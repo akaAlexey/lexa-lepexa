@@ -1,0 +1,1665 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Тропа памяти: Последний бой — API",
+    "version": "0.1.0",
+    "description": "Контракт, который ожидает фронтенд. Источник правды — frontend/src/contract (zod). Сгенерировано: npm run contract."
+  },
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "Тот же домен, что и фронт (прокси)"
+    }
+  ],
+  "paths": {
+    "/graves": {
+      "get": {
+        "operationId": "listGraves",
+        "summary": "Захоронения (данные жюри)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Grave"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        }
+      }
+    },
+    "/battles": {
+      "get": {
+        "operationId": "listBattles",
+        "summary": "Бои (данные жюри)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Battle"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        }
+      }
+    },
+    "/teams": {
+      "get": {
+        "operationId": "listTeams",
+        "summary": "Поисковые отряды (данные жюри)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Team"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        }
+      }
+    },
+    "/stats/search": {
+      "get": {
+        "operationId": "getSearchStats",
+        "summary": "Найдено бойцов за текущий месяц",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchStats"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        }
+      }
+    },
+    "/routes": {
+      "get": {
+        "operationId": "listRoutes",
+        "summary": "Семейные маршруты",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Route"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        }
+      }
+    },
+    "/routes/{id}": {
+      "get": {
+        "operationId": "getRoute",
+        "summary": "Маршрут с точками",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Route"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/requests": {
+      "get": {
+        "operationId": "listRequests",
+        "summary": "Заявки на набор волонтёров, новые сверху",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VolunteerRequest"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createRequest",
+        "summary": "Создать заявку (командир)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VolunteerRequest"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewVolunteerRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/requests/{id}/join": {
+      "post": {
+        "operationId": "joinRequest",
+        "summary": "«Стать частью команды»",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VolunteerRequest"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/fundraisers": {
+      "get": {
+        "operationId": "listFundraisers",
+        "summary": "Целевые сборы",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Fundraiser"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        }
+      }
+    },
+    "/donations": {
+      "post": {
+        "operationId": "donate",
+        "summary": "Пожертвование (только тестовый режим ЮKassa/CloudPayments)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DonationResult"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Donation"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips": {
+      "get": {
+        "operationId": "listTrips",
+        "summary": "Выезды «Выходные с поисковиком» по дате",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Trip"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        }
+      }
+    },
+    "/trips/{id}": {
+      "get": {
+        "operationId": "getTrip",
+        "summary": "Выезд",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Trip"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/trips/{id}/register": {
+      "post": {
+        "operationId": "registerTrip",
+        "summary": "Записаться на выезд",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Trip"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/sites": {
+      "get": {
+        "operationId": "listSites",
+        "summary": "Места гибели «Последний бой»",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LastBattleSite"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createSite",
+        "summary": "Добавить место гибели; сервер рассылает уведомления подписчикам в радиусе 20 км",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSiteResult"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLastBattleSite"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sites/{id}": {
+      "get": {
+        "operationId": "getSite",
+        "summary": "Место гибели",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LastBattleSite"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/sites/{id}/status": {
+      "patch": {
+        "operationId": "changeSiteStatus",
+        "summary": "Сменить статус (только вперёд)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LastBattleSite"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteStatusChange"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sites/{id}/volunteer": {
+      "post": {
+        "operationId": "volunteerForSite",
+        "summary": "«Я готов помочь в подъёме»",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LastBattleSite"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/subscriptions": {
+      "post": {
+        "operationId": "subscribe",
+        "summary": "Подписка на поисковую деятельность в радиусе",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionResult"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Subscription"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/stream": {
+      "get": {
+        "operationId": "notificationStream",
+        "summary": "Поток уведомлений (Server-Sent Events). data каждого события — AppNotification",
+        "responses": {
+          "200": {
+            "description": "text/event-stream",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppNotification"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LatLon": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lon": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          }
+        },
+        "required": [
+          "lat",
+          "lon"
+        ],
+        "additionalProperties": false,
+        "description": "Координаты WGS84"
+      },
+      "SourceKind": {
+        "type": "string",
+        "enum": [
+          "book_of_memory",
+          "obd_memorial",
+          "pamyat_naroda",
+          "osm",
+          "archive",
+          "literature",
+          "eyewitness",
+          "demo"
+        ],
+        "description": "Тип источника факта"
+      },
+      "Source": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/SourceKind"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "kind",
+          "title"
+        ],
+        "additionalProperties": false,
+        "description": "Источник факта. У каждого факта в интерфейсе есть хотя бы один источник"
+      },
+      "Grave": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lon": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "fullName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1
+          },
+          "demo": {
+            "type": "boolean",
+            "description": "true — демо-данные, вымышлены или не проверены"
+          }
+        },
+        "required": [
+          "id",
+          "lat",
+          "lon",
+          "fullName",
+          "unit",
+          "demo"
+        ],
+        "additionalProperties": false,
+        "description": "Захоронение (mock_graves.csv: ID, lat, lon, ФИО, № части)"
+      },
+      "Battle": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "Дата YYYY-MM-DD"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "archiveUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "place": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "lat": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "lon": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              }
+            },
+            "required": [
+              "name",
+              "lat",
+              "lon"
+            ],
+            "additionalProperties": false
+          },
+          "demo": {
+            "type": "boolean",
+            "description": "true — демо-данные, вымышлены или не проверены"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "text",
+          "archiveUrl",
+          "demo"
+        ],
+        "additionalProperties": false,
+        "description": "Бой (mock_battles.json: дата боя, текст подвига, ссылка на архив)"
+      },
+      "Team": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "region": {
+            "type": "string"
+          },
+          "budgetGoalRub": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Сумма в рублях"
+          },
+          "budgetCollectedRub": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Сумма в рублях"
+          },
+          "foundThisMonth": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "demo": {
+            "type": "boolean",
+            "description": "true — демо-данные, вымышлены или не проверены"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "region",
+          "budgetGoalRub",
+          "budgetCollectedRub",
+          "foundThisMonth",
+          "demo"
+        ],
+        "additionalProperties": false,
+        "description": "Поисковый отряд (mock_teams.json) с дефицитом бюджета"
+      },
+      "PointKind": {
+        "type": "string",
+        "enum": [
+          "battle",
+          "trench",
+          "hq"
+        ],
+        "description": "Тип точки маршрута: battle — Звезда (бой), trench — Шлем (окоп), hq — Книга (штаб)"
+      },
+      "ChildTask": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "minLength": 1
+          },
+          "options": {
+            "minItems": 2,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "answerIndex": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "illustration": {
+            "description": "Путь к иллюстрации в ассетах фронта",
+            "type": "string"
+          },
+          "explanation": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Что сказать после ответа"
+          }
+        },
+        "required": [
+          "question",
+          "options",
+          "answerIndex",
+          "explanation"
+        ],
+        "additionalProperties": false,
+        "description": "Задание для ребёнка на точке маршрута"
+      },
+      "RoutePoint": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "$ref": "#/components/schemas/PointKind"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lon": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "story": {
+            "type": "string",
+            "minLength": 1
+          },
+          "task": {
+            "$ref": "#/components/schemas/ChildTask"
+          },
+          "sources": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Source"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "title",
+          "lat",
+          "lon",
+          "story",
+          "task",
+          "sources"
+        ],
+        "additionalProperties": false,
+        "description": "Интерактивная точка маршрута"
+      },
+      "Route": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "summary": {
+            "type": "string"
+          },
+          "lengthM": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "durationMin": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "path": {
+            "minItems": 2,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LatLon"
+            }
+          },
+          "points": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoutePoint"
+            }
+          },
+          "demo": {
+            "type": "boolean",
+            "description": "true — демо-данные, вымышлены или не проверены"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "summary",
+          "lengthM",
+          "durationMin",
+          "path",
+          "points",
+          "demo"
+        ],
+        "additionalProperties": false,
+        "description": "Семейный квест-маршрут. Точки упорядочены, path — линия маршрута"
+      },
+      "VolunteerRole": {
+        "type": "string",
+        "enum": [
+          "digger",
+          "prober",
+          "cook",
+          "driver",
+          "medic",
+          "any"
+        ],
+        "description": "Кого ищет отряд"
+      },
+      "VolunteerRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "teamId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "Дата YYYY-MM-DD"
+          },
+          "place": {
+            "type": "string",
+            "minLength": 1
+          },
+          "roles": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "$ref": "#/components/schemas/VolunteerRole"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "exclusiveMinimum": true,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "role",
+                "count"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "joined": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "fundraiserId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "Дата и время ISO 8601, UTC"
+          },
+          "demo": {
+            "type": "boolean",
+            "description": "true — демо-данные, вымышлены или не проверены"
+          }
+        },
+        "required": [
+          "id",
+          "teamId",
+          "title",
+          "date",
+          "place",
+          "roles",
+          "joined",
+          "createdAt",
+          "demo"
+        ],
+        "additionalProperties": false,
+        "description": "Заявка отряда на набор волонтёров"
+      },
+      "NewVolunteerRequest": {
+        "type": "object",
+        "properties": {
+          "teamId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "Дата YYYY-MM-DD"
+          },
+          "place": {
+            "type": "string",
+            "minLength": 1
+          },
+          "roles": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "$ref": "#/components/schemas/VolunteerRole"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "exclusiveMinimum": true,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "role",
+                "count"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "teamId",
+          "title",
+          "date",
+          "place",
+          "roles"
+        ],
+        "additionalProperties": false,
+        "description": "Создание заявки командиром"
+      },
+      "FundraiserPurpose": {
+        "type": "string",
+        "enum": [
+          "fuel",
+          "raise_fighter",
+          "equip"
+        ],
+        "description": "fuel — «Пожертвовать на бензин», raise_fighter — «Поднять бойца», equip — «Экипировать отряд»"
+      },
+      "Fundraiser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "teamId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "purpose": {
+            "$ref": "#/components/schemas/FundraiserPurpose"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "goalRub": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Сумма в рублях"
+          },
+          "collectedRub": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Сумма в рублях"
+          },
+          "demo": {
+            "type": "boolean",
+            "description": "true — демо-данные, вымышлены или не проверены"
+          }
+        },
+        "required": [
+          "id",
+          "teamId",
+          "purpose",
+          "title",
+          "goalRub",
+          "collectedRub",
+          "demo"
+        ],
+        "additionalProperties": false,
+        "description": "Целевой сбор отряда"
+      },
+      "Donation": {
+        "type": "object",
+        "properties": {
+          "fundraiserId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "amountRub": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991,
+            "description": "Сумма в рублях"
+          }
+        },
+        "required": [
+          "fundraiserId",
+          "amountRub"
+        ],
+        "additionalProperties": false,
+        "description": "Пожертвование. Только тестовый режим платёжного провайдера"
+      },
+      "DonationResult": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "test_succeeded"
+            ]
+          },
+          "fundraiser": {
+            "$ref": "#/components/schemas/Fundraiser"
+          }
+        },
+        "required": [
+          "paymentId",
+          "status",
+          "fundraiser"
+        ],
+        "additionalProperties": false,
+        "description": "Результат тестового платежа"
+      },
+      "SearchStats": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}$"
+          },
+          "foundThisMonth": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "month",
+          "foundThisMonth"
+        ],
+        "additionalProperties": false,
+        "description": "Счётчик «Найдено бойцов за месяц»"
+      },
+      "ChecklistItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "id",
+          "label"
+        ],
+        "additionalProperties": false,
+        "description": "Пункт чек-листа новичка"
+      },
+      "Trip": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "teamId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "Дата YYYY-MM-DD"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "place": {
+            "type": "string",
+            "minLength": 1
+          },
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lon": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "spotsTotal": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "spotsTaken": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "checklist": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChecklistItem"
+            }
+          },
+          "demo": {
+            "type": "boolean",
+            "description": "true — демо-данные, вымышлены или не проверены"
+          }
+        },
+        "required": [
+          "id",
+          "teamId",
+          "date",
+          "title",
+          "place",
+          "lat",
+          "lon",
+          "spotsTotal",
+          "spotsTaken",
+          "checklist",
+          "demo"
+        ],
+        "additionalProperties": false,
+        "description": "Выезд «Выходные с поисковиком»"
+      },
+      "SiteStatus": {
+        "type": "string",
+        "enum": [
+          "found_needs_check",
+          "archive_confirmed",
+          "remains_raised"
+        ],
+        "description": "found_needs_check — «Обнаружено место (требуется проверка)», archive_confirmed — «Подтверждено архивом», remains_raised — «Останки подняты». Переходы только вперёд"
+      },
+      "Fighter": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string"
+          },
+          "rank": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Боец. Имя может быть неизвестно"
+      },
+      "LastBattleSite": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lon": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "placeName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fightersCount": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "fighters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Fighter"
+            }
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1
+          },
+          "dateText": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Датировка как в источнике, например «октябрь 1941»"
+          },
+          "circumstances": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SiteStatus"
+          },
+          "sources": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Source"
+            }
+          },
+          "teamId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "volunteersReady": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "Дата и время ISO 8601, UTC"
+          },
+          "demo": {
+            "type": "boolean",
+            "description": "true — демо-данные, вымышлены или не проверены"
+          }
+        },
+        "required": [
+          "id",
+          "lat",
+          "lon",
+          "placeName",
+          "fightersCount",
+          "fighters",
+          "unit",
+          "dateText",
+          "circumstances",
+          "status",
+          "sources",
+          "volunteersReady",
+          "createdAt",
+          "demo"
+        ],
+        "additionalProperties": false,
+        "description": "Место гибели бойцов на карте «Последний бой»"
+      },
+      "NewLastBattleSite": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lon": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "placeName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fightersCount": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "fighters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Fighter"
+            }
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1
+          },
+          "dateText": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Датировка как в источнике, например «октябрь 1941»"
+          },
+          "circumstances": {
+            "type": "string"
+          },
+          "sources": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Source"
+            }
+          },
+          "teamId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "lat",
+          "lon",
+          "placeName",
+          "fightersCount",
+          "fighters",
+          "unit",
+          "dateText",
+          "circumstances",
+          "sources"
+        ],
+        "additionalProperties": false,
+        "description": "Новая точка от отряда. Статус на сервере всегда found_needs_check"
+      },
+      "CreateSiteResult": {
+        "type": "object",
+        "properties": {
+          "site": {
+            "$ref": "#/components/schemas/LastBattleSite"
+          },
+          "notifiedCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "site",
+          "notifiedCount"
+        ],
+        "additionalProperties": false,
+        "description": "Созданная точка и число подписчиков в радиусе 20 км, которым ушло уведомление"
+      },
+      "SiteStatusChange": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/SiteStatus"
+          },
+          "source": {
+            "$ref": "#/components/schemas/Source"
+          }
+        },
+        "required": [
+          "status",
+          "source"
+        ],
+        "additionalProperties": false,
+        "description": "Смена статуса точки (краевед или отряд)"
+      },
+      "Subscription": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lon": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "radiusKm": {
+            "default": 20,
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 200
+          },
+          "topics": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "search"
+              ]
+            }
+          }
+        },
+        "required": [
+          "lat",
+          "lon",
+          "radiusKm",
+          "topics"
+        ],
+        "additionalProperties": false,
+        "description": "Подписка на поисковую деятельность рядом с точкой"
+      },
+      "SubscriptionResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false,
+        "description": "Созданная подписка"
+      },
+      "AppNotification": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "site_found"
+            ]
+          },
+          "siteId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "distanceKm": {
+            "type": "number",
+            "minimum": 0
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "Дата и время ISO 8601, UTC"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "siteId",
+          "distanceKm",
+          "title",
+          "body",
+          "createdAt"
+        ],
+        "additionalProperties": false,
+        "description": "Уведомление пользователю (SSE /notifications/stream, в будущем Web Push)"
+      },
+      "Ack": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "additionalProperties": false,
+        "description": "Подтверждение действия"
+      }
+    }
+  }
+}
