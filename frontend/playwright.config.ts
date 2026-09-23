@@ -13,6 +13,8 @@ export default defineConfig({
   testDir: './e2e',
   outputDir: './test-results',
   fullyParallel: true,
+  // История 3 — две вкладки, три проверки axe и скриншоты: на телефоне под нагрузкой 30 с мало
+  timeout: 60_000,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
