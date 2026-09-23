@@ -12,7 +12,10 @@ interface Common {
 type Props = Common &
   ({ to: string; onClick?: never } | { onClick: () => void; to?: never; disabled?: boolean })
 
-/** «Одна большая красная кнопка» — главное действие экрана. На экране она одна. */
+/**
+ * «Одна большая красная кнопка» — главное действие экрана. На экране она одна:
+ * e2e считает элементы с data-main-action.
+ */
 export function BigButton(props: Props) {
   const content = (
     <>
@@ -22,7 +25,7 @@ export function BigButton(props: Props) {
   )
   if (props.to !== undefined) {
     return (
-      <Link to={props.to} className={s.bigButton} data-testid={props.testID}>
+      <Link to={props.to} className={s.bigButton} data-testid={props.testID} data-main-action>
         {content}
       </Link>
     )
@@ -34,6 +37,7 @@ export function BigButton(props: Props) {
       onClick={props.onClick}
       disabled={'disabled' in props ? props.disabled : undefined}
       data-testid={props.testID}
+      data-main-action
     >
       {content}
     </button>
