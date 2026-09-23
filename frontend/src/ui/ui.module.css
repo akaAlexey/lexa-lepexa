@@ -81,3 +81,130 @@
   color: var(--color-ink-muted);
   font-size: 1.05rem;
 }
+
+/* ---------- Вторичные действия ---------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-4);
+  border: 2px solid var(--color-olive);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-olive-dark);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button[aria-pressed='true'] {
+  background: var(--color-olive);
+  color: #fff;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---------- Формы ---------- */
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.label {
+  font-weight: 700;
+}
+
+.hint {
+  color: var(--color-ink-muted);
+  font-size: 0.95rem;
+}
+
+.input {
+  min-height: var(--touch-min);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--color-khaki);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--color-ink);
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--color-red);
+}
+
+.error {
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+  color: var(--color-red);
+  font-weight: 700;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.chips legend {
+  margin-bottom: var(--space-1);
+  font-weight: 700;
+}
+
+/* ---------- Сообщения и диалог ---------- */
+
+.notice {
+  padding: var(--space-3) var(--space-4);
+  border-left: 0.4rem solid var(--color-olive);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.noticeSuccess {
+  composes: notice;
+  border-left-color: var(--color-status-remains-raised);
+}
+
+.noticeError {
+  composes: notice;
+  border-left-color: var(--color-red);
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: rgb(27 27 20 / 0.55);
+}
+
+.dialog {
+  display: grid;
+  gap: var(--space-3);
+  width: min(100%, 32rem);
+  max-height: 100%;
+  overflow: auto;
+  padding: var(--space-6);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.sources {
+  margin: 0;
+  padding-left: var(--space-6);
+  color: var(--color-ink-muted);
+  font-size: 0.95rem;
+}
