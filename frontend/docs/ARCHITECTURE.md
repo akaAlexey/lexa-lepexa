@@ -8,7 +8,7 @@
 features/*  ──►  app/ (сервисы, роли, раскладка)  ──►  ui/, map/, theme/
     │                                                    │
     └──────────►  api/ (ApiClient)  ──►  contract/  ◄────┘
-                  platform/ (Geo, Notify, Storage)
+                  platform/ (Geo, Notify, Storage, Share)
                   domain/ (чистая логика)  ──►  contract/ (только типы)
 ```
 
@@ -28,9 +28,9 @@ frontend/
     platform/   types.ts · web/ · demo/ · index.ts (createWebPlatform)
     map/        MapView.tsx · style.ts (стиль из токенов) · tiles.ts (источник тайлов)
     theme/      tokens.ts (цвета, шрифты, размеры) · global.css
-    ui/         BigButton · Card · StatusBadge · DemoBadge · Icon · Screen · siteStatus
-    app/        App · routes · Layout (шапка, вкладки/меню) · RoleContext · roles · services · Toaster · QueryState
-    features/   roles · trail · search-hq · weekends · last-battle — у каждого свой routes.tsx
+    ui/         BigButton · Card · StatusBadge · StatePill · DemoBadge · Icon · Logo · Screen · Field · siteStatus
+    app/        App · routes · Layout (шапка, вкладки/меню) · RoleContext · roles · services · Toaster · QueryState · ShareButton
+    features/   roles · trail · search-hq · weekends · last-battle · archive · chronicle — у каждого свой routes.tsx
     config/     env.ts (проверка переменных окружения) · region.ts (регион, тексты, источники)
     test/       setup · renderApp · MapViewStub
   fixtures/jury/   данные в формате жюри (сейчас — демо, сгенерированы по схеме)
@@ -65,6 +65,10 @@ frontend/
 | `app/QueryState`                | `QueryState({ query, what, children })`                                                                  | Единые загрузка/ошибка/повтор                                                                                                                                                                                                                                   |
 | `domain/plural`, `domain/dates` | `pluralRu`, `todayIso`, `tomorrowIso`, `addDaysIso`                                                      | Русские формы числа; даты в часовом поясе региона                                                                                                                                                                                                               |
 | `config/region`                 | `region.demo.commanderTeamId`                                                                            | Отряд демо-командира («Высота»)                                                                                                                                                                                                                                 |
+| `ui/StatePill`                  | `StatePill({ label, tone: 'wait' \| 'action' \| 'done', testID? })`                                      | Состояние заявки или истории: иконка + подпись + цвет                                                                                                                                                                                                           |
+| `ui/Field` (`TextAreaField`)    | `TextAreaField({ label, value, onChange, hint?, error?, rows?, testID })`                                | Многострочное поле с подписью и ошибкой                                                                                                                                                                                                                         |
+| `app/ShareButton`               | `ShareButton({ title, text?, testID })`                                                                  | «Поделиться» ссылкой на текущий экран через `platform.share`                                                                                                                                                                                                    |
+| `map/MapView` (`shape`)         | `MapMarker.shape?: 'pin' \| 'zone'`                                                                      | `zone` — круг-зона «Последнего боя»: нажимается центр, кольцо — декор                                                                                                                                                                                           |
 
 Рассылка находок без бэкенда: mock-API каждой вкладки шлёт по BroadcastChannel событие «создано место», остальные вкладки добавляют место к себе и уведомляют свои подписки. Подписка хранится на устройстве и восстанавливается при старте (`Toaster`).
 

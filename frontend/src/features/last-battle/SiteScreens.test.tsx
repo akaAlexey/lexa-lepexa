@@ -26,6 +26,21 @@ describe('карточка места гибели', () => {
     expect(screen.getByTestId('site-volunteers')).toHaveTextContent('Готовы помочь: 4')
   })
 
+  it('закрытые координаты: волонтёр видит только район, точные цифры скрыты', async () => {
+    renderApp('/last-battle/S01', { role: 'volunteer' })
+    expect(await screen.findByTestId('site-coords-closed')).toHaveTextContent('район ~500 м')
+    expect(screen.queryByTestId('site-coords')).not.toBeInTheDocument()
+  })
+
+  it.each(['commander', 'verifier'] as const)(
+    'закрытые координаты: %s видит точные координаты',
+    async (role) => {
+      renderApp('/last-battle/S01', { role })
+      expect(await screen.findByTestId('site-coords')).toHaveTextContent(/^\d+\.\d{4}, \d+\.\d{4}$/)
+      expect(screen.queryByTestId('site-coords-closed')).not.toBeInTheDocument()
+    },
+  )
+
   it('подтверждённое и поднятое место не просит подъёма', async () => {
     renderApp('/last-battle/S03', { role: 'volunteer' })
     expect(await screen.findByTestId('status-remains_raised')).toBeInTheDocument()

@@ -20,6 +20,8 @@ export interface MapMarker {
   color: string
   /** Компактная метка для плотного фонового слоя (захоронения), чтобы не перекрывать главные. */
   size?: 'normal' | 'small'
+  /** 'zone' — круг-зона с пунктирной границей («Последний бой»): место известно примерно, это не булавка. */
+  shape?: 'pin' | 'zone'
   /** false — фоновая метка без действия: не кнопка, не в порядке фокуса, скринридер её пропускает. */
   interactive?: boolean
 }
@@ -126,21 +128,25 @@ export function MapView({
       return
     }
     map.addSource(ROUTE_SOURCE, { type: 'geojson', data })
-    // «След танка»: две пунктирные колеи по бокам линии маршрута.
-    for (const offset of [-3, 3]) {
-      map.addLayer({
-        id: `route-track${offset}`,
-        type: 'line',
-        source: ROUTE_SOURCE,
-        layout: { 'line-cap': 'butt', 'line-join': 'round' },
-        paint: {
-          'line-color': tokens.color.map.route,
-          'line-width': 3,
-          'line-offset': offset,
-          'line-dasharray': [0.8, 0.6],
-        },
-      })
-    }
+    // «След танка» из макета: светлая подложка и поверх — широкий оранжевый пунктир, как траки.
+    map.addLayer({
+      id: 'route-halo',
+      type: 'line',
+      source: ROUTE_SOURCE,
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: { 'line-color': tokens.color.map.routeHalo, 'line-width': 12, 'line-opacity': 0.75 },
+    })
+    map.addLayer({
+      id: 'route-track',
+      type: 'line',
+      source: ROUTE_SOURCE,
+      layout: { 'line-cap': 'butt', 'line-join': 'round' },
+      paint: {
+        'line-color': tokens.color.map.route,
+        'line-width': 8,
+        'line-dasharray': [0.4, 0.65],
+      },
+    })
   }, [map, route])
 
   useEffect(() => {
@@ -167,7 +173,7 @@ export function MapView({
   }
 
   return (
-    <div className={s.frame}>
+    <div className={s.frame} data-map-frame>
       <section
         ref={container}
         className={s.map}
@@ -189,7 +195,13 @@ export function MapView({
           ) : (
             <button
               type="button"
-              className={marker.size === 'small' ? s.markerSmall : s.marker}
+              className={
+                marker.size === 'small'
+                  ? s.markerSmall
+                  : marker.shape === 'zone'
+                    ? s.markerZone
+                    : s.marker
+              }
               style={{ color: marker.color }}
               aria-label={marker.label}
               title={marker.label}

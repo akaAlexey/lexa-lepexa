@@ -14,14 +14,31 @@
   gap: var(--space-2);
 }
 
+/* Легенда повторяет метки карты: место — залитый круг в пунктирной зоне, захоронение — светлый круг. */
 .legendIcon {
   display: inline-grid;
   place-items: center;
   width: 2rem;
   height: 2rem;
-  border: 2px solid currentColor;
   border-radius: 50%;
+  background: currentColor;
+  outline: 2px dashed currentColor;
+  outline-offset: 2px;
+}
+
+.legendIcon svg {
+  color: var(--color-surface);
+}
+
+.legendIconGrave {
+  composes: legendIcon;
+  border: 1.5px solid currentColor;
   background: var(--color-surface);
+  outline: 0;
+}
+
+.legendIconGrave svg {
+  color: inherit;
 }
 
 /* Карточка места в списке — вся строка-ссылка, зона нажатия не меньше 3rem. */
@@ -55,7 +72,7 @@
   margin: 0;
   padding: var(--space-3) var(--space-4) var(--space-4);
   border: 2px solid var(--color-control-border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-card);
   min-width: 0;
 }
 
@@ -103,7 +120,28 @@
   gap: var(--space-2);
   margin: 0;
   font-weight: 700;
-  color: var(--color-red);
+  color: var(--color-danger);
+}
+
+.coordsValue {
+  font-family: var(--font-mono);
+}
+
+/* Закрытые координаты — плашка с замком, как на макете «Последний бой» */
+.closedCoords {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--color-danger-soft);
+  color: var(--color-danger-text);
+}
+
+.closedCoords svg {
+  flex-shrink: 0;
+  color: var(--color-danger);
 }
 
 .actions {

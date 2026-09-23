@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { ApiError } from '../../api/client.ts'
 import { QueryState } from '../../app/QueryState.tsx'
+import { ShareButton } from '../../app/ShareButton.tsx'
 import { useServices } from '../../app/services.tsx'
 import type { Trip } from '../../contract/schemas.ts'
 import { checklistProgress, toggleChecklistItem } from '../../domain/checklist.ts'
@@ -12,6 +13,7 @@ import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { Screen } from '../../ui/Screen.tsx'
+import { groupUrl } from './groups.ts'
 import { checklistKey, freeSpots, spotsText } from './trips.ts'
 import s from './weekends.module.css'
 
@@ -111,7 +113,18 @@ function TripDetails({ trip }: { trip: Trip }) {
         </Notice>
       )}
 
+      <p>
+        <Link to={groupUrl(trip.id)} className={s.tripLink} data-testid="trip-group">
+          Записать группу: школу, клуб или семью
+        </Link>
+      </p>
+
       <Checklist trip={trip} />
+      <ShareButton
+        title={`Выезд с поисковиками: ${trip.title}`}
+        text={`${formatDayRu(trip.date)} — «Выходные с поисковиком»`}
+        testID="trip-share"
+      />
     </Screen>
   )
 }

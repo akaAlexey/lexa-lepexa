@@ -4,6 +4,7 @@ import { createDemoGeo } from './demo/geo.ts'
 import type { Platform } from './types.ts'
 import { createWebGeo } from './web/geo.ts'
 import { createWebNotify } from './web/notify.ts'
+import { createWebShare } from './web/share.ts'
 import { createWebStorage } from './web/storage.ts'
 
 export const GEO_MODE_KEY = 'geo-mode'
@@ -20,7 +21,7 @@ export function createWebPlatform(): Platform {
     storage.get<string>(GEO_MODE_KEY) === 'device'
       ? createWebGeo()
       : createDemoGeo(storage.get<LatLon>(DEMO_POSITION_KEY) ?? region.demoPosition)
-  return { geo, notify: createWebNotify(), storage }
+  return { geo, notify: createWebNotify(), storage, share: createWebShare() }
 }
 
-export type { Platform, GeoService, NotifyService, StorageService } from './types.ts'
+export type { Platform, GeoService, NotifyService, ShareService, StorageService } from './types.ts'

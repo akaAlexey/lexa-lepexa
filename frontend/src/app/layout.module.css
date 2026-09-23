@@ -17,23 +17,21 @@
   top: var(--space-2);
 }
 
+/* Телефон: шапка сверху и нижняя панель разделов живут отдельно — обёртка не создаёт блок. */
+.rail {
+  display: contents;
+}
+
 .header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-2) var(--space-4);
-  padding: var(--space-2) var(--space-4);
-  background: var(--color-olive-dark);
-  color: var(--color-paper);
-  /* Георгиевская лента — тонкая полоса под шапкой */
-  border-bottom: 0.4rem solid transparent;
-  border-image: repeating-linear-gradient(
-      90deg,
-      var(--color-ribbon-orange) 0 0.8rem,
-      var(--color-ribbon-black) 0.8rem 1.6rem
-    )
-    1;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border-bottom: 1px solid var(--color-line);
 }
 
 .brand {
@@ -42,43 +40,54 @@
   gap: var(--space-2);
   color: inherit;
   text-decoration: none;
-  font-family: var(--font-heading);
-  font-size: 1.1rem;
-  font-weight: 700;
   min-height: var(--touch-min);
   white-space: nowrap;
 }
 
-.headerMeta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
+.brandText {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
+.brandSub {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-ink-muted);
+}
+
+/* Роль — пилюля, как кнопка аккаунта на макете */
 .roleLink {
   display: inline-flex;
   align-items: center;
+  gap: var(--space-1);
   min-height: var(--touch-min);
-  padding: 0 var(--space-3);
-  color: var(--color-paper);
-  border: 2px solid var(--color-paper);
-  border-radius: 999px;
-  text-decoration: none;
+  padding: 0 var(--space-2);
+  border: 2px solid var(--color-olive);
+  border-radius: var(--radius-pill);
+  color: var(--color-olive);
   font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
 .nav {
   position: fixed;
   inset: auto 0 0 0;
   z-index: 10;
-  background: var(--color-olive-dark);
+  background: var(--color-rail);
   padding-bottom: env(safe-area-inset-bottom);
 }
 
 .navList {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   margin: 0;
   padding: 0;
   list-style: none;
@@ -89,10 +98,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.1rem;
+  gap: 0.15rem;
   min-height: var(--nav-height);
-  padding: var(--space-1);
-  color: var(--color-paper);
+  padding: var(--space-1) 0.15rem;
+  color: var(--color-rail-text);
   text-decoration: none;
   font-size: 0.9rem;
   line-height: 1.15;
@@ -103,57 +112,123 @@
   border-top: 0.25rem solid transparent;
 }
 
+/* Активный раздел — не только цветом: жирный текст и полоса */
 .navLink[aria-current='page'] {
-  border-top-color: var(--color-ribbon-orange);
+  color: var(--color-accent-on-dark);
+  border-top-color: var(--color-accent-on-dark);
   font-weight: 700;
-  background: rgb(255 255 255 / 0.08);
 }
 
 .main:focus {
   outline: none;
 }
 
-/* Ноутбук: меню слева, контент справа. В rem — при масштабе 200 % включается мобильная раскладка. */
+/* Ноутбук: плавающая тёмная панель разделов слева. В rem — при масштабе 200 % включается мобильная раскладка. */
 @media (min-width: 64rem) {
   .shell {
     display: grid;
-    grid-template-columns: var(--sidebar-width) 1fr;
-    grid-template-rows: auto 1fr;
+    grid-template-columns: calc(var(--rail-width) + var(--float-gap)) minmax(0, 1fr);
+    align-items: start;
     padding-bottom: var(--toast-space, 0px);
   }
 
+  .rail {
+    position: sticky;
+    top: var(--float-gap);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    width: var(--rail-width);
+    height: calc(100dvh - 2 * var(--float-gap));
+    margin: var(--float-gap) 0 0 var(--float-gap);
+    padding: var(--space-3) 0;
+    overflow-y: auto;
+    border-radius: var(--radius-card);
+    background: var(--color-rail);
+    box-shadow: var(--shadow-panel);
+  }
+
   .header {
-    grid-column: 1 / -1;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: var(--space-2);
+    padding: 0 var(--space-2);
+    background: transparent;
+    color: var(--color-surface);
+    border-bottom: 0;
+  }
+
+  .brand {
+    flex-direction: column;
+    gap: var(--space-1);
+    white-space: normal;
+    text-align: center;
+  }
+
+  .brandText {
+    font-size: 0.85rem;
+    line-height: 1.15;
+  }
+
+  .brandSub {
+    margin-top: 0.15rem;
+    color: var(--color-rail-text);
+  }
+
+  /* В узкой панели — только «Демо» */
+  .brandRegion {
+    display: none;
+  }
+
+  .roleLink {
+    flex-direction: column;
+    gap: 0.1rem;
+    min-height: 3.5rem;
+    width: calc(var(--rail-width) - 1rem);
+    padding: var(--space-1);
+    border-color: var(--color-rail-text);
+    border-radius: var(--radius-control);
+    color: var(--color-rail-text);
+    font-size: 0.9rem;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .roleLink[aria-current='page'] {
+    border-color: var(--color-accent-on-dark);
+    color: var(--color-accent-on-dark);
   }
 
   .nav {
     position: static;
+    flex: 1;
     padding-bottom: 0;
+    background: transparent;
   }
 
   .navList {
-    grid-template-columns: 1fr;
-    padding: var(--space-4) var(--space-2);
-    gap: var(--space-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    height: 100%;
+    padding: 0 var(--space-2);
   }
 
   .navLink {
-    flex-direction: row;
-    justify-content: flex-start;
-    gap: var(--space-3);
-    padding: var(--space-2) var(--space-4);
-    font-size: 1.05rem;
+    min-height: 4.25rem;
+    padding: var(--space-2) var(--space-1);
     border-top: 0;
-    border-left: 0.3rem solid transparent;
-    border-radius: 0 var(--radius) var(--radius) 0;
+    border-left: 0.25rem solid transparent;
+    border-radius: var(--radius-control);
   }
 
   .navLink[aria-current='page'] {
-    border-left-color: var(--color-ribbon-orange);
+    background: var(--color-rail-active);
+    border-left-color: var(--color-accent-on-dark);
   }
 }
 
-/* Уведомление: на телефоне — внизу над меню, на ноутбуке — справа под шапкой. Заголовок экрана не закрывает. */
+/* Уведомление: на телефоне — внизу над меню, на ноутбуке — справа внизу. Заголовок экрана не закрывает. */
 .toasts {
   position: fixed;
   z-index: 50;
@@ -163,6 +238,7 @@
   pointer-events: none;
 }
 
+/* Уведомление как пуш на макете «Последний бой»: тёмная плашка, красный значок */
 .toast {
   pointer-events: auto;
   display: flex;
@@ -171,11 +247,11 @@
   width: min(100%, 30rem);
   max-height: 35dvh;
   overflow: auto;
-  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
-  border-left: 0.4rem solid var(--color-red);
-  border-radius: var(--radius);
-  background: var(--color-surface);
-  box-shadow: 0 0.3rem 1rem rgb(0 0 0 / 0.25);
+  padding: var(--space-3) var(--space-2) var(--space-3) var(--space-3);
+  border-radius: var(--radius-card);
+  background: var(--color-rail);
+  color: var(--color-paper);
+  box-shadow: var(--shadow-panel);
 }
 
 .toast p {
@@ -184,7 +260,12 @@
 
 .toastIcon {
   flex-shrink: 0;
-  color: var(--color-red);
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0.4rem;
+  border-radius: var(--radius-control);
+  background: var(--color-danger);
+  color: var(--color-surface);
 }
 
 .toastBody {
@@ -197,6 +278,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2) var(--space-4);
+  color: var(--color-rail-text);
 }
 
 .toastAction {
@@ -204,9 +286,9 @@
   align-items: center;
   min-height: var(--touch-min);
   padding: 0 var(--space-4);
-  border: 2px solid var(--color-olive);
-  border-radius: var(--radius);
-  color: var(--color-olive-dark);
+  border-radius: var(--radius-control);
+  background: var(--color-accent);
+  color: #fff;
   font-weight: 700;
   text-decoration: none;
 }
@@ -219,7 +301,7 @@
   min-height: var(--touch-min);
   border: 0;
   background: transparent;
-  color: var(--color-ink);
+  color: var(--color-paper);
   cursor: pointer;
 }
 

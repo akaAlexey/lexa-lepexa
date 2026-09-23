@@ -5,6 +5,7 @@ import type {
   LatLon,
   Subscription,
 } from '../../contract/schemas.ts'
+import { isAwaitingReview } from '../../domain/archive.ts'
 import { distanceKm, isWithinRadius } from '../../domain/geo.ts'
 import {
   NOTIFY_RADIUS_KM,
@@ -37,6 +38,8 @@ function createDb() {
     requests: seed.requests,
     fundraisers: seed.fundraisers,
     trips: seed.trips,
+    groupApplications: seed.groupApplications,
+    stories: seed.stories,
     sites: seed.sites,
     subscriptions: [] as StoredSubscription[],
   })
@@ -154,6 +157,59 @@ export function createMockApi(options: MockOptions = {}): ApiClient {
         if (t.spotsTaken >= t.spotsTotal) throw new ApiError('Мест нет', 409)
         t.spotsTaken += 1
         return t
+      }),
+    listGroupApplications: () =>
+      respond(() =>
+        [...db.groupApplications].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+      ),
+    createGroupApplication: ({ body }) =>
+      respond(() => {
+        const input = endpoints.createGroupApplication.body.parse(body)
+        find(db.trips, input.tripId, 'Выезд')
+        const created = {
+          ...input,
+          id: nextId('G'),
+          status: 'pending' as const,
+          createdAt: now().toISOString(),
+          demo: true,
+        }
+        db.groupApplications.push(created)
+        return created
+      }),
+    decideGroupApplication: ({ id, body }) =>
+      respond(() => {
+        const input = endpoints.decideGroupApplication.body.parse(body)
+        const application = find(db.groupApplications, id, 'Заявка')
+        application.status = input.status
+        return application
+      }),
+    listStories: () =>
+      respond(() => [...db.stories].sort((a, b) => b.createdAt.localeCompare(a.createdAt))),
+    getStory: ({ id }) => respond(() => find(db.stories, id, 'История')),
+    createStory: ({ body }) =>
+      respond(() => {
+        const input = endpoints.createStory.body.parse(body)
+        const created = {
+          ...input,
+          id: nextId('ST'),
+          status: 'pending' as const,
+          createdAt: now().toISOString(),
+          demo: true,
+        }
+        db.stories.push(created)
+        return created
+      }),
+    reviewStory: ({ id, body }) =>
+      respond(() => {
+        const input = endpoints.reviewStory.body.parse(body)
+        const story = find(db.stories, id, 'История')
+        if (!isAwaitingReview(story)) throw new ApiError('История уже рассмотрена', 409)
+        if (input.decision === 'verified' && !story.sourceText.trim())
+          throw new ApiError('Без источника подтвердить нельзя', 422)
+        story.status = input.decision
+        story.verifiedBy = input.reviewer
+        if (input.note.trim()) story.reviewNote = input.note.trim()
+        return story
       }),
     listSites: () => respond(() => db.sites),
     getSite: ({ id }) => respond(() => find(db.sites, id, 'Место')),

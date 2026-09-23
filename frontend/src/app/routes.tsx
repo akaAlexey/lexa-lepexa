@@ -1,4 +1,6 @@
 import type { RouteObject } from 'react-router'
+import { routes as archive } from '../features/archive/routes.tsx'
+import { routes as chronicle } from '../features/chronicle/routes.tsx'
 import { routes as demoConsole } from '../features/demo-console/routes.tsx'
 import { routes as lastBattle } from '../features/last-battle/routes.tsx'
 import { RolePickerScreen } from '../features/roles/RolePickerScreen.tsx'
@@ -21,6 +23,8 @@ export const appRoutes: RouteObject[] = [
       ...searchHq,
       ...weekends,
       ...lastBattle,
+      ...archive,
+      ...chronicle,
       ...demoConsole,
       { path: '*', element: <NotFoundScreen /> },
     ],

@@ -30,6 +30,11 @@ describe('контракт и фикстуры', () => {
     z.array(s.Trip).parse(seed.trips)
     z.array(s.Fundraiser).parse(seed.fundraisers)
     z.array(s.VolunteerRequest).parse(seed.requests)
+    z.array(s.GroupApplication).parse(seed.groupApplications)
+    const stories = z.array(s.ArchiveStory).parse(seed.stories)
+    // Подтверждённая история — всегда с источником
+    for (const story of stories.filter((x) => x.status === 'verified'))
+      expect(story.sourceText.trim()).not.toBe('')
     const sites = z.array(s.LastBattleSite).parse(seed.sites)
     for (const site of sites) expect(site.sources.length).toBeGreaterThan(0)
   })

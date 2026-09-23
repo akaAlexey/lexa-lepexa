@@ -72,3 +72,5 @@
 - Тост живёт внизу над меню и резервирует место (`--toast-space`) — иначе закрывает кнопки под собой (ловили в e2e).
 - Шапка на 360 px должна переноситься (`flex-wrap: wrap`), иначе появляется горизонтальная прокрутка и меню уезжает.
 - В e2e с настоящей подложкой тест «без сети» падает на ошибках тайлов в консоли — поэтому verify идёт с `VITE_TILES=none`, а `npm run screenshots` его пропускает.
+- Windows: `git clone` с `core.autocrlf=true` даёт CRLF, и `prettier --check` падает на всех файлах → в репо `git config core.autocrlf false` и `core.eol lf`, затем перечекаут. `webServer.command` в `playwright.config.ts` написан под POSIX (`VITE_TILES=… npm …`): на Windows собрать `npm run build:e2e`, поднять `vite preview --host 127.0.0.1 --port $E2E_PORT` отдельно — Playwright переиспользует сервер.
+- Карта на ноутбуке — `position: fixed` справа от панели экрана: у предков `.screen` не должно быть `transform`/`filter`, иначе карта уедет в поток.
