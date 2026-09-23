@@ -12,6 +12,7 @@ export const tokens = {
     olive: '#4B5320',
     oliveDark: '#353B16', // навигация
     khaki: '#A39A6A', // только декор и линии
+    controlBorder: '#6E6647', // рамки полей и чекбоксов: 5,4:1 к карточке (WCAG 1.4.11 ≥ 3:1)
     sepia: '#6B4A1F',
     ribbonOrange: '#F28C28', // георгиевская лента: акцент для детей, текст на нём — ink
     ribbonBlack: '#1B1B14',

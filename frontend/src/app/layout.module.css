@@ -19,7 +19,7 @@
 
 .header {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2) var(--space-4);
@@ -43,14 +43,15 @@
   color: inherit;
   text-decoration: none;
   font-family: var(--font-heading);
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 700;
   min-height: var(--touch-min);
+  white-space: nowrap;
 }
 
 .headerMeta {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: var(--space-2);
 }
@@ -93,7 +94,7 @@
   padding: var(--space-1);
   color: var(--color-paper);
   text-decoration: none;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   line-height: 1.15;
   text-align: center;
   border-top: 0.25rem solid transparent;
@@ -115,7 +116,7 @@
     display: grid;
     grid-template-columns: var(--sidebar-width) 1fr;
     grid-template-rows: auto 1fr;
-    padding-bottom: 0;
+    padding-bottom: var(--toast-space, 0px);
   }
 
   .header {
@@ -165,7 +166,7 @@
   gap: var(--space-3);
   align-items: flex-start;
   width: min(100%, 30rem);
-  max-height: 50dvh;
+  max-height: 35dvh;
   overflow: auto;
   padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
   border-left: 0.4rem solid var(--color-red);
@@ -221,7 +222,7 @@
 
 @media (min-width: 64rem) {
   .toasts {
-    inset: 5rem var(--space-6) auto auto;
+    inset: auto var(--space-6) var(--space-6) auto;
     justify-items: end;
   }
 }

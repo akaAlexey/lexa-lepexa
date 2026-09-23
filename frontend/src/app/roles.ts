@@ -14,6 +14,8 @@ export type RoleId = 'family' | 'volunteer' | 'commander' | 'verifier'
 export interface Role {
   id: RoleId
   label: string
+  /** Короткое имя для шапки на телефоне. */
+  short: string
   description: string
   icon: IconName
   /** Порядок вкладок: первая — домашний экран роли. */
@@ -25,6 +27,7 @@ export const ROLES: readonly Role[] = [
   {
     id: 'family',
     label: 'Семья',
+    short: 'Семья',
     description: 'Прогулка-квест с ребёнком по местам боёв',
     icon: 'family',
     tabs: ['trail', 'lastBattle', 'weekends', 'search'],
@@ -32,6 +35,7 @@ export const ROLES: readonly Role[] = [
   {
     id: 'volunteer',
     label: 'Волонтёр',
+    short: 'Волонтёр',
     description: 'Помочь отряду делом или рублём',
     icon: 'shovel',
     tabs: ['search', 'weekends', 'lastBattle', 'trail'],
@@ -39,6 +43,7 @@ export const ROLES: readonly Role[] = [
   {
     id: 'commander',
     label: 'Командир отряда',
+    short: 'Командир',
     description: 'Набрать людей и отметить находку',
     icon: 'flag',
     tabs: ['search', 'lastBattle', 'weekends', 'trail'],
@@ -46,6 +51,7 @@ export const ROLES: readonly Role[] = [
   {
     id: 'verifier',
     label: 'Краевед, учитель, музей',
+    short: 'Краевед',
     description: 'Проверить и подтвердить данные',
     icon: 'book',
     tabs: ['lastBattle', 'trail', 'search', 'weekends'],

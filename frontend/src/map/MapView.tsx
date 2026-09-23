@@ -20,6 +20,8 @@ export interface MapMarker {
   color: string
   /** Компактная метка для плотного фонового слоя (захоронения), чтобы не перекрывать главные. */
   size?: 'normal' | 'small'
+  /** false — фоновая метка без действия: не кнопка, не в порядке фокуса, скринридер её пропускает. */
+  interactive?: boolean
 }
 
 export interface MapViewProps {
@@ -175,17 +177,28 @@ export function MapView({
       />
       {anchors.map(({ marker, el }) =>
         createPortal(
-          <button
-            type="button"
-            className={marker.size === 'small' ? s.markerSmall : s.marker}
-            style={{ color: marker.color }}
-            aria-label={marker.label}
-            title={marker.label}
-            data-testid={`marker-${marker.id}`}
-            onClick={() => onMarkerSelect?.(marker.id)}
-          >
-            <Icon name={marker.icon} size={marker.size === 'small' ? 1 : 1.6} />
-          </button>,
+          marker.interactive === false ? (
+            <span
+              className={marker.size === 'small' ? s.markerSmall : s.marker}
+              style={{ color: marker.color, pointerEvents: 'none' }}
+              aria-hidden="true"
+              data-testid={`marker-${marker.id}`}
+            >
+              <Icon name={marker.icon} size={marker.size === 'small' ? 1 : 1.6} />
+            </span>
+          ) : (
+            <button
+              type="button"
+              className={marker.size === 'small' ? s.markerSmall : s.marker}
+              style={{ color: marker.color }}
+              aria-label={marker.label}
+              title={marker.label}
+              data-testid={`marker-${marker.id}`}
+              onClick={() => onMarkerSelect?.(marker.id)}
+            >
+              <Icon name={marker.icon} size={marker.size === 'small' ? 1 : 1.6} />
+            </button>
+          ),
           el,
           marker.id,
         ),

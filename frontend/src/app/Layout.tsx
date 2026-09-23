@@ -21,9 +21,16 @@ export function Layout() {
           {region.appTitle}
         </NavLink>
         <div className={s.headerMeta}>
-          <DemoBadge />
+          <DemoBadge text="Демо" />
           <NavLink to="/" end className={s.roleLink} data-testid="nav-role">
-            {role ? `Роль: ${role.label}` : 'Выбрать роль'}
+            {role ? (
+              <>
+                <span className="visually-hidden">Роль: </span>
+                {role.short}
+              </>
+            ) : (
+              'Выбрать роль'
+            )}
           </NavLink>
         </div>
       </header>
