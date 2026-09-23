@@ -1,5 +1,4 @@
 import type { LatLon } from '../contract/schemas.ts'
-import { notImplemented } from './notImplemented.ts'
 
 const EARTH_RADIUS_KM = 6371.0088
 
@@ -33,7 +32,28 @@ export function formatDistance(km: number): string {
   return `${rounded.toLocaleString('ru-RU')} км`
 }
 
-/** Расстояние от точки до ломаной (до ближайшего отрезка), км. */
+/**
+ * Расстояние от точки до ломаной (до ближайшего отрезка), км.
+ * Ближайшая точка отрезка ищется в локальной равнопромежуточной проекции с центром в точке
+ * (в пределах города погрешность ничтожна), само расстояние — по гаверсинусу.
+ */
 export function distanceToPathKm(point: LatLon, path: readonly LatLon[]): number {
-  return notImplemented(`distanceToPathKm(${point.lat}, ${point.lon}; ${path.length})`)
+  if (path.length === 0) return Infinity
+  if (path.length === 1) return distanceKm(point, path[0]!)
+  const kx = Math.cos(toRad(point.lat))
+  const project = (p: LatLon) => ({ x: (p.lon - point.lon) * kx, y: p.lat - point.lat })
+  let best = Infinity
+  for (let i = 1; i < path.length; i++) {
+    const a = path[i - 1]!
+    const b = path[i]!
+    const pa = project(a)
+    const pb = project(b)
+    const dx = pb.x - pa.x
+    const dy = pb.y - pa.y
+    const len2 = dx * dx + dy * dy
+    const t = len2 === 0 ? 0 : Math.min(1, Math.max(0, -(pa.x * dx + pa.y * dy) / len2))
+    const closest = { lat: a.lat + (b.lat - a.lat) * t, lon: a.lon + (b.lon - a.lon) * t }
+    best = Math.min(best, distanceKm(point, closest))
+  }
+  return best
 }
