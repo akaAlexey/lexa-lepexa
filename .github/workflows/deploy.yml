@@ -32,10 +32,11 @@ jobs:
       - name: Install deps
         run: npm ci
 
-      - name: Router basename for project Pages (/<repo>/)
-        run: sed -i 's#createBrowserRouter(appRoutes)#createBrowserRouter(appRoutes, { basename: import.meta.env.BASE_URL })#' src/main.tsx
+      - name: Router basename for project Pages
+        run: |
+          sed -i 's#createBrowserRouter(appRoutes)#createBrowserRouter(appRoutes, { basename: import.meta.env.BASE_URL })#' src/main.tsx
 
-      - name: Build (base = /lexa-lepexa/)
+      - name: Build
         run: npm run build -- --base=/lexa-lepexa/
         env:
           VITE_API_MODE: mock
