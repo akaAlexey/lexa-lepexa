@@ -19,7 +19,7 @@
 
 .header {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2) var(--space-4);
@@ -51,7 +51,7 @@
 
 .headerMeta {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
 }
@@ -96,6 +96,9 @@
   text-decoration: none;
   font-size: 0.9rem;
   line-height: 1.15;
+  /* «Поисковикам» на 360 px переносится с дефисом, а не упирается в край */
+  hyphens: auto;
+  overflow-wrap: anywhere;
   text-align: center;
   border-top: 0.25rem solid transparent;
 }
