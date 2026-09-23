@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRole } from '../../app/RoleContext.tsx'
 import { SUBSCRIPTION_KEY, subscribeNearby, useServices } from '../../app/services.tsx'
 import type { LatLon, NewLastBattleSite } from '../../contract/schemas.ts'
@@ -29,6 +29,12 @@ function demoSiteNear(p: LatLon): NewLastBattleSite {
   }
 }
 
+/** Готовые точки: ввод чисел на показе медленный и чреват ошибками. */
+const PRESETS: readonly { label: string; testID: string; position: LatLon }[] = [
+  { label: 'Орёл, центр', testID: 'demo-preset-orel', position: { lat: 52.9651, lon: 36.0785 } },
+  { label: 'Мценск', testID: 'demo-preset-mtsensk', position: { lat: 53.2791, lon: 36.5752 } },
+]
+
 function parseCoord(value: string, limit: number): number | undefined {
   const n = Number(value.trim().replace(',', '.'))
   return value.trim() !== '' && Number.isFinite(n) && Math.abs(n) <= limit ? n : undefined
@@ -48,6 +54,13 @@ export function DemoConsoleScreen() {
   const [injectStatus, setInjectStatus] = useState<Status>()
   const [resetDone, setResetDone] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [showGeoErrors, setShowGeoErrors] = useState(false)
+  const injectStatusRef = useRef<HTMLDivElement>(null)
+
+  // Результат вброса может оказаться под нижним меню — показываем его
+  useEffect(() => {
+    if (injectStatus) injectStatusRef.current?.scrollIntoView?.({ block: 'nearest' })
+  }, [injectStatus])
 
   useEffect(() => {
     let alive = true
@@ -67,16 +80,28 @@ export function DemoConsoleScreen() {
   const latValue = parseCoord(lat ?? '', 90)
   const lonValue = parseCoord(lon, 180)
 
+  const applyPosition = (p: LatLon) => {
+    demo.setPosition(p)
+    setShowGeoErrors(false)
+    setGeoStatus({
+      tone: 'success',
+      text: `Геопозиция применена: ${p.lat}, ${p.lon}. Сохранится после перезагрузки`,
+    })
+  }
+
   const applyGeo = () => {
     if (latValue === undefined || lonValue === undefined) {
+      setShowGeoErrors(true)
       setGeoStatus({ tone: 'error', text: 'Проверьте координаты: нужны числа, например 52.97' })
       return
     }
-    demo.setPosition({ lat: latValue, lon: lonValue })
-    setGeoStatus({
-      tone: 'success',
-      text: `Геопозиция применена: ${latValue}, ${lonValue}. Сохранится после перезагрузки`,
-    })
+    applyPosition({ lat: latValue, lon: lonValue })
+  }
+
+  const applyPreset = (p: LatLon) => {
+    setLat(String(p.lat))
+    setLon(String(p.lon))
+    applyPosition(p)
   }
 
   const injectSite = async () => {
@@ -110,14 +135,9 @@ export function DemoConsoleScreen() {
   return (
     <Screen
       title="Демо-пульт"
-      lead="Пульт для показа проекта. Обычные пользователи его не видят"
+      lead="Пульт для показа жюри, в меню его нет. Все данные вымышлены."
       testID="screen-demo"
     >
-      <Notice>
-        Это пульт для показа жюри: здесь подставляется геопозиция и создаются демо-находки. Все
-        данные вымышлены.
-      </Notice>
-
       <Card as="section" aria-labelledby="demo-inject-title">
         <div className={s.section}>
           <h2 id="demo-inject-title">Уведомление о находке</h2>
@@ -128,9 +148,11 @@ export function DemoConsoleScreen() {
             icon="bell"
             testID="demo-inject-site"
           >
-            Вбросить новую точку рядом
+            {busy ? 'Вбрасываем точку…' : 'Вбросить новую точку рядом'}
           </BigButton>
-          {injectStatus && <Notice tone={injectStatus.tone}>{injectStatus.text}</Notice>}
+          <div ref={injectStatusRef}>
+            {injectStatus && <Notice tone={injectStatus.tone}>{injectStatus.text}</Notice>}
+          </div>
         </div>
       </Card>
 
@@ -148,6 +170,9 @@ export function DemoConsoleScreen() {
                   inputMode="decimal"
                   value={lat}
                   onChange={setLat}
+                  error={
+                    showGeoErrors && latValue === undefined ? 'Широта от −90 до 90' : undefined
+                  }
                   testID="demo-lat"
                 />
                 <TextField
@@ -156,12 +181,26 @@ export function DemoConsoleScreen() {
                   inputMode="decimal"
                   value={lon}
                   onChange={setLon}
+                  error={
+                    showGeoErrors && lonValue === undefined ? 'Долгота от −180 до 180' : undefined
+                  }
                   testID="demo-lon"
                 />
               </div>
-              <Button onClick={applyGeo} icon="pin" testID="demo-geo-apply">
-                Применить геопозицию
-              </Button>
+              <div className={s.actions}>
+                <Button onClick={applyGeo} icon="pin" testID="demo-geo-apply">
+                  Применить геопозицию
+                </Button>
+                {PRESETS.map((preset) => (
+                  <Button
+                    key={preset.testID}
+                    onClick={() => applyPreset(preset.position)}
+                    testID={preset.testID}
+                  >
+                    {preset.label}
+                  </Button>
+                ))}
+              </div>
             </div>
           )}
           {geoStatus && <Notice tone={geoStatus.tone}>{geoStatus.text}</Notice>}
@@ -172,7 +211,7 @@ export function DemoConsoleScreen() {
         <div className={s.section}>
           <h2 id="demo-reset-title">Сброс</h2>
           <p>Забывает роль, прогресс квестов, отметки и подписку, возвращает исходные данные.</p>
-          <Button onClick={reset} icon="flag" testID="demo-reset">
+          <Button onClick={reset} icon="refresh" testID="demo-reset">
             Сбросить демо-данные
           </Button>
           {resetDone && (
