@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Icon } from './Icon.tsx'
 import s from './ui.module.css'
 
 interface Props {
@@ -13,7 +14,11 @@ export function Notice({ children, tone = 'info', testID }: Props) {
     tone === 'success' ? s.noticeSuccess : tone === 'error' ? s.noticeError : s.notice
   return (
     <div className={className} role={tone === 'error' ? 'alert' : 'status'} data-testid={testID}>
-      {children}
+      {/* Статус не только цветом: у успеха и ошибки есть иконка */}
+      {tone !== 'info' && (
+        <Icon name={tone === 'success' ? 'check' : 'alert'} size={1.3} className={s.noticeIcon} />
+      )}
+      <div>{children}</div>
     </div>
   )
 }

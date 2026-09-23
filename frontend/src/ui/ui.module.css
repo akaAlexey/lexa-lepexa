@@ -165,6 +165,9 @@
 /* ---------- Сообщения и диалог ---------- */
 
 .notice {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
   padding: var(--space-3) var(--space-4);
   border-left: 0.4rem solid var(--color-olive);
   border-radius: var(--radius);
@@ -174,6 +177,15 @@
 .noticeSuccess {
   composes: notice;
   border-left-color: var(--color-status-remains-raised);
+}
+
+.noticeSuccess .noticeIcon {
+  color: var(--color-status-remains-raised);
+}
+
+.noticeIcon {
+  flex-shrink: 0;
+  color: var(--color-red);
 }
 
 .noticeError {
