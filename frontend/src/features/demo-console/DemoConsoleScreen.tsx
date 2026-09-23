@@ -114,7 +114,7 @@ export function DemoConsoleScreen() {
       await queryClient.invalidateQueries({ queryKey: ['sites'] })
       setInjectStatus({
         tone: 'success',
-        text: 'Точка вброшена в 5 км к северу — уведомление вверху экрана',
+        text: 'Точка вброшена в 5 км к северу — появилось уведомление',
       })
     } catch {
       setInjectStatus({ tone: 'error', text: 'Не удалось вбросить точку. Попробуйте ещё раз' })

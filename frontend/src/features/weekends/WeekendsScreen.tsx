@@ -39,7 +39,7 @@ export function WeekendsScreen() {
                   icon="calendar"
                   testID="weekends-register"
                 >
-                  Записаться на ближайший выезд
+                  Ближайший выезд — {formatDayRu(nearest.date)}
                 </BigButton>
               ) : (
                 <>

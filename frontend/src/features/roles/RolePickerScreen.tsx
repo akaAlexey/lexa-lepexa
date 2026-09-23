@@ -12,8 +12,8 @@ export function RolePickerScreen() {
   const navigate = useNavigate()
   return (
     <Screen
-      title={`${region.appTitle}: ${region.appSubtitle}`}
-      lead={`Память о Великой Отечественной войне на карте: ${region.regionName}. Кто вы сегодня?`}
+      title={region.appTitle}
+      lead={`«${region.appSubtitle}»: память о Великой Отечественной войне на карте — ${region.regionName}. Кто вы сегодня?`}
       testID="screen-roles"
     >
       <ul className={s.grid}>

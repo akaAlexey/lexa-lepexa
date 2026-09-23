@@ -70,13 +70,21 @@ function PointCard({ route, point, index }: { route: Route; point: RoutePoint; i
             <button
               key={option}
               type="button"
-              className={s.option}
+              className={
+                answer?.index === i ? (answer.correct ? s.optionRight : s.optionWrong) : s.option
+              }
               aria-pressed={answer?.index === i}
               disabled={solved}
               onClick={() => choose(i)}
               data-testid={`task-option-${i}`}
             >
+              {answer?.index === i && <Icon name={answer.correct ? 'check' : 'close'} size={1.3} />}
               {option}
+              {answer?.index === i && (
+                <span className="visually-hidden">
+                  {answer.correct ? ' — верно' : ' — неверно'}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -84,17 +92,12 @@ function PointCard({ route, point, index }: { route: Route; point: RoutePoint; i
           <Notice tone={answer.correct ? 'success' : 'error'} testID="task-feedback">
             {answer.correct ? (
               <>
-                <strong className={s.feedbackTitle}>
-                  <Icon name="check" /> Верно!
-                </strong>{' '}
-                {point.task.explanation}
+                <strong className={s.feedbackTitle}>Верно!</strong> {point.task.explanation}
               </>
             ) : (
               <>
-                <strong className={s.feedbackTitle}>
-                  <Icon name="question" /> Попробуй ещё раз
-                </strong>{' '}
-                Перечитай историю места — подсказка там.
+                <strong className={s.feedbackTitle}>Попробуй ещё раз</strong> Перечитай историю
+                места — подсказка там.
               </>
             )}
           </Notice>

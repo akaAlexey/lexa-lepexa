@@ -92,6 +92,8 @@ export function SearchScreen() {
         {(st) => (
           <p data-testid="found-counter">
             Найдено бойцов за месяц: <strong>{st.foundThisMonth}</strong> <DemoBadge />
+            <br />
+            <small>Источник: сводки поисковых отрядов региона (демо).</small>
           </p>
         )}
       </QueryState>

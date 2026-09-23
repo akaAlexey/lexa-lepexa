@@ -141,3 +141,19 @@
   border-style: dashed;
   color: var(--color-ink-muted);
 }
+
+/* Выбранный вариант: верный — зелёный с ✓, неверный — красный с ✗ (не только цвет) */
+.optionRight {
+  composes: option;
+  border-color: var(--color-status-remains-raised) !important;
+  background: var(--color-status-remains-raised) !important;
+  color: #fff !important;
+  opacity: 1 !important;
+}
+
+.optionWrong {
+  composes: option;
+  border-color: var(--color-red) !important;
+  background: var(--color-surface) !important;
+  color: var(--color-red) !important;
+}

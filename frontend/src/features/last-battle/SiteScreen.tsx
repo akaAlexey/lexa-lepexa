@@ -6,6 +6,7 @@ import { QueryState } from '../../app/QueryState.tsx'
 import { useApi } from '../../app/services.tsx'
 import type { LastBattleSite, SiteStatus } from '../../contract/schemas.ts'
 import { describeFighters, NOTIFY_RADIUS_KM } from '../../domain/lastBattle.ts'
+import { useRole } from '../../app/RoleContext.tsx'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
@@ -73,6 +74,7 @@ function HelpAction({ site }: { site: LastBattleSite }) {
 
 function SiteCard({ site, notified }: { site: LastBattleSite; notified: number | undefined }) {
   const needsRaising = NEEDS_RAISING.includes(site.status)
+  const isCommander = useRole().role?.id === 'commander'
   return (
     <>
       {notified !== undefined && (
@@ -89,7 +91,14 @@ function SiteCard({ site, notified }: { site: LastBattleSite; notified: number |
           Требуется подъём
         </p>
       )}
-      {needsRaising && <HelpAction site={site} />}
+      {isCommander ? (
+        // Командир место и отметил — его главное действие: отметить следующее
+        <BigButton to="/last-battle/new" icon="pin" testID="site-add-next">
+          Отметить ещё одно место
+        </BigButton>
+      ) : (
+        needsRaising && <HelpAction site={site} />
+      )}
       <Card as="section" aria-labelledby="site-facts">
         <h2 id="site-facts">Что известно</h2>
         <dl className={s.facts}>
