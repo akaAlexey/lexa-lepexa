@@ -7,6 +7,8 @@ import { test as base, expect, type Page, type TestInfo } from '@playwright/test
  */
 export async function snap(page: Page, testInfo: TestInfo, name: string) {
   const dir = process.env.SHOTS_DIR ?? 'e2e/screenshots'
+  // Снимок — только после загрузки карты: иначе на скриншоте пустая рамка без меток
+  await expect(page.locator('[data-ready="false"]')).toHaveCount(0, { timeout: 15_000 })
   if (process.env.E2E_TILES === 'openfreemap') {
     // для документации ждём, пока догрузится подложка карты
     await page.waitForLoadState('networkidle').catch(() => undefined)
