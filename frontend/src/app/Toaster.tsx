@@ -33,6 +33,26 @@ export function Toaster() {
   const [current, ...rest] = items
   const toastRef = useRef<HTMLDivElement>(null)
 
+  // Место под уведомление: страница получает отступ, прокрутка к элементу его учитывает —
+  // тост никогда не закрывает кнопки под собой.
+  const currentId = current?.id
+  useEffect(() => {
+    const root = document.documentElement
+    const el = toastRef.current
+    if (!currentId || !el) {
+      root.style.setProperty('--toast-space', '0px')
+      return
+    }
+    const update = () => root.style.setProperty('--toast-space', `${el.offsetHeight + 8}px`)
+    update()
+    const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(update)
+    observer?.observe(el)
+    return () => {
+      observer?.disconnect()
+      root.style.setProperty('--toast-space', '0px')
+    }
+  }, [currentId])
+
   // Escape закрывает уведомление, когда фокус внутри него
   useEffect(() => {
     if (!current) return

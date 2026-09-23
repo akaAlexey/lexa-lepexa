@@ -30,11 +30,13 @@ body {
 
 /* Прокрутка к элементу учитывает нижнее меню на телефоне — оно не закрывает цель. */
 html {
-  scroll-padding-bottom: calc(var(--nav-height) + 1rem);
+  scroll-padding-bottom: calc(var(--nav-height) + var(--toast-space, 0px) + 1rem);
 }
 
+/* На ноутбуке уведомление справа вверху — учитываем его сверху */
 @media (min-width: 64rem) {
   html {
+    scroll-padding-top: calc(var(--toast-space, 0px) + 1rem);
     scroll-padding-bottom: 1rem;
   }
 }
