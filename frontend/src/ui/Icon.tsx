@@ -1,0 +1,59 @@
+/**
+ * Собственные SVG-иконки (сетка 24×24, заливка currentColor).
+ * Эскизы для каркаса — дизайнер заменяет пути, не трогая API компонента.
+ */
+const paths = {
+  /** Звезда — бой */
+  star: 'M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.5L12 17.3l-5.9 3.2 1.3-6.5L2.5 9.4l6.6-.8z',
+  /** Шлем — окоп */
+  helmet:
+    'M3 16.5C3 10.7 7 6 12 6s9 4.7 9 10.5h1.5V19H1.5v-2.5zM6 16.5h12C18 12.4 15.3 9 12 9s-6 3.4-6 7.5z',
+  /** Книга — штаб */
+  book: 'M3 4.5C5.8 4 8.6 4.4 11 6v14c-2.4-1.5-5.2-1.9-8-1.4zM13 6c2.4-1.6 5.2-2 8-1.5v14.1c-2.8-.5-5.6-.1-8 1.4z',
+  /** Обелиск — захоронение */
+  grave:
+    'M10 21V8l2-5.5L14 8v13zM6 21h12v1.5H6zM12 9.2l.7 1.4 1.5.2-1.1 1 .3 1.5-1.4-.7-1.4.7.3-1.5-1.1-1 1.5-.2z',
+  route:
+    'M5 21a2 2 0 110-4 2 2 0 010 4zm14-14a2 2 0 110-4 2 2 0 010 4zM6 16.5l1.5-1.5 1 1L7 17.5zm3-3l1.5-1.5 1 1-1.5 1.5zm3-3l1.5-1.5 1 1-1.5 1.5zm3-3L16.5 6l1 1L16 8.5z',
+  shovel:
+    'M14.5 2l7.5 7.5-2 2-2.3-2.3-5.2 5.2 1.3 1.3-4.6 4.6a3 3 0 01-4.2 0l-1.3-1.3a3 3 0 010-4.2l4.6-4.6 1.3 1.3 5.2-5.2L12.5 4z',
+  calendar: 'M7 2h2v2h6V2h2v2h3v17H4V4h3zm-1 7v10h12V9zm2 2h3v3H8z',
+  pin: 'M12 22s-7-7.2-7-12.5a7 7 0 0114 0C19 14.8 12 22 12 22zm0-9.5l1.5.8-.3-1.7 1.2-1.2-1.7-.2L12 8.6l-.7 1.6-1.7.2 1.2 1.2-.3 1.7z',
+  question:
+    'M12 2a10 10 0 110 20 10 10 0 010-20zm-1 14v2h2v-2zm1-10a4 4 0 00-4 4h2a2 2 0 114 0c0 1.5-3 1.6-3 4.5h2c0-2 3-2.4 3-4.5a4 4 0 00-4-4z',
+  archive: 'M5 2h10l4 4v16H5zm9 1.5V7h3.5zM8 11v2h8v-2zm0 4v2h5v-2z',
+  check: 'M12 2a10 10 0 110 20 10 10 0 010-20zm4.3 6.3L10.5 14l-2.8-2.8-1.4 1.4 4.2 4.2 7.2-7.1z',
+  family:
+    'M8 2.5a3 3 0 110 6 3 3 0 010-6zm9 4a2.5 2.5 0 110 5 2.5 2.5 0 010-5zM3 21v-6a5 5 0 0110 0v6zm11 0v-4a3 3 0 016 0v4z',
+  flag: 'M5 2h2v20H5zm3 1h12l-3 4.5 3 4.5H8z',
+  bell: 'M12 2a6 6 0 016 6v5l2 3v1H4v-1l2-3V8a6 6 0 016-6zm-2.5 17h5a2.5 2.5 0 01-5 0z',
+} as const
+
+export type IconName = keyof typeof paths
+
+interface IconProps {
+  name: IconName
+  /** Размер в rem — масштабируется вместе с текстом. */
+  size?: number
+  /** Подпись для скринридера. Без неё иконка декоративная. */
+  label?: string
+  className?: string
+}
+
+export function Icon({ name, size = 1.5, label, className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={`${size}rem`}
+      height={`${size}rem`}
+      fill="currentColor"
+      className={className}
+      role={label ? 'img' : undefined}
+      aria-label={label}
+      aria-hidden={label ? undefined : true}
+      focusable="false"
+    >
+      <path fillRule="evenodd" d={paths[name]} />
+    </svg>
+  )
+}
