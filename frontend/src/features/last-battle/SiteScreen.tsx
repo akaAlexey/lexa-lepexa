@@ -74,7 +74,11 @@ function HelpAction({ site }: { site: LastBattleSite }) {
 
 function SiteCard({ site, notified }: { site: LastBattleSite; notified: number | undefined }) {
   const needsRaising = NEEDS_RAISING.includes(site.status)
-  const isCommander = useRole().role?.id === 'commander'
+  const roleId = useRole().role?.id
+  const isCommander = roleId === 'commander'
+  // Защита от «чёрных копателей»: точные координаты — только поисковикам и краеведам.
+  // Это витрина; настоящее скрытие должен делать сервер (docs/BACKEND_REQUESTS.md).
+  const seesExactCoords = isCommander || roleId === 'verifier'
   return (
     <>
       {notified !== undefined && (
@@ -114,12 +118,25 @@ function SiteCard({ site, notified }: { site: LastBattleSite; notified: number |
               <dd data-testid="site-circumstances">{site.circumstances}</dd>
             </>
           )}
-          <dt>Координаты</dt>
-          <dd>
-            {site.lat.toFixed(4)}, {site.lon.toFixed(4)}
-          </dd>
+          {seesExactCoords && (
+            <>
+              <dt>Координаты</dt>
+              <dd className={s.coordsValue} data-testid="site-coords">
+                {site.lat.toFixed(4)}, {site.lon.toFixed(4)}
+              </dd>
+            </>
+          )}
         </dl>
       </Card>
+      {!seesExactCoords && (
+        <p className={s.closedCoords} data-testid="site-coords-closed">
+          <Icon name="lock" size={1.3} />
+          <span>
+            На карте показан район ~500 м. Точные координаты видны только верифицированным
+            поисковикам и краеведам.
+          </span>
+        </p>
+      )}
       <p data-testid="site-volunteers">Готовы помочь: {site.volunteersReady}</p>
       <SourceList sources={site.sources} testID="site-sources" />
       <p>
