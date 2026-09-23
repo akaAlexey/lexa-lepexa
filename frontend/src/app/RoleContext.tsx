@@ -7,6 +7,8 @@ const ROLE_KEY = 'role'
 interface RoleState {
   role: Role | undefined
   setRole: (id: RoleId) => void
+  /** Забыть роль (сброс демо). */
+  clearRole: () => void
 }
 
 const RoleContext = createContext<RoleState | null>(null)
@@ -22,7 +24,11 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     },
     [storage],
   )
-  const value = useMemo(() => ({ role, setRole }), [role, setRole])
+  const clearRole = useCallback(() => {
+    storage.remove(ROLE_KEY)
+    setRoleState(undefined)
+  }, [storage])
+  const value = useMemo(() => ({ role, setRole, clearRole }), [role, setRole, clearRole])
   return <RoleContext.Provider value={value}>{children}</RoleContext.Provider>
 }
 

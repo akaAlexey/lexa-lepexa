@@ -4,6 +4,7 @@ import { createMockApi } from '../api/mock/mockApi.ts'
 import { App } from '../app/App.tsx'
 import type { RoleId } from '../app/roles.ts'
 import { appRoutes } from '../app/routes.tsx'
+import { createServices } from '../app/services.tsx'
 import { createDemoGeo } from '../platform/demo/geo.ts'
 import type { Platform } from '../platform/types.ts'
 import { createWebStorage } from '../platform/web/storage.ts'
@@ -36,6 +37,7 @@ export function renderApp(
     ...overrides,
   }
   const router = createMemoryRouter(appRoutes, { initialEntries: [url] })
-  const utils = render(<App services={{ api, platform }} router={router} />)
-  return { ...utils, api, platform, router }
+  const services = createServices(api, platform)
+  const utils = render(<App services={services} router={router} />)
+  return { ...utils, api, platform, router, services }
 }

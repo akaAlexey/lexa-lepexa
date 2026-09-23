@@ -3,7 +3,8 @@ import { Link } from 'react-router'
 import type { AppNotification } from '../contract/schemas.ts'
 import { Icon } from '../ui/Icon.tsx'
 import s from './layout.module.css'
-import { useServices } from './services.tsx'
+import { SUBSCRIPTION_KEY, useServices } from './services.tsx'
+import type { Subscription } from '../contract/schemas.ts'
 
 /**
  * Уведомления внутри приложения — основной канал на демо (не зависит от разрешений браузера).
@@ -21,6 +22,12 @@ export function Toaster() {
       }),
     [api, platform],
   )
+
+  // Подписка на находки рядом переживает перезагрузку: восстанавливаем её при старте.
+  useEffect(() => {
+    const saved = platform.storage.get<Subscription>(SUBSCRIPTION_KEY)
+    if (saved) void api.subscribe({ body: saved }).catch(() => undefined)
+  }, [api, platform])
 
   const dismiss = (id: string) => setItems((prev) => prev.filter((i) => i.id !== id))
 

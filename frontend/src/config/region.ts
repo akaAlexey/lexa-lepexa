@@ -13,6 +13,8 @@ export const region = {
   mapZoom: 9,
   /** Точка «я здесь» по умолчанию в демо-режиме — у начала семейного маршрута. */
   demoPosition: { lat: 52.97, lon: 36.07 } satisfies LatLon,
+  /** Демо-роли: командир в показе — из отряда «Высота» (user story 2 и 3). */
+  demo: { commanderTeamId: 'T01' },
   /** Источники, на которые ссылается интерфейс. */
   sources: [
     {

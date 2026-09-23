@@ -9,6 +9,8 @@ export interface GeoService {
   getPosition(): Promise<LatLon>
   /** Источник позиции: реальное устройство или демо-подстановка. */
   readonly source: 'device' | 'demo'
+  /** Только у демо-геопозиции: подставить точку с пульта. */
+  setPosition?(p: LatLon): void
 }
 
 export type NotifyPermission = 'granted' | 'denied' | 'default' | 'unsupported'
@@ -24,6 +26,8 @@ export interface StorageService {
   get<T>(key: string): T | undefined
   set<T>(key: string, value: T): void
   remove(key: string): void
+  /** Удалить все данные приложения на устройстве (сброс демо). */
+  clear(): void
 }
 
 export interface Platform {

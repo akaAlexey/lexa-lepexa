@@ -23,6 +23,8 @@ export type EndpointMethods = { [K in EndpointName]: Method<Endpoints[K]> }
 export interface ApiClient extends EndpointMethods {
   /** Подписка на поток уведомлений. Возвращает функцию отписки. */
   onNotification(listener: (n: AppNotification) => void): () => void
+  /** Только mock: вернуть данные к исходным фикстурам (сброс демо). */
+  reset?(): void
 }
 
 export class ApiError extends Error {

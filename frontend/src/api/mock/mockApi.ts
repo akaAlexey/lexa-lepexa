@@ -1,5 +1,10 @@
 import { endpoints } from '../../contract/endpoints.ts'
-import type { AppNotification, LatLon, Subscription } from '../../contract/schemas.ts'
+import type {
+  AppNotification,
+  LastBattleSite,
+  LatLon,
+  Subscription,
+} from '../../contract/schemas.ts'
 import { distanceKm, isWithinRadius } from '../../domain/geo.ts'
 import {
   NOTIFY_RADIUS_KM,
@@ -38,7 +43,7 @@ function createDb() {
 }
 
 /** Адаптер на фикстурах: in-memory «сервер» с задержками и ошибками. */
-export function createMockApi(options: MockOptions = {}): ApiClient & { reset(): void } {
+export function createMockApi(options: MockOptions = {}): ApiClient {
   const {
     latencyMs = 300,
     failRate = 0,
@@ -51,12 +56,38 @@ export function createMockApi(options: MockOptions = {}): ApiClient & { reset():
   const nextId = (prefix: string) => `${prefix}-${now().getTime().toString(36)}-${++seq}`
 
   const listeners = new Set<(n: AppNotification) => void>()
+
+  /** Разослать уведомления подписчикам этой вкладки, до которых место в пределах их радиуса. */
+  function notifyLocalSubscribers(site: LastBattleSite): number {
+    const mine = db.subscriptions.filter((sub) => isWithinRadius(sub, site, sub.radiusKm))
+    for (const sub of mine) {
+      const km = distanceKm(sub, site)
+      const notification: AppNotification = {
+        id: nextId('N'),
+        kind: 'site_found',
+        siteId: site.id,
+        distanceKm: km,
+        ...siteFoundNotificationText(km),
+        createdAt: now().toISOString(),
+      }
+      listeners.forEach((l) => l(notification))
+    }
+    return mine.length
+  }
+
+  // Показ «командир → волонтёр» без бэкенда: вкладки одного браузера обмениваются новыми местами,
+  // каждая сама проверяет свои подписки — как сервер проверял бы подписчиков.
   const channel =
     channelName && typeof BroadcastChannel !== 'undefined'
       ? new BroadcastChannel(channelName)
       : null
-  channel?.addEventListener('message', (e: MessageEvent<AppNotification>) =>
-    listeners.forEach((l) => l(e.data)),
+  channel?.addEventListener(
+    'message',
+    (e: MessageEvent<{ type: 'site_created'; site: LastBattleSite }>) => {
+      if (e.data?.type !== 'site_created') return
+      if (!db.sites.some((s) => s.id === e.data.site.id)) db.sites.push(e.data.site)
+      notifyLocalSubscribers(e.data.site)
+    },
   )
 
   async function respond<T>(produce: () => T): Promise<T> {
@@ -138,25 +169,12 @@ export function createMockApi(options: MockOptions = {}): ApiClient & { reset():
           demo: true,
         }
         db.sites.push(site)
-
         const demoNotified = seed.demoSubscribers.filter((p) =>
           isWithinRadius(p, site, NOTIFY_RADIUS_KM),
         ).length
-        const mine = db.subscriptions.filter((s) => isWithinRadius(s, site, s.radiusKm))
-        for (const sub of mine) {
-          const km = distanceKm(sub, site)
-          const notification: AppNotification = {
-            id: nextId('N'),
-            kind: 'site_found',
-            siteId: site.id,
-            distanceKm: km,
-            ...siteFoundNotificationText(km),
-            createdAt: now().toISOString(),
-          }
-          listeners.forEach((l) => l(notification))
-          channel?.postMessage(notification)
-        }
-        return { site, notifiedCount: demoNotified + mine.length }
+        const localNotified = notifyLocalSubscribers(site)
+        channel?.postMessage({ type: 'site_created', site })
+        return { site, notifiedCount: demoNotified + localNotified }
       }),
     changeSiteStatus: ({ id, body }) =>
       respond(() => {

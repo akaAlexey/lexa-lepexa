@@ -40,5 +40,15 @@ export function createWebStorage(
     remove(key) {
       write(key, null)
     },
+    clear() {
+      memory.clear()
+      try {
+        if (!backend) return
+        const keys = Array.from({ length: backend.length }, (_, i) => backend.key(i))
+        for (const key of keys) if (key?.startsWith(PREFIX)) backend.removeItem(key)
+      } catch {
+        /* хранилище недоступно — память уже очищена */
+      }
+    },
   }
 }

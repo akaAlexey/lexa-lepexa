@@ -23,6 +23,12 @@
       {
         "allow": ["**/*.css", "@testing-library/jest-dom/vitest"]
       }
+    ],
+    "eslint/no-underscore-dangle": [
+      "warn",
+      {
+        "allow": ["__BUILD_ID__"]
+      }
     ]
   },
   "ignorePatterns": ["dist", "node_modules", "playwright-report", "test-results"],
