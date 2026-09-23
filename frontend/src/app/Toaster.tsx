@@ -11,16 +11,18 @@ import { SUBSCRIPTION_KEY, useServices } from './services.tsx'
  * На экране одно уведомление — самое свежее; остальные — счётчиком, чтобы не закрывать экран.
  */
 export function Toaster() {
-  const { api, platform } = useServices()
+  const { api, platform, own } = useServices()
   const [items, setItems] = useState<AppNotification[]>([])
 
   useEffect(
     () =>
       api.onNotification((n) => {
+        // Автор находки не получает уведомление о ней самой
+        if (own.active()) return
         setItems((prev) => [n, ...prev].slice(0, 10))
         platform.notify.show({ title: n.title, body: n.body, url: `/last-battle/${n.siteId}` })
       }),
-    [api, platform],
+    [api, platform, own],
   )
 
   // Подписка на находки рядом переживает перезагрузку: восстанавливаем её при старте.

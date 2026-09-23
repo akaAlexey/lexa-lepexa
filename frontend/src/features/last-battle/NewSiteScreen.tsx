@@ -28,7 +28,7 @@ export interface SiteCreatedState {
 const toNumber = (value: string) => (value.trim() === '' ? NaN : Number(value.replace(',', '.')))
 
 function NewSiteForm({ initial }: { initial: LatLon | null }) {
-  const { api, platform } = useServices()
+  const { api, platform, own } = useServices()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const form = useRef<HTMLDivElement>(null)
@@ -86,7 +86,7 @@ function NewSiteForm({ initial }: { initial: LatLon | null }) {
     }
     setBusy(true)
     try {
-      const { site, notifiedCount } = await api.createSite({ body: input })
+      const { site, notifiedCount } = await own.run(() => api.createSite({ body: input }))
       queryClient.setQueryData(['sites', site.id], site)
       void queryClient.invalidateQueries({ queryKey: ['sites'], exact: true })
       const state: SiteCreatedState = { notifiedCount }
@@ -107,6 +107,35 @@ function NewSiteForm({ initial }: { initial: LatLon | null }) {
         error={errors.placeName}
         testID="site-place"
       />
+      <fieldset className={s.coords}>
+        <legend>Координаты места</legend>
+        <div className={s.actions}>
+          <Button onClick={() => void fillMyPosition()} icon="pin" testID="site-my-position">
+            Мои координаты
+          </Button>
+        </div>
+        <div className={s.coordsRow}>
+          <TextField
+            label="Широта"
+            type="number"
+            inputMode="decimal"
+            step="any"
+            value={lat}
+            onChange={setLat}
+            error={errors.coords}
+            testID="site-lat"
+          />
+          <TextField
+            label="Долгота"
+            type="number"
+            inputMode="decimal"
+            step="any"
+            value={lon}
+            onChange={setLon}
+            testID="site-lon"
+          />
+        </div>
+      </fieldset>
       <TextField
         label="Сколько бойцов"
         type="number"
@@ -148,35 +177,6 @@ function NewSiteForm({ initial }: { initial: LatLon | null }) {
         onChange={setCircumstances}
         testID="site-circumstances"
       />
-      <fieldset className={s.coords}>
-        <legend>Координаты места</legend>
-        <div className={s.coordsRow}>
-          <TextField
-            label="Широта"
-            type="number"
-            inputMode="decimal"
-            step="any"
-            value={lat}
-            onChange={setLat}
-            error={errors.coords}
-            testID="site-lat"
-          />
-          <TextField
-            label="Долгота"
-            type="number"
-            inputMode="decimal"
-            step="any"
-            value={lon}
-            onChange={setLon}
-            testID="site-lon"
-          />
-        </div>
-        <div className={s.actions}>
-          <Button onClick={() => void fillMyPosition()} icon="pin" testID="site-my-position">
-            Мои координаты
-          </Button>
-        </div>
-      </fieldset>
       <p>После публикации место получит статус «Обнаружено место (требуется проверка)».</p>
       {problem && (
         <Notice tone="error" testID="site-problem">

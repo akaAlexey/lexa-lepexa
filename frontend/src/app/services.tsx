@@ -16,16 +16,35 @@ export interface DemoControls {
   reset(): void
 }
 
+/** Собственные действия пользователя: уведомления, пришедшие во время них, — о нём самом. */
+export interface OwnActions {
+  run<T>(action: () => Promise<T>): Promise<T>
+  active(): boolean
+}
+
 export interface Services {
   api: ApiClient
   platform: Platform
   demo: DemoControls
+  own: OwnActions
 }
 
 export function createServices(api: ApiClient, platform: Platform): Services {
+  let running = 0
   return {
     api,
     platform,
+    own: {
+      async run(action) {
+        running++
+        try {
+          return await action()
+        } finally {
+          running--
+        }
+      },
+      active: () => running > 0,
+    },
     demo: {
       buildId: BUILD_ID,
       setPosition(p) {
