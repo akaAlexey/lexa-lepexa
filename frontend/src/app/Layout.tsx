@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router'
+import { NavLink, Outlet, ScrollRestoration } from 'react-router'
 import { region } from '../config/region.ts'
 import { DemoBadge } from '../ui/DemoBadge.tsx'
 import { Icon } from '../ui/Icon.tsx'
@@ -46,6 +46,8 @@ export function Layout() {
         <Outlet />
       </main>
       <Toaster />
+      {/* Новый экран открывается сверху, «Назад» возвращает прежнюю прокрутку */}
+      <ScrollRestoration />
     </div>
   )
 }
