@@ -1,0 +1,44 @@
+.frame {
+  position: relative;
+  border: 2px solid var(--color-olive);
+  border-radius: var(--radius);
+  overflow: hidden;
+  /* Бумажная подложка видна, пока тайлы грузятся или если сети нет. */
+  background-color: var(--color-map-land);
+  background-image: var(--paper-texture);
+}
+
+.map {
+  width: 100%;
+  height: min(60dvh, 32rem);
+}
+
+/* Фактура старой бумаги поверх подложки, не мешает нажатиям. */
+.frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--paper-texture);
+  mix-blend-mode: multiply;
+}
+
+.marker {
+  display: grid;
+  place-items: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  padding: 0;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  background: var(--color-surface);
+  cursor: pointer;
+  box-shadow: 0 0.1rem 0.3rem rgb(0 0 0 / 0.3);
+}
+
+.fallback {
+  padding: var(--space-4);
+  border: 2px dashed var(--color-khaki);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
