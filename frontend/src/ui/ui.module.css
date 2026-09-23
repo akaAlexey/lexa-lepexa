@@ -172,8 +172,15 @@
   color: var(--color-ink);
 }
 
-.input[aria-invalid='true'] {
+.input[aria-invalid='true'],
+.textarea[aria-invalid='true'] {
   border-color: var(--color-danger);
+}
+
+.textarea {
+  composes: input;
+  resize: vertical;
+  line-height: 1.5;
 }
 
 .error {

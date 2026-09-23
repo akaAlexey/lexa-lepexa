@@ -230,6 +230,90 @@ export const Trip = entity(
   }),
 )
 
+export const GroupApplicationStatus = entity(
+  'GroupApplicationStatus',
+  'pending — «На рассмотрении», confirmed — «Подтверждена», clarify — «Нужно уточнение»',
+  z.enum(['pending', 'confirmed', 'clarify']),
+)
+
+export const GroupApplication = entity(
+  'GroupApplication',
+  'Коллективная заявка на выезд: школа, клуб или семейная группа. Контакт видит только командир отряда',
+  z.object({
+    id,
+    tripId: id,
+    organization: z.string().min(1).describe('Школа, клуб или название группы'),
+    contactName: z.string().min(2),
+    contact: z.string().min(3).describe('Телефон или электронная почта ответственного'),
+    peopleCount: z.number().int().min(2).max(100),
+    comment: z.string(),
+    status: GroupApplicationStatus,
+    createdAt: isoDateTime,
+    demo,
+  }),
+)
+
+export const NewGroupApplication = entity(
+  'NewGroupApplication',
+  'Подать коллективную заявку. Статус на сервере всегда pending',
+  GroupApplication.pick({
+    tripId: true,
+    organization: true,
+    contactName: true,
+    contact: true,
+    peopleCount: true,
+    comment: true,
+  }),
+)
+
+export const GroupApplicationDecision = entity(
+  'GroupApplicationDecision',
+  'Решение командира по коллективной заявке',
+  z.object({ status: z.enum(['confirmed', 'clarify']) }),
+)
+
+/* ---------- Истории людей (народный архив) ---------- */
+
+export const ArchiveStatus = entity(
+  'ArchiveStatus',
+  'pending — «Ожидает проверки», clarify — «Нужно уточнение», verified — «Подтверждено», rejected — «Отклонено»',
+  z.enum(['pending', 'clarify', 'verified', 'rejected']),
+)
+
+export const ArchiveStory = entity(
+  'ArchiveStory',
+  'История человека или места от пользователя. Всем видна только после проверки краеведом или отрядом',
+  z.object({
+    id,
+    title: z.string().min(4),
+    place: z.string().min(2),
+    story: z.string().min(30),
+    sourceText: z.string().describe('Источник словами автора: семейный архив, документ, книга'),
+    author: z.string().min(2).describe('Подпись автора; контакты автора не публикуются'),
+    status: ArchiveStatus,
+    verifiedBy: z.string().optional(),
+    reviewNote: z.string().optional().describe('Комментарий проверяющего автору'),
+    createdAt: isoDateTime,
+    demo,
+  }),
+)
+
+export const NewArchiveStory = entity(
+  'NewArchiveStory',
+  'Отправить историю на проверку',
+  ArchiveStory.pick({ title: true, place: true, story: true, sourceText: true, author: true }),
+)
+
+export const ArchiveReview = entity(
+  'ArchiveReview',
+  'Решение проверяющего. Подтвердить — только с источником; «уточнить» — только с комментарием',
+  z.object({
+    decision: z.enum(['verified', 'clarify']),
+    reviewer: z.string().min(1),
+    note: z.string(),
+  }),
+)
+
 /* ---------- Последний бой ---------- */
 
 export const SiteStatus = entity(
@@ -341,6 +425,11 @@ export type VolunteerRequest = z.infer<typeof VolunteerRequest>
 export type NewVolunteerRequest = z.infer<typeof NewVolunteerRequest>
 export type Fundraiser = z.infer<typeof Fundraiser>
 export type Trip = z.infer<typeof Trip>
+export type GroupApplicationStatus = z.infer<typeof GroupApplicationStatus>
+export type GroupApplication = z.infer<typeof GroupApplication>
+export type NewGroupApplication = z.infer<typeof NewGroupApplication>
+export type ArchiveStory = z.infer<typeof ArchiveStory>
+export type NewArchiveStory = z.infer<typeof NewArchiveStory>
 export type SiteStatus = z.infer<typeof SiteStatus>
 export type LastBattleSite = z.infer<typeof LastBattleSite>
 export type NewLastBattleSite = z.infer<typeof NewLastBattleSite>

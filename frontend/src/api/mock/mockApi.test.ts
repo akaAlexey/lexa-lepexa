@@ -50,3 +50,67 @@ describe('mock API: «Последний бой»', () => {
     ).rejects.toMatchObject({ status: 409 })
   })
 })
+
+describe('mock API: истории и коллективные заявки', () => {
+  it('новая история ждёт проверки; без источника подтвердить нельзя, после уточнения — можно', async () => {
+    const api = createMockApi({ latencyMs: 0, channelName: null })
+    const story = await api.createStory({
+      body: {
+        title: 'Письмо деда',
+        place: 'Орёл',
+        story: 'Дед писал домой летом 1943 года перед наступлением.',
+        sourceText: '',
+        author: 'Внук',
+      },
+    })
+    expect(story.status).toBe('pending')
+    await expect(
+      api.reviewStory({
+        id: story.id,
+        body: { decision: 'verified', reviewer: 'Краевед', note: '' },
+      }),
+    ).rejects.toMatchObject({ status: 422 })
+
+    const clarified = await api.reviewStory({
+      id: story.id,
+      body: { decision: 'clarify', reviewer: 'Краевед', note: 'Пришлите фото письма' },
+    })
+    expect(clarified).toMatchObject({ status: 'clarify', reviewNote: 'Пришлите фото письма' })
+  })
+
+  it('подтверждённую историю повторно не рассматривают', async () => {
+    const api = createMockApi({ latencyMs: 0, channelName: null })
+    const verified = await api.reviewStory({
+      id: 'ST02',
+      body: { decision: 'verified', reviewer: 'Краевед', note: '' },
+    })
+    expect(verified).toMatchObject({ status: 'verified', verifiedBy: 'Краевед' })
+    await expect(
+      api.reviewStory({
+        id: 'ST02',
+        body: { decision: 'clarify', reviewer: 'Краевед', note: 'x' },
+      }),
+    ).rejects.toMatchObject({ status: 409 })
+  })
+
+  it('коллективная заявка: подана — «на рассмотрении», командир подтверждает', async () => {
+    const api = createMockApi({ latencyMs: 0, channelName: null })
+    const created = await api.createGroupApplication({
+      body: {
+        tripId: 'W01',
+        organization: 'Клуб «Поиск»',
+        contactName: 'Руководитель',
+        contact: '+7 900 111-22-33',
+        peopleCount: 8,
+        comment: '',
+      },
+    })
+    expect(created.status).toBe('pending')
+    expect((await api.listGroupApplications())[0]!.id).toBe(created.id)
+    const confirmed = await api.decideGroupApplication({
+      id: created.id,
+      body: { status: 'confirmed' },
+    })
+    expect(confirmed.status).toBe('confirmed')
+  })
+})

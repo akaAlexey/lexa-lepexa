@@ -69,6 +69,38 @@ export function TextField({ label, value, onChange, hint, error, testID, ...rest
   )
 }
 
+type TextAreaProps = Omit<InputProps, 'type' | 'inputMode' | 'min' | 'max'> & { rows?: number }
+
+/** Многострочное поле: рассказ, комментарий. */
+export function TextAreaField({
+  label,
+  value,
+  onChange,
+  hint,
+  error,
+  testID,
+  rows = 5,
+  placeholder,
+}: TextAreaProps) {
+  return (
+    <FieldShell label={label} hint={hint} error={error}>
+      {({ inputId, describedBy, invalid }) => (
+        <textarea
+          id={inputId}
+          className={s.textarea}
+          rows={rows}
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          aria-invalid={invalid}
+          aria-describedby={describedBy}
+          data-testid={testID}
+        />
+      )}
+    </FieldShell>
+  )
+}
+
 interface SelectProps<V extends string> {
   label: string
   value: V

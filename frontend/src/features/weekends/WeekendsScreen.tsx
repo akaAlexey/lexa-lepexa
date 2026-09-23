@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
 import { useApi } from '../../app/services.tsx'
 import type { Trip } from '../../contract/schemas.ts'
@@ -10,6 +10,8 @@ import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { Screen } from '../../ui/Screen.tsx'
+import type { GroupSentState } from './GroupApplicationScreen.tsx'
+import { GroupList } from './GroupList.tsx'
 import { freeSpots, spotsText } from './trips.ts'
 import s from './weekends.module.css'
 
@@ -19,8 +21,12 @@ function nearestTrip(list: readonly Trip[], today: string): Trip | undefined {
   return upcoming.find((t) => freeSpots(t) > 0) ?? upcoming[0]
 }
 
+const groupSent = (state: unknown) =>
+  typeof (state as Partial<GroupSentState> | null)?.groupSent === 'string'
+
 export function WeekendsScreen() {
   const api = useApi()
+  const location = useLocation()
   const trips = useQuery({ queryKey: ['trips'], queryFn: api.listTrips })
   return (
     <Screen
@@ -33,6 +39,11 @@ export function WeekendsScreen() {
           const nearest = nearestTrip(list, todayIso(new Date()))
           return (
             <>
+              {groupSent(location.state) && (
+                <Notice tone="success" testID="group-sent">
+                  Заявка группы отправлена. Командир отряда рассмотрит её и уточнит подготовку.
+                </Notice>
+              )}
               {nearest ? (
                 <BigButton
                   to={`/weekends/${nearest.id}`}
@@ -66,6 +77,7 @@ export function WeekendsScreen() {
                   </Card>
                 ))}
               </ul>
+              <GroupList trips={list} />
             </>
           )
         }}

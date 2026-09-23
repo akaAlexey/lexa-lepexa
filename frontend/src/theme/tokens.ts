@@ -56,6 +56,7 @@ export const tokens = {
       route: '#B4531A',
       routeHalo: '#FBF6EC',
       grave: '#2B2A26',
+      me: '#2F5D7C', // «Вы здесь» — синий, как принято на картах
     },
   },
   font: {

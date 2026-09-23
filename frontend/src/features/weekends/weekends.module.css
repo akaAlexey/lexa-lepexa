@@ -93,3 +93,35 @@
   margin: var(--space-4) 0 var(--space-2);
   font-weight: 700;
 }
+
+.form {
+  display: grid;
+  gap: var(--space-4);
+  /* На ноутбуке поля не растягиваются во всю ширину — так их легче читать */
+  max-width: 40rem;
+}
+
+.tripTitle {
+  margin: 0;
+  font-weight: 700;
+}
+
+.groupMeta {
+  margin: 0 0 var(--space-2);
+  color: var(--color-ink-muted);
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}

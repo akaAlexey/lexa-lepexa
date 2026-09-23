@@ -27,8 +27,8 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-2) var(--space-4);
-  padding: var(--space-1) var(--space-4);
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
   background: var(--color-surface);
   color: var(--color-ink);
   border-bottom: 1px solid var(--color-line);
@@ -46,10 +46,35 @@
 
 .brandText {
   font-family: var(--font-heading);
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   font-weight: 600;
   letter-spacing: 0.03em;
   text-transform: uppercase;
+}
+
+.brandSub {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-ink-muted);
+}
+
+/* Роль — пилюля, как кнопка аккаунта на макете */
+.roleLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-2);
+  border: 2px solid var(--color-olive);
+  border-radius: var(--radius-pill);
+  color: var(--color-olive);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
 .nav {
@@ -145,6 +170,35 @@
     line-height: 1.15;
   }
 
+  .brandSub {
+    margin-top: 0.15rem;
+    color: var(--color-rail-text);
+  }
+
+  /* В узкой панели — только «Демо» */
+  .brandRegion {
+    display: none;
+  }
+
+  .roleLink {
+    flex-direction: column;
+    gap: 0.1rem;
+    min-height: 3.5rem;
+    width: calc(var(--rail-width) - 1rem);
+    padding: var(--space-1);
+    border-color: var(--color-rail-text);
+    border-radius: var(--radius-control);
+    color: var(--color-rail-text);
+    font-size: 0.9rem;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .roleLink[aria-current='page'] {
+    border-color: var(--color-accent-on-dark);
+    color: var(--color-accent-on-dark);
+  }
+
   .nav {
     position: static;
     flex: 1;
@@ -171,11 +225,6 @@
   .navLink[aria-current='page'] {
     background: var(--color-rail-active);
     border-left-color: var(--color-accent-on-dark);
-  }
-
-  /* Роль — внизу панели, как «Профиль» на макете */
-  .navRole {
-    margin-top: auto;
   }
 }
 

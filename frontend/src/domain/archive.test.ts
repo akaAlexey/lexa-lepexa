@@ -4,7 +4,9 @@ import {
   canVerify,
   hasConfirmedBadge,
   notesToCheckNear,
+  reviewBlocker,
   reviewNote,
+  validateStory,
   type ArchiveNote,
 } from './archive.ts'
 
@@ -48,5 +50,46 @@ describe('народный архив: верификация', () => {
       { ...note, id: 'near-1', lat: 52.9723 },
     ]
     expect(notesToCheckNear(point, notes).map((n) => n.id)).toEqual(['near-1', 'near-2'])
+  })
+})
+
+describe('истории людей: проверка', () => {
+  it('«нужно уточнение» возвращает историю в очередь: её можно рассмотреть снова', () => {
+    const clarify = reviewNote(note, 'verifier', 'clarify', 'Краевед')
+    expect(clarify.status).toBe('clarify')
+    expect(reviewNote(clarify, 'commander', 'verified', 'Отряд «Высота»').status).toBe('verified')
+  })
+
+  it('подтвердить — только с источником и всеми пунктами чек-листа', () => {
+    const all = ['datePlace', 'source', 'archive'] as const
+    expect(reviewBlocker('verified', { source: '', checks: all, note: '' })).toMatch(/источник/)
+    expect(
+      reviewBlocker('verified', { source: 'Письмо', checks: ['datePlace'], note: '' }),
+    ).toMatch(/все пункты/)
+    expect(reviewBlocker('verified', { source: 'Письмо', checks: all, note: '' })).toBeUndefined()
+  })
+
+  it('попросить уточнение — только с комментарием автору', () => {
+    expect(reviewBlocker('clarify', { source: '', checks: [], note: '  ' })).toMatch(/уточнить/)
+    expect(
+      reviewBlocker('clarify', { source: '', checks: [], note: 'Фото письма' }),
+    ).toBeUndefined()
+  })
+
+  it('форма истории: название, место, подпись и рассказ не короче 30 символов', () => {
+    expect(validateStory({ title: '', place: '', story: 'коротко', author: '' })).toEqual({
+      title: expect.any(String),
+      place: expect.any(String),
+      story: expect.stringMatching(/30/),
+      author: expect.any(String),
+    })
+    expect(
+      validateStory({
+        title: 'Письмо деда',
+        place: 'Орёл',
+        story: 'Дед писал домой летом 1943 года перед наступлением.',
+        author: 'Внук',
+      }),
+    ).toEqual({})
   })
 })
