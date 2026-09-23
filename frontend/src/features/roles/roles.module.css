@@ -1,0 +1,39 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.role {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 8rem;
+  padding: var(--space-4);
+  border: 2px solid var(--color-olive);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-olive);
+  text-align: left;
+  cursor: pointer;
+}
+
+.role[aria-pressed='true'] {
+  border-width: 4px;
+  border-color: var(--color-red);
+}
+
+.roleLabel {
+  color: var(--color-ink);
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.roleDescription {
+  color: var(--color-ink-muted);
+}
