@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
 import { useRole } from '../../app/RoleContext.tsx'
@@ -69,6 +69,11 @@ export function SearchScreen() {
   const teamById = new Map<string, Team>((teams.data ?? []).map((t) => [t.id, t]))
   const fundraiserById = new Map<string, Fundraiser>((fundraisers.data ?? []).map((f) => [f.id, f]))
   const published = isPublishedState(location.state)
+  // Форма длинная: после публикации возвращаем командира к сообщению и новой карточке.
+  const publishedRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (published) publishedRef.current?.scrollIntoView?.({ block: 'center' })
+  }, [published])
 
   return (
     <Screen
@@ -77,9 +82,11 @@ export function SearchScreen() {
       testID="screen-search"
     >
       {published && (
-        <Notice tone="success" testID="request-published">
-          Заявка опубликована. Волонтёры видят её первой в ленте.
-        </Notice>
+        <div ref={publishedRef}>
+          <Notice tone="success" testID="request-published">
+            Заявка опубликована. Волонтёры видят её первой в ленте.
+          </Notice>
+        </div>
       )}
       <QueryState query={stats} what="счётчик">
         {(st) => (
