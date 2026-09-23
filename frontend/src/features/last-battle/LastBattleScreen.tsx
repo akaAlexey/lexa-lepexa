@@ -42,6 +42,7 @@ function BattleMap({ sites, graves }: { sites: LastBattleSite[]; graves: Grave[]
         icon: SITE_STATUS_META[site.status].icon,
         label: `${site.placeName}: ${SITE_STATUS_META[site.status].label}`,
         color: tokens.color.status[site.status],
+        shape: 'zone' as const,
       })),
     ],
     [sites, graves],
@@ -90,7 +91,7 @@ function Legend() {
           <LegendItem key={status} status={status} />
         ))}
         <li className={s.legendItem}>
-          <span className={s.legendIcon} style={{ color: tokens.color.map.grave }}>
+          <span className={s.legendIconGrave} style={{ color: tokens.color.map.grave }}>
             <Icon name="grave" size={1.2} />
           </span>
           Воинское захоронение

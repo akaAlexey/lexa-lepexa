@@ -1,6 +1,8 @@
 @import '@fontsource/pt-sans/400.css';
 @import '@fontsource/pt-sans/700.css';
-@import '@fontsource/pt-serif/700.css';
+@import '@fontsource/oswald/500.css';
+@import '@fontsource/oswald/600.css';
+@import '@fontsource/pt-mono/400.css';
 
 /* Значения переменных задаёт applyTheme() из tokens.ts; здесь — только фолбэк до старта JS. */
 :root {
@@ -13,7 +15,10 @@
   --space-6: 1.5rem;
   --space-8: 2rem;
   --nav-height: 4.5rem;
-  --sidebar-width: 16rem;
+  /* Ноутбук: узкая тёмная панель разделов и панель экрана рядом с картой */
+  --rail-width: 7rem;
+  --panel-width: 27rem;
+  --float-gap: 1rem;
   font-size: var(--font-size-base, 112.5%);
 }
 
@@ -44,27 +49,38 @@ body {
   min-height: 100dvh;
   font-family: var(--font-body);
   line-height: 1.5;
-  color: var(--color-ink, #2a2a1e);
-  background-color: var(--color-paper, #f4ecd8);
-  background-image: var(--paper-texture);
+  color: var(--color-ink, #2b2a26);
+  background-color: var(--color-paper, #f2e8d5);
   -webkit-text-size-adjust: 100%;
 }
 
 h1,
 h2,
 h3 {
-  font-family: var(--font-heading);
   line-height: 1.2;
   margin: 0 0 var(--space-3);
   overflow-wrap: anywhere;
 }
 
+/* Заголовки экранов и разделов — Oswald, как на макетах; заголовки карточек — PT Sans */
+h1,
+h2 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
 h1 {
-  font-size: 1.75rem;
+  font-size: 1.9rem;
 }
 
 h2 {
-  font-size: 1.35rem;
+  font-size: 1.4rem;
+}
+
+h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
 }
 
 p {
@@ -85,9 +101,9 @@ textarea {
 
 /* Видимый фокус для клавиатуры: двойное кольцо читается на любом фоне. */
 :focus-visible {
-  outline: 3px solid var(--color-focus, #c25a00);
+  outline: 3px solid var(--color-focus, #b4531a);
   outline-offset: 2px;
-  box-shadow: 0 0 0 6px var(--color-surface, #fbf7ec);
+  box-shadow: 0 0 0 6px var(--color-surface, #fbf6ec);
 }
 
 .visually-hidden {

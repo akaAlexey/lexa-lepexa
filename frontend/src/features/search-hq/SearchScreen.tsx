@@ -90,10 +90,14 @@ export function SearchScreen() {
       )}
       <QueryState query={stats} what="счётчик">
         {(st) => (
-          <p data-testid="found-counter">
-            Найдено бойцов за месяц: <strong>{st.foundThisMonth}</strong> <DemoBadge />
-            <br />
-            <small>Источник: сводки поисковых отрядов региона (демо).</small>
+          <p className={s.counter} data-testid="found-counter">
+            <span className={s.counterLabel}>
+              Найдено бойцов за месяц: <DemoBadge />
+            </span>
+            <strong className={s.counterValue}>{st.foundThisMonth}</strong>
+            <small className={s.counterSource}>
+              Источник: сводки поисковых отрядов региона (демо).
+            </small>
           </p>
         )}
       </QueryState>

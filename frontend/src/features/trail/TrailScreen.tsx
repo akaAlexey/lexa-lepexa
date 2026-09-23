@@ -28,7 +28,7 @@ function RouteOverview({ route }: { route: Route }) {
         lon: p.lon,
         icon: done.has(p.id) ? 'check' : POINT_ICON[p.kind].icon,
         label: `Точка ${i + 1}: ${p.title} (${POINT_ICON[p.kind].label})${done.has(p.id) ? ', пройдена' : ''}`,
-        color: done.has(p.id) ? tokens.color.olive : tokens.color.red,
+        color: done.has(p.id) ? tokens.color.point.done : tokens.color.point[p.kind],
       })),
     [route, done],
   )
@@ -69,7 +69,9 @@ function RouteOverview({ route }: { route: Route }) {
               className={s.pointLink}
               data-testid={`point-${p.id}`}
             >
-              <Icon name={POINT_ICON[p.kind].icon} label={POINT_ICON[p.kind].label} />
+              <span className={s.pointIcon} style={{ color: tokens.color.point[p.kind] }}>
+                <Icon name={POINT_ICON[p.kind].icon} label={POINT_ICON[p.kind].label} size={1.3} />
+              </span>
               <span className={s.pointTitle}>
                 {i + 1}. {p.title}
               </span>

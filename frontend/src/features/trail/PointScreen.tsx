@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
 import type { Route, RoutePoint } from '../../contract/schemas.ts'
@@ -16,8 +16,29 @@ import { finishUrl, pointUrl, useQuestProgress, useRoutes } from './useTrail.ts'
 
 type Answer = { index: number; correct: boolean }
 
+/** Прогресс маршрута кружками из макета: пройденные — ✓, текущая — оранжевая. Для скринридера — текст «Точка N из M». */
+function Stepper({ route, index, done }: { route: Route; index: number; done: Set<string> }) {
+  return (
+    <ol className={s.stepper} aria-hidden="true">
+      {route.points.map((p, i) => (
+        <Fragment key={p.id}>
+          {i > 0 && (
+            <li className={done.has(route.points[i - 1]!.id) ? s.stepLineDone : s.stepLine} />
+          )}
+          <li
+            className={i === index ? s.stepDotCurrent : done.has(p.id) ? s.stepDotDone : s.stepDot}
+          >
+            {i !== index && done.has(p.id) ? <Icon name="check" size={1.1} /> : i + 1}
+          </li>
+        </Fragment>
+      ))}
+    </ol>
+  )
+}
+
 function PointCard({ route, point, index }: { route: Route; point: RoutePoint; index: number }) {
-  const { markDone } = useQuestProgress(route.id)
+  const { progress, markDone } = useQuestProgress(route.id)
+  const done = useMemo(() => new Set(progress.donePointIds), [progress])
   const [answer, setAnswer] = useState<Answer>()
   const solved = answer?.correct === true
   const next = route.points[index + 1]
@@ -44,6 +65,7 @@ function PointCard({ route, point, index }: { route: Route; point: RoutePoint; i
         </span>
         {route.demo && <DemoBadge />}
       </p>
+      <Stepper route={route} index={index} done={done} />
 
       <Card as="section" aria-labelledby="point-story-title">
         <h2 id="point-story-title" className={s.cardTitle}>

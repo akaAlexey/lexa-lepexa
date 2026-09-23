@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import type { SiteStatus } from '../contract/schemas.ts'
 import { tokens } from '../theme/tokens.ts'
 import { Icon } from './Icon.tsx'
@@ -9,8 +10,8 @@ export function StatusBadge({ status }: { status: SiteStatus }) {
   const meta = SITE_STATUS_META[status]
   return (
     <span
-      className={s.badge}
-      style={{ color: tokens.color.status[status] }}
+      className={s.statusBadge}
+      style={{ '--badge': tokens.color.status[status] } as CSSProperties}
       data-testid={`status-${status}`}
     >
       <Icon name={meta.icon} size={1.1} />
