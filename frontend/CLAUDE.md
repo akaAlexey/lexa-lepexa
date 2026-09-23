@@ -62,6 +62,7 @@
 - В jsdom нет WebGL: `MapView` в тестах подменён `src/test/MapViewStub.tsx`. У тестов в среде jsdom `import.meta.url` не `file:` — JSON читаем импортом, чистые тесты помечаем `// @vitest-environment node`.
 - Маска `canvas` на скриншотах Playwright закрывает и метки поверх карты — не маскируем; e2e идут с `VITE_TILES=none`, картинка стабильна.
 - Полностраничный скриншот рисует `position: fixed` меню посреди страницы — снимаем видимую область.
+- Бесплатный localhost.run (`npm run tunnel`) каждые несколько минут выдаёт новый адрес — старый отвечает 503. Актуальный адрес — последняя строка `*.lhr.life` в выводе; QR генерировать прямо перед проверкой. Решение арбитра: пока так, до постоянного хостинга.
 - Git в этой среде: глобальный прокси `10.0.0.1:3128` не пускает к GitHub → в локальном конфиге репо прокси отключён, креды — в `~/.config/lexa/git-credentials`.
 - Chromium для Playwright ставится напрямую: `npx playwright install chromium`.
 - Субагенты с `isolation: worktree` создают worktree **от `main`**, а не от `frontend`: первым делом `git switch -c fe/<модуль> && git reset --hard frontend`. Worktree лежат в `.claude/worktrees/` (исключены через `.git/info/exclude`).
