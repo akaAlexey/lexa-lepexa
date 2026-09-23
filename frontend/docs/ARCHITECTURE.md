@@ -1,0 +1,97 @@
+# Архитектура фронтенда «Тропа памяти»
+
+Короткая карта кода и правил. Решения с обоснованием — в [adr/](adr/).
+
+## Слои и направление зависимостей
+
+```
+features/*  ──►  app/ (сервисы, роли, раскладка)  ──►  ui/, map/, theme/
+    │                                                    │
+    └──────────►  api/ (ApiClient)  ──►  contract/  ◄────┘
+                  platform/ (Geo, Notify, Storage)
+                  domain/ (чистая логика)  ──►  contract/ (только типы)
+```
+
+- `domain/`, `contract/`, `api/` не импортируют React и DOM — переносятся в любой стек (ADR 0001).
+- Экраны берут API и платформу только через `useServices()` / `useApi()` — не импортируют адаптеры напрямую.
+- Модули `features/*` не импортируют друг друга. Общее выносится в `ui/`, `map/` или `domain/`.
+- Внутри `src/contract` импорты с расширением `.ts`: эти файлы читает и Node-скрипт генерации OpenAPI.
+
+## Папки
+
+```
+frontend/
+  src/
+    contract/   schemas.ts (zod-сущности) · endpoints.ts (REST-таблица) · openapi.ts (генерация)
+    api/        client.ts (ApiClient, ошибки) · mock/ · live/ · fixtures/ (jury.generated.json, seed.ts)
+    domain/     geo · lastBattle (статусы, радиус 20 км, текст уведомления) · fundraising · format
+    platform/   types.ts · web/ · demo/ · index.ts (createWebPlatform)
+    map/        MapView.tsx · style.ts (стиль из токенов) · tiles.ts (источник тайлов)
+    theme/      tokens.ts (цвета, шрифты, размеры) · global.css
+    ui/         BigButton · Card · StatusBadge · DemoBadge · Icon · Screen · siteStatus
+    app/        App · routes · Layout (шапка, вкладки/меню) · RoleContext · roles · services · Toaster · QueryState
+    features/   roles · trail · search-hq · weekends · last-battle — у каждого свой routes.tsx
+    config/     env.ts (проверка переменных окружения) · region.ts (регион, тексты, источники)
+    test/       setup · renderApp · MapViewStub
+  fixtures/jury/   данные в формате жюри (сейчас — демо, сгенерированы по схеме)
+  scripts/         build-fixtures · gen-openapi · tunnel.sh · deploy.sh
+  deploy/          Caddyfile
+  e2e/             Playwright: сценарии, helpers (скриншоты, axe, ошибки консоли)
+  docs/            ARCHITECTURE · adr/ · HANDOFF
+```
+
+## Публичный API общих модулей (зафиксирован до запуска агентов)
+
+Менять сигнатуры можно только через техлида: от них зависят все модули.
+
+| Модуль | Экспорт | Контракт |
+|---|---|---|
+| `ui/BigButton` | `BigButton({ children, icon?, testID, to \| onClick, disabled? })` | Главное действие экрана, одно на экран. Ссылка (`to`) или кнопка (`onClick`) |
+| `ui/Screen` | `Screen({ title, lead?, testID, children })` | h1, заголовок вкладки, перенос фокуса на h1 при переходе |
+| `ui/Card` | `Card({ as?, testID?, children })` | Карточка на бумажном фоне |
+| `ui/StatusBadge` | `StatusBadge({ status })` | Статус места: иконка + текст + цвет |
+| `ui/DemoBadge` | `DemoBadge({ text? })` | Пометка демо-данных |
+| `ui/Icon` | `Icon({ name, size?, label? })`, `IconName` | Свои SVG; без `label` иконка декоративная |
+| `map/MapView` | `MapView({ label, center, zoom, markers?, route?, onMarkerSelect?, testID })` | `markers` — стабильный массив (`useMemo`); метка = кнопка с `testID="marker-<id>"`; атрибут `data-ready="true"`, когда карта загружена |
+| `app/services` | `useApi()`, `useServices()` | Доступ к `ApiClient` и `Platform` |
+| `app/RoleContext` | `useRole()` → `{ role, setRole }` | Текущая роль |
+| `app/QueryState` | `QueryState({ query, what, children })` | Единые загрузка/ошибка/повтор |
+
+## Навигация
+
+- Каждый экран и каждая карточка — свой URL (React Router). Прямые ссылки открываются: `vite preview` и Caddy отдают `index.html`.
+- Роль (`app/roles.ts`) задаёт порядок вкладок и домашний экран: семья → `/trail`, волонтёр и командир → `/search`, краевед → `/last-battle`.
+- Телефон: вкладки снизу. Ноутбук (от 64rem): меню слева. Точки перелома в rem — при масштабе 200 % включается мобильная раскладка.
+
+## Как добавить модуль
+
+1. Создайте `src/features/<модуль>/` с экранами и `routes.tsx` (массив `RouteObject`).
+2. Подключите `routes` в `src/app/routes.tsx`, при необходимости — вкладку в `app/roles.ts`.
+3. Новые данные — сначала сущность в `contract/schemas.ts` и эндпоинт в `contract/endpoints.ts`, затем реализация в `api/mock/mockApi.ts` (TypeScript не даст забыть), затем `npm run contract`.
+4. Тесты модуля — рядом (`*.test.tsx`) и сценарий в `e2e/`.
+
+## Переключение на живой бэкенд
+
+```
+VITE_API_MODE=live VITE_API_URL=https://<домен>/api/v1 npm run build
+```
+Каждый ответ проверяется схемой. Расхождение с контрактом видно сразу как `ContractError` в консоли.
+
+## Перенос на Android (следующая фаза)
+
+1. `npm i @capacitor/core @capacitor/android` и `npx cap add android` — веб-сборка из `dist/` едет в WebView без изменений (карта та же, MapLibre GL JS).
+2. Реализовать `platform/capacitor/` (geolocation, local-notifications / push, preferences) и выбирать её в `src/platform/index.ts` по `Capacitor.isNativePlatform()`.
+3. Критерий перехода на нативную карту — в ADR 0001.
+
+## Аналог для другого региона или темы
+
+Замените `src/config/region.ts` (название, центр карты, источники), данные в `fixtures/` и при желании токены в `src/theme/tokens.ts`. Код экранов не меняется.
+
+## Цифры каркаса (2026-09-23)
+
+| Метрика | Значение |
+|---|---|
+| Строк кода в `src` без тестов | ≈ 2 700 |
+| Сущностей в контракте / эндпоинтов | 30 / 20 + SSE |
+| Начальный JS (gzip) | 145 КБ; MapLibre (274 КБ) и его воркер (140 КБ) грузятся только на экранах с картой |
+| Тесты | 13 unit и компонентных, 4 e2e (2 сценария × 2 вьюпорта) с axe |
