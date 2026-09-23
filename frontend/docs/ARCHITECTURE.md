@@ -44,18 +44,18 @@ frontend/
 
 Менять сигнатуры можно только через техлида: от них зависят все модули.
 
-| Модуль | Экспорт | Контракт |
-|---|---|---|
-| `ui/BigButton` | `BigButton({ children, icon?, testID, to \| onClick, disabled? })` | Главное действие экрана, одно на экран. Ссылка (`to`) или кнопка (`onClick`) |
-| `ui/Screen` | `Screen({ title, lead?, testID, children })` | h1, заголовок вкладки, перенос фокуса на h1 при переходе |
-| `ui/Card` | `Card({ as?, testID?, children })` | Карточка на бумажном фоне |
-| `ui/StatusBadge` | `StatusBadge({ status })` | Статус места: иконка + текст + цвет |
-| `ui/DemoBadge` | `DemoBadge({ text? })` | Пометка демо-данных |
-| `ui/Icon` | `Icon({ name, size?, label? })`, `IconName` | Свои SVG; без `label` иконка декоративная |
-| `map/MapView` | `MapView({ label, center, zoom, markers?, route?, onMarkerSelect?, testID })` | `markers` — стабильный массив (`useMemo`); метка = кнопка с `testID="marker-<id>"`; атрибут `data-ready="true"`, когда карта загружена |
-| `app/services` | `useApi()`, `useServices()` | Доступ к `ApiClient` и `Platform` |
-| `app/RoleContext` | `useRole()` → `{ role, setRole }` | Текущая роль |
-| `app/QueryState` | `QueryState({ query, what, children })` | Единые загрузка/ошибка/повтор |
+| Модуль            | Экспорт                                                                       | Контракт                                                                                                                               |
+| ----------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `ui/BigButton`    | `BigButton({ children, icon?, testID, to \| onClick, disabled? })`            | Главное действие экрана, одно на экран. Ссылка (`to`) или кнопка (`onClick`)                                                           |
+| `ui/Screen`       | `Screen({ title, lead?, testID, children })`                                  | h1, заголовок вкладки, перенос фокуса на h1 при переходе                                                                               |
+| `ui/Card`         | `Card({ as?, testID?, children })`                                            | Карточка на бумажном фоне                                                                                                              |
+| `ui/StatusBadge`  | `StatusBadge({ status })`                                                     | Статус места: иконка + текст + цвет                                                                                                    |
+| `ui/DemoBadge`    | `DemoBadge({ text? })`                                                        | Пометка демо-данных                                                                                                                    |
+| `ui/Icon`         | `Icon({ name, size?, label? })`, `IconName`                                   | Свои SVG; без `label` иконка декоративная                                                                                              |
+| `map/MapView`     | `MapView({ label, center, zoom, markers?, route?, onMarkerSelect?, testID })` | `markers` — стабильный массив (`useMemo`); метка = кнопка с `testID="marker-<id>"`; атрибут `data-ready="true"`, когда карта загружена |
+| `app/services`    | `useApi()`, `useServices()`                                                   | Доступ к `ApiClient` и `Platform`                                                                                                      |
+| `app/RoleContext` | `useRole()` → `{ role, setRole }`                                             | Текущая роль                                                                                                                           |
+| `app/QueryState`  | `QueryState({ query, what, children })`                                       | Единые загрузка/ошибка/повтор                                                                                                          |
 
 ## Навигация
 
@@ -75,6 +75,7 @@ frontend/
 ```
 VITE_API_MODE=live VITE_API_URL=https://<домен>/api/v1 npm run build
 ```
+
 Каждый ответ проверяется схемой. Расхождение с контрактом видно сразу как `ContractError` в консоли.
 
 ## Перенос на Android (следующая фаза)
@@ -89,9 +90,9 @@ VITE_API_MODE=live VITE_API_URL=https://<домен>/api/v1 npm run build
 
 ## Цифры каркаса (2026-09-23)
 
-| Метрика | Значение |
-|---|---|
-| Строк кода в `src` без тестов | ≈ 2 700 |
-| Сущностей в контракте / эндпоинтов | 30 / 20 + SSE |
-| Начальный JS (gzip) | 145 КБ; MapLibre (274 КБ) и его воркер (140 КБ) грузятся только на экранах с картой |
-| Тесты | 13 unit и компонентных, 4 e2e (2 сценария × 2 вьюпорта) с axe |
+| Метрика                            | Значение                                                                            |
+| ---------------------------------- | ----------------------------------------------------------------------------------- |
+| Строк кода в `src` без тестов      | ≈ 2 700                                                                             |
+| Сущностей в контракте / эндпоинтов | 30 / 20 + SSE                                                                       |
+| Начальный JS (gzip)                | 145 КБ; MapLibre (274 КБ) и его воркер (140 КБ) грузятся только на экранах с картой |
+| Тесты                              | 13 unit и компонентных, 4 e2e (2 сценария × 2 вьюпорта) с axe                       |

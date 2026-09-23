@@ -41,15 +41,15 @@
 
 ## Зафиксированные решения (ADR в `frontend/docs/adr/`)
 
-| #    | Решение                                                                                                                         |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------- |
-| 0001 | React 19 + TS strict + Vite 8 + React Router; Android — Capacitor; критерий перехода на нативную карту                          |
-| 0002 | Сейчас временный HTTPS-туннель localhost.run (`npm run tunnel`); цель — VPS в РФ + Caddy (`deploy/Caddyfile`, `npm run deploy`) |
-| 0003 | MapLibre GL JS, стиль из токенов, `VITE_TILES=openfreemap                                                                       | none` (P1 — PMTiles района), метки-кнопки + дублирующий список, «след танка» |
-| 0004 | zod-контракт → `docs/openapi.json`; `ApiClient` с адаптерами mock/live; фикстуры жюри через `npm run fixtures`                  |
-| 0005 | Платформенные интерфейсы Geo/Notify/Storage; геопозиция по умолчанию демо                                                       |
-| 0006 | Vitest + Testing Library + Playwright (phone 360×780, laptop 1366×768), axe, проверка ошибок консоли, `npm run verify`          |
-| 0007 | TanStack Query + React context (без Zustand)                                                                                    |
+| #    | Решение                                                                                                                                          |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0001 | React 19 + TS strict + Vite 8 + React Router; Android — Capacitor; критерий перехода на нативную карту                                           |
+| 0002 | Сейчас временный HTTPS-туннель localhost.run (`npm run tunnel`); цель — VPS в РФ + Caddy (`deploy/Caddyfile`, `npm run deploy`)                  |
+| 0003 | MapLibre GL JS, стиль из токенов, `VITE_TILES` = `openfreemap` или `none` (P1 — PMTiles района), метки-кнопки + дублирующий список, «след танка» |
+| 0004 | zod-контракт → `docs/openapi.json`; `ApiClient` с адаптерами mock/live; фикстуры жюри через `npm run fixtures`                                   |
+| 0005 | Платформенные интерфейсы Geo/Notify/Storage; геопозиция по умолчанию демо                                                                        |
+| 0006 | Vitest + Testing Library + Playwright (phone 360×780, laptop 1366×768), axe, проверка ошибок консоли, `npm run verify`                           |
+| 0007 | TanStack Query + React context (без Zustand)                                                                                                     |
 
 Правки арбитра после ревью плана: хостинг пока не подключён — проверяем локально; по AR, картам и дизайну будут правки с командой — всё заменяемо через токены и `tiles.ts`; бэкенд — другой человек.
 
