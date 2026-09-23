@@ -1,4 +1,5 @@
-import type { SiteStatus } from '../contract/schemas.ts'
+import type { LastBattleSite, NewLastBattleSite, SiteStatus } from '../contract/schemas.ts'
+import { notImplemented } from './notImplemented.ts'
 
 /** Радиус оповещения подписчиков о новом месте гибели (из кейса). */
 export const NOTIFY_RADIUS_KM = 20
@@ -21,4 +22,18 @@ export function siteFoundNotificationText(distanceKm: number): { title: string; 
     title: 'Последний бой',
     body: `В ${km} км от вас обнаружено место гибели бойца. Требуется помощь в идентификации`,
   }
+}
+
+export type SiteErrors = Partial<
+  Record<'coords' | 'placeName' | 'fightersCount' | 'unit' | 'dateText' | 'sources', string>
+>
+
+/** Проверка формы «Отметить место гибели». */
+export function validateNewSite(input: NewLastBattleSite): SiteErrors {
+  return notImplemented(`validateNewSite(${input.placeName})`)
+}
+
+/** «Красноармеец Иванов И.И.» или «3 бойца, имена не установлены». */
+export function describeFighters(site: Pick<LastBattleSite, 'fighters' | 'fightersCount'>): string {
+  return notImplemented(`describeFighters(${site.fightersCount})`)
 }

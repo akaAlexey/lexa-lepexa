@@ -1,4 +1,5 @@
 import type { LatLon } from '../contract/schemas.ts'
+import { notImplemented } from './notImplemented.ts'
 
 const EARTH_RADIUS_KM = 6371.0088
 
@@ -30,4 +31,9 @@ export function formatDistance(km: number): string {
   if (km < 1) return `${Math.round(km * 1000)} м`
   const rounded = km < 10 ? Math.round(km * 10) / 10 : Math.round(km)
   return `${rounded.toLocaleString('ru-RU')} км`
+}
+
+/** Расстояние от точки до ломаной (до ближайшего отрезка), км. */
+export function distanceToPathKm(point: LatLon, path: readonly LatLon[]): number {
+  return notImplemented(`distanceToPathKm(${point.lat}, ${point.lon}; ${path.length})`)
 }
