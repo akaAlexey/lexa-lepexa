@@ -1,0 +1,21 @@
+.section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.section h2,
+.section p {
+  margin: 0;
+}
+
+.coords {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: var(--space-3);
+}
+
+.build {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-variant-numeric: tabular-nums;
+}

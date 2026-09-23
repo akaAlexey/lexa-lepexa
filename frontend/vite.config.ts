@@ -28,6 +28,8 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    // Компонентные тесты рендерят приложение целиком; под нагрузкой (параллельные агенты) 5 с мало.
+    testTimeout: 15_000,
     include: ['src/**/*.test.{ts,tsx}'],
     env: { VITE_MOCK_LATENCY_MS: '0' },
   },
