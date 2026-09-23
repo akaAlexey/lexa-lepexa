@@ -46,7 +46,7 @@ function Finish({ route }: { route: Route }) {
         <ul className={s.stamps}>
           {route.points.map((p) => (
             <li key={p.id} className={done.has(p.id) ? s.stamp : s.stampEmpty}>
-              <Icon name={POINT_ICON[p.kind].icon} size={2} />
+              <Icon name={POINT_ICON[p.kind].icon} size={1.6} />
               <span>{p.title}</span>
               <span className="visually-hidden">
                 {done.has(p.id) ? '— штамп получен' : '— ещё не пройдено'}

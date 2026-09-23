@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
 import type { Route, RoutePoint } from '../../contract/schemas.ts'
@@ -22,6 +22,12 @@ function PointCard({ route, point, index }: { route: Route; point: RoutePoint; i
   const solved = answer?.correct === true
   const next = route.points[index + 1]
   const kind = POINT_ICON[point.kind]
+
+  // Ответ и кнопка «дальше» появляются под вариантами — на телефоне за краем экрана. Показываем их.
+  const resultRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (answer) resultRef.current?.scrollIntoView?.({ block: 'nearest' })
+  }, [answer])
 
   const choose = (optionIndex: number) => {
     const correct = checkAnswer(point, optionIndex)
@@ -95,16 +101,18 @@ function PointCard({ route, point, index }: { route: Route; point: RoutePoint; i
         )}
       </section>
 
-      {solved &&
-        (next ? (
-          <BigButton to={pointUrl(route.id, next.id)} icon="route" testID="point-next">
-            К следующей точке
-          </BigButton>
-        ) : (
-          <BigButton to={finishUrl(route.id)} icon="flag" testID="point-next">
-            Завершить тропу
-          </BigButton>
-        ))}
+      <div ref={resultRef}>
+        {solved &&
+          (next ? (
+            <BigButton to={pointUrl(route.id, next.id)} icon="route" testID="point-next">
+              К следующей точке
+            </BigButton>
+          ) : (
+            <BigButton to={finishUrl(route.id)} icon="flag" testID="point-next">
+              Завершить тропу
+            </BigButton>
+          ))}
+      </div>
     </Screen>
   )
 }
