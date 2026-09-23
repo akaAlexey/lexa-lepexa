@@ -1,6 +1,9 @@
 import { defineConfig, devices } from '@playwright/test'
 
-const PORT = 4173
+// Свой порт у каждого параллельного агента: reuseExistingServer иначе подхватит чужую сборку.
+const PORT = Number(process.env.E2E_PORT ?? 4173)
+// Скриншоты для документации — с настоящей подложкой (E2E_TILES=openfreemap), тесты — без сети.
+const TILES = process.env.E2E_TILES ?? 'none'
 
 /**
  * E2E в двух вьюпортах: телефон 360 px (mobile-first) и ноутбук 1366 px.
@@ -36,7 +39,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `npm run build:e2e && npx vite preview --port ${PORT} --strictPort`,
+    command: `VITE_TILES=${TILES} npm run build:e2e -- --outDir dist-e2e-${PORT} && npx vite preview --outDir dist-e2e-${PORT} --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

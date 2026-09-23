@@ -6,7 +6,12 @@ import { test as base, expect, type Page, type TestInfo } from '@playwright/test
  * Снимается видимая область — так, как экран видит человек (фиксированное меню на месте).
  */
 export async function snap(page: Page, testInfo: TestInfo, name: string) {
-  await page.screenshot({ path: `e2e/screenshots/${testInfo.project.name}/${name}.png` })
+  const dir = process.env.SHOTS_DIR ?? 'e2e/screenshots'
+  if (process.env.E2E_TILES === 'openfreemap') {
+    // для документации ждём, пока догрузится подложка карты
+    await page.waitForLoadState('networkidle').catch(() => undefined)
+  }
+  await page.screenshot({ path: `${dir}/${testInfo.project.name}/${name}.png` })
 }
 
 /** Автоматическая проверка доступности (WCAG 2.1 AA) на текущем экране. */
