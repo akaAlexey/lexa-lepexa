@@ -1,7 +1,5 @@
 import type { RouteObject } from 'react-router'
-import { NotImplementedScreen } from '../../app/NotImplementedScreen.tsx'
+import { DemoConsoleScreen } from './DemoConsoleScreen.tsx'
 
 /** Скрытый демо-пульт: не в меню, открывается по адресу /demo. */
-export const routes: RouteObject[] = [
-  { path: 'demo', element: <NotImplementedScreen what="Демо-пульт" /> },
-]
+export const routes: RouteObject[] = [{ path: 'demo', element: <DemoConsoleScreen /> }]

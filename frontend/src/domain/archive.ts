@@ -3,7 +3,7 @@
  * Доменная логика фиксируется тестами уже сейчас; сущность попадёт в контракт вместе с модулем.
  */
 import type { LatLon } from '../contract/schemas.ts'
-import { notImplemented } from './notImplemented.ts'
+import { distanceKm } from './geo.ts'
 
 export type ArchiveStatus = 'pending' | 'verified' | 'rejected'
 
@@ -16,24 +16,30 @@ export interface ArchiveNote extends LatLon {
 
 export type ArchiveActor = 'family' | 'volunteer' | 'commander' | 'verifier'
 
+const VERIFIERS: ReadonlySet<ArchiveActor> = new Set(['verifier', 'commander'])
+
 /** Подтверждать могут краевед/учитель/музей и поисковый отряд (командир). */
 export function canVerify(actor: ArchiveActor): boolean {
-  return notImplemented(`canVerify(${actor})`)
+  return VERIFIERS.has(actor)
 }
 
-/** Решение по заметке. Бросает ошибку, если прав нет или заметка уже рассмотрена. */
+/** Решение по заметке. Бросает ошибку, если прав нет или заметка уже рассмотрена. Исходную не меняет. */
 export function reviewNote(
   note: ArchiveNote,
   actor: ArchiveActor,
   decision: 'verified' | 'rejected',
   reviewer: string,
 ): ArchiveNote {
-  return notImplemented(`reviewNote(${note.id}, ${actor}, ${decision}, ${reviewer})`)
+  if (!canVerify(actor)) {
+    throw new Error('Нет прав на проверку: подтверждают краевед или поисковый отряд')
+  }
+  if (note.status !== 'pending') throw new Error('Заметка уже рассмотрена')
+  return { ...note, status: decision, verifiedBy: reviewer }
 }
 
 /** Значок «Подтверждено» показывается только у проверенных заметок. */
 export function hasConfirmedBadge(note: ArchiveNote): boolean {
-  return notImplemented(`hasConfirmedBadge(${note.id})`)
+  return note.status === 'verified'
 }
 
 /** «Помоги проверить»: непроверенные заметки рядом с точкой маршрута (по умолчанию 500 м), ближние первыми. */
@@ -42,5 +48,10 @@ export function notesToCheckNear(
   notes: readonly ArchiveNote[],
   radiusKm = 0.5,
 ): ArchiveNote[] {
-  return notImplemented(`notesToCheckNear(${point.lat}, ${notes.length}, ${radiusKm})`)
+  return notes
+    .filter((n) => n.status === 'pending')
+    .map((n) => ({ note: n, km: distanceKm(point, n) }))
+    .filter(({ km }) => km <= radiusKm)
+    .sort((a, b) => a.km - b.km)
+    .map(({ note }) => note)
 }
