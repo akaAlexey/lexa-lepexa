@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import type { AppNotification, Subscription } from '../contract/schemas.ts'
 import { Icon } from '../ui/Icon.tsx'
@@ -31,6 +31,19 @@ export function Toaster() {
 
   const dismiss = (id: string) => setItems((prev) => prev.filter((i) => i.id !== id))
   const [current, ...rest] = items
+  const toastRef = useRef<HTMLDivElement>(null)
+
+  // Escape закрывает уведомление, когда фокус внутри него
+  useEffect(() => {
+    if (!current) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && toastRef.current?.contains(document.activeElement)) {
+        setItems((prev) => prev.filter((i) => i.id !== current.id))
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [current])
 
   return (
     <div className={s.toasts}>
@@ -42,10 +55,10 @@ export function Toaster() {
         <div
           key={current.id}
           className={s.toast}
+          ref={toastRef}
           role="group"
           aria-label="Уведомление"
           data-testid="toast"
-          onKeyDown={(e) => e.key === 'Escape' && dismiss(current.id)}
         >
           <Icon name="bell" className={s.toastIcon} />
           <div className={s.toastBody}>
