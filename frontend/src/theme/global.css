@@ -28,6 +28,17 @@ body {
   margin: 0;
 }
 
+/* Прокрутка к элементу учитывает нижнее меню на телефоне — оно не закрывает цель. */
+html {
+  scroll-padding-bottom: calc(var(--nav-height) + 1rem);
+}
+
+@media (min-width: 64rem) {
+  html {
+    scroll-padding-bottom: 1rem;
+  }
+}
+
 body {
   min-height: 100dvh;
   font-family: var(--font-body);

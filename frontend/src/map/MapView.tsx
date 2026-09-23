@@ -30,6 +30,8 @@ export interface MapViewProps {
   /** Линия маршрута, рисуется пунктиром «след танка». */
   route?: LatLon[]
   onMarkerSelect?: (id: string) => void
+  /** Подобрать масштаб так, чтобы все метки и маршрут поместились в кадр. */
+  fitToContent?: boolean
   testID: string
 }
 
@@ -47,6 +49,7 @@ export function MapView({
   markers = NO_MARKERS,
   route,
   onMarkerSelect,
+  fitToContent = false,
   testID,
 }: MapViewProps) {
   const container = useRef<HTMLElement>(null)
@@ -118,17 +121,6 @@ export function MapView({
       ;(existing as GeoJSONSource).setData(data)
       return
     }
-    if (route && route.length > 1) {
-      const lons = route.map((p) => p.lon)
-      const lats = route.map((p) => p.lat)
-      map.fitBounds(
-        [
-          [Math.min(...lons), Math.min(...lats)],
-          [Math.max(...lons), Math.max(...lats)],
-        ],
-        { padding: 48, animate: false },
-      )
-    }
     map.addSource(ROUTE_SOURCE, { type: 'geojson', data })
     // «След танка»: две пунктирные колеи по бокам линии маршрута.
     for (const offset of [-3, 3]) {
@@ -146,6 +138,21 @@ export function MapView({
       })
     }
   }, [map, route])
+
+  useEffect(() => {
+    if (!map || !fitToContent) return
+    const points = [...markers, ...(route ?? [])]
+    if (points.length < 2) return
+    const lons = points.map((p) => p.lon)
+    const lats = points.map((p) => p.lat)
+    map.fitBounds(
+      [
+        [Math.min(...lons), Math.min(...lats)],
+        [Math.max(...lons), Math.max(...lats)],
+      ],
+      { padding: 48, animate: false, maxZoom: 16 },
+    )
+  }, [map, markers, route, fitToContent])
 
   if (failed) {
     return (

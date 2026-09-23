@@ -41,6 +41,7 @@ function BattleMap({ sites, graves }: { sites: LastBattleSite[]; graves: Grave[]
       center={region.mapCenter}
       zoom={region.mapZoom}
       markers={markers}
+      fitToContent
       testID="battle-map"
     />
   )

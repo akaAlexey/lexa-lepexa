@@ -42,6 +42,7 @@ function RouteOverview({ route }: { route: Route }) {
         zoom={14}
         route={route.path}
         markers={markers}
+        fitToContent
         testID="trail-map"
       />
       <ol aria-label="Точки маршрута">
