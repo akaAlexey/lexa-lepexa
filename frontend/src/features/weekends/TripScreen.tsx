@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { ApiError } from '../../api/client.ts'
 import { QueryState } from '../../app/QueryState.tsx'
+import { ShareButton } from '../../app/ShareButton.tsx'
 import { useServices } from '../../app/services.tsx'
 import type { Trip } from '../../contract/schemas.ts'
 import { checklistProgress, toggleChecklistItem } from '../../domain/checklist.ts'
@@ -119,6 +120,11 @@ function TripDetails({ trip }: { trip: Trip }) {
       </p>
 
       <Checklist trip={trip} />
+      <ShareButton
+        title={`Выезд с поисковиками: ${trip.title}`}
+        text={`${formatDayRu(trip.date)} — «Выходные с поисковиком»`}
+        testID="trip-share"
+      />
     </Screen>
   )
 }

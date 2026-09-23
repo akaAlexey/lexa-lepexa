@@ -8,7 +8,7 @@ import {
   useDemoDate,
 } from './helpers.ts'
 
-/** Функции из единого макета команды: «Истории», коллективные заявки, «Где я?». */
+/** Функции из единого макета команды и дизайна: «Истории», коллективные заявки, «Где я?», хроника, «Поделиться». */
 
 test.describe('Новые экраны: адаптив, доступность, одна главная кнопка', () => {
   const SCREENS = [
@@ -16,6 +16,7 @@ test.describe('Новые экраны: адаптив, доступность, 
     { url: '/archive/new', main: 'story-send' },
     { url: '/archive/ST01', main: 'story-tell-own' },
     { url: '/weekends/W01/group', main: 'group-send' },
+    { url: '/chronicle', main: 'chronicle-tell' },
   ] as const
 
   for (const { url, main } of SCREENS) {
@@ -107,4 +108,33 @@ test('«Где я?» на карте тропы: метка и расстоян�
   // карта перестраивает кадр под новую метку — даём программному рендеру дорисовать маршрут
   await page.waitForTimeout(800)
   await snap(page, testInfo, 'merge-09-trail-locate')
+})
+
+test('хроника: события по годам, фильтр и выбор события на карте', async ({ page }, testInfo) => {
+  await startAs(page, 'family')
+  await page.getByTestId('tab-archive').click()
+  await page.getByTestId('archive-chronicle').click()
+  await expect(page.getByRole('heading', { level: 2, name: '1941 оборона' })).toBeVisible()
+  await expect(page.getByTestId('chronicle-map')).toHaveAttribute('data-ready', 'true')
+  await page.getByTestId('year-1943').click()
+  await expect(page.getByRole('heading', { level: 2, name: '1941 оборона' })).toHaveCount(0)
+  const marker = page.locator('[data-testid^="marker-"]').first()
+  await marker.click()
+  await expectNoA11yViolations(page)
+  await page.waitForTimeout(800)
+  await snap(page, testInfo, 'merge-10-chronicle')
+})
+
+test('«Поделиться» на карточке места: ссылка или системное меню', async ({
+  page,
+  context,
+}, testInfo) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  await startAs(page, 'volunteer')
+  await page.goto('/last-battle/S01')
+  await page.getByTestId('site-share').click()
+  await expect(page.getByTestId('site-share-result')).toContainText('Ссылка скопирована')
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(/\/last-battle\/S01$/)
+  await page.getByTestId('site-share').scrollIntoViewIfNeeded()
+  await snap(page, testInfo, 'merge-11-share')
 })

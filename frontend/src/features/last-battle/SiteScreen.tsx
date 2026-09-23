@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 import { ApiError } from '../../api/client.ts'
 import { QueryState } from '../../app/QueryState.tsx'
+import { ShareButton } from '../../app/ShareButton.tsx'
 import { useApi } from '../../app/services.tsx'
 import type { LastBattleSite, SiteStatus } from '../../contract/schemas.ts'
 import { describeFighters, NOTIFY_RADIUS_KM } from '../../domain/lastBattle.ts'
@@ -139,6 +140,11 @@ function SiteCard({ site, notified }: { site: LastBattleSite; notified: number |
       )}
       <p data-testid="site-volunteers">Готовы помочь: {site.volunteersReady}</p>
       <SourceList sources={site.sources} testID="site-sources" />
+      <ShareButton
+        title={`Последний бой: ${site.placeName}`}
+        text="Нужна помощь в увековечении памяти бойцов"
+        testID="site-share"
+      />
       <p>
         <Link to="/last-battle">Все места на карте</Link>
       </p>

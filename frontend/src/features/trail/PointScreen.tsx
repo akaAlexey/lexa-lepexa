@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
+import { ShareButton } from '../../app/ShareButton.tsx'
 import type { Route, RoutePoint } from '../../contract/schemas.ts'
 import { checkAnswer } from '../../domain/trail.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
@@ -74,6 +75,11 @@ function PointCard({ route, point, index }: { route: Route; point: RoutePoint; i
         <p data-testid="point-story">{point.story}</p>
         <SourceList sources={point.sources} testID="point-sources" />
       </Card>
+      <ShareButton
+        title={`${point.title} — ${route.title}`}
+        text="Точка семейного маршрута «Тропа памяти»"
+        testID="point-share"
+      />
 
       <section
         className={s.task}

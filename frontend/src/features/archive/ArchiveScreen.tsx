@@ -81,6 +81,11 @@ export function ArchiveScreen() {
                   </section>
                 )
               )}
+              <p>
+                <Link to="/chronicle" className={s.chronicleLink} data-testid="archive-chronicle">
+                  Хроника боёв 1941–1943 — события по годам на карте
+                </Link>
+              </p>
               <section aria-labelledby="archive-published">
                 <h2 id="archive-published">Проверенные истории</h2>
                 <StoryList label="Проверенные истории" stories={published} />

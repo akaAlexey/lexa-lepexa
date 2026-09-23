@@ -90,3 +90,10 @@
   gap: var(--space-3);
   margin-top: var(--space-4);
 }
+
+.chronicleLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  font-weight: 700;
+}

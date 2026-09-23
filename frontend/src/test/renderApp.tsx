@@ -34,6 +34,7 @@ export function renderApp(
       show: () => undefined,
     },
     storage,
+    share: { share: async () => 'copied' },
     ...overrides,
   }
   const router = createMemoryRouter(appRoutes, { initialEntries: [url] })

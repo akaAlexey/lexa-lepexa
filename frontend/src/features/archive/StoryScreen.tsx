@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 import { ApiError } from '../../api/client.ts'
 import { QueryState } from '../../app/QueryState.tsx'
+import { ShareButton } from '../../app/ShareButton.tsx'
 import { useRole } from '../../app/RoleContext.tsx'
 import { useApi } from '../../app/services.tsx'
 import type { ArchiveStory } from '../../contract/schemas.ts'
@@ -158,6 +159,13 @@ function StoryCard({ story, sent }: { story: ArchiveStory; sent: boolean }) {
         <p className={s.meta} data-testid="story-verified-by">
           Проверил: {story.verifiedBy}
         </p>
+      )}
+      {story.status === 'verified' && (
+        <ShareButton
+          title={story.title}
+          text="История из народного архива «Тропа памяти»"
+          testID="story-share"
+        />
       )}
       {reviewable ? (
         <ReviewPanel story={story} />

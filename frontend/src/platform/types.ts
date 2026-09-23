@@ -22,6 +22,14 @@ export interface NotifyService {
   show(n: { title: string; body: string; url?: string }): void
 }
 
+/** shared — открылось системное «Поделиться», copied — ссылка в буфере, unsupported — ни то ни другое. */
+export type ShareResult = 'shared' | 'copied' | 'unsupported'
+
+export interface ShareService {
+  /** Поделиться ссылкой на экран: системное меню на телефоне, копирование ссылки на ноутбуке. */
+  share(item: { title: string; text?: string; url: string }): Promise<ShareResult>
+}
+
 export interface StorageService {
   get<T>(key: string): T | undefined
   set<T>(key: string, value: T): void
@@ -34,4 +42,5 @@ export interface Platform {
   geo: GeoService
   notify: NotifyService
   storage: StorageService
+  share: ShareService
 }
