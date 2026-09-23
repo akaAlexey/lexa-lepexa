@@ -32,6 +32,7 @@ function BattleMap({ sites, graves }: { sites: LastBattleSite[]; graves: Grave[]
         icon: 'grave' as const,
         label: `Захоронение: ${g.fullName}, ${g.unit}`,
         color: tokens.color.map.grave,
+        size: 'small' as const,
       })),
       ...sites.map((site) => ({
         id: `${SITE_MARKER_PREFIX}${site.id}`,

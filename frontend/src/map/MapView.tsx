@@ -18,6 +18,8 @@ export interface MapMarker {
   label: string
   icon: IconName
   color: string
+  /** Компактная метка для плотного фонового слоя (захоронения), чтобы не перекрывать главные. */
+  size?: 'normal' | 'small'
 }
 
 export interface MapViewProps {
@@ -175,14 +177,14 @@ export function MapView({
         createPortal(
           <button
             type="button"
-            className={s.marker}
+            className={marker.size === 'small' ? s.markerSmall : s.marker}
             style={{ color: marker.color }}
             aria-label={marker.label}
             title={marker.label}
             data-testid={`marker-${marker.id}`}
             onClick={() => onMarkerSelect?.(marker.id)}
           >
-            <Icon name={marker.icon} size={1.6} />
+            <Icon name={marker.icon} size={marker.size === 'small' ? 1 : 1.6} />
           </button>,
           el,
           marker.id,
