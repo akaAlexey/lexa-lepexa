@@ -31,3 +31,24 @@ export const test = base.extend<{ consoleErrors: string[] }>({
     { auto: true },
   ],
 })
+
+/** Демо-«сегодня»: пятница 2 октября 2026, 12:00 по Москве. «Завтра» — суббота 3 октября. */
+export async function useDemoDate(page: Page) {
+  await page.clock.setFixedTime(new Date('2026-10-02T09:00:00Z'))
+}
+
+type Role = 'family' | 'volunteer' | 'commander' | 'verifier'
+
+/** Старт сценария: выбор роли на стартовом экране — первое нажатие. */
+export async function startAs(page: Page, role: Role) {
+  await page.goto('/')
+  await page.getByTestId(`role-${role}`).click()
+}
+
+/** Нет горизонтальной прокрутки: вёрстка помещается в ширину экрана. */
+export async function expectNoHorizontalScroll(page: Page) {
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  )
+  expect(overflow, 'горизонтальная прокрутка, px').toBeLessThanOrEqual(0)
+}
