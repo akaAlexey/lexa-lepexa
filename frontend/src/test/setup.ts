@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup } from '@testing-library/react'
+import { cleanup, configure } from '@testing-library/react'
 import { afterEach, vi } from 'vitest'
+
+// Экран рендерится с приложением целиком; под нагрузкой первый рендер дольше секунды по умолчанию.
+configure({ asyncUtilTimeout: 3000 })
 
 afterEach(() => cleanup())
 
