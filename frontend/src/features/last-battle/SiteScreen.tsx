@@ -17,7 +17,8 @@ import { Screen } from '../../ui/Screen.tsx'
 import { SourceList } from '../../ui/SourceList.tsx'
 import { StatusBadge } from '../../ui/StatusBadge.tsx'
 import type { SiteCreatedState } from './NewSiteScreen.tsx'
-import { SiteStatusAction, StatusChanged, statusActionFor } from './SiteStatusAction.tsx'
+import { SiteStatusAction, StatusChanged } from './SiteStatusAction.tsx'
+import { statusActionFor } from './statusAction.ts'
 import s from './lastBattle.module.css'
 
 /** Подъём нужен, пока останки не подняты. */

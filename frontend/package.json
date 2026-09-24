@@ -17,6 +17,7 @@
     "e2e": "playwright test",
     "fixtures": "tsx scripts/build-fixtures.ts",
     "contract": "tsx scripts/gen-openapi.ts",
+    "memorials": "tsx scripts/fetch-memorials.ts",
     "verify": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run e2e",
     "tunnel": "bash scripts/tunnel.sh",
     "deploy": "bash scripts/deploy.sh",

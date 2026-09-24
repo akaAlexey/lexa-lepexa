@@ -60,6 +60,18 @@ export const Grave = entity(
   z.object({ id, lat, lon, fullName: z.string().min(1), unit: z.string().min(1), demo }),
 )
 
+export const MemorialKind = entity(
+  'MemorialKind',
+  'Тип памятника: братская могила, вечный огонь, техника, памятник или стела',
+  z.enum(['grave', 'flame', 'vehicle', 'monument']),
+)
+
+export const Memorial = entity(
+  'Memorial',
+  'Памятник Великой Отечественной войны. Источник — OpenStreetMap (historic=memorial|monument)',
+  z.object({ id, lat, lon, name: z.string().min(1), kind: MemorialKind, osmUrl: z.url() }),
+)
+
 export const Battle = entity(
   'Battle',
   'Бой (mock_battles.json: дата боя, текст подвига, ссылка на архив)',
@@ -447,6 +459,8 @@ export const Ack = entity('Ack', 'Подтверждение действия', 
 export type LatLon = z.infer<typeof LatLon>
 export type Source = z.infer<typeof Source>
 export type Grave = z.infer<typeof Grave>
+export type Memorial = z.infer<typeof Memorial>
+export type MemorialKind = z.infer<typeof MemorialKind>
 export type Battle = z.infer<typeof Battle>
 export type Team = z.infer<typeof Team>
 export type PointKind = z.infer<typeof PointKind>

@@ -2,13 +2,13 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useApi } from '../../app/services.tsx'
 import type { LastBattleSite, SiteStatus, Source } from '../../contract/schemas.ts'
-import { can, type RoleId } from '../../functions/core/permissions.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Button } from '../../ui/Button.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { SelectField, TextField } from '../../ui/Field.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { SITE_STATUS_META } from '../../ui/siteStatus.ts'
+import type { StatusAction } from './statusAction.ts'
 
 /** Сообщение после смены статуса. Живёт в карточке: после смены блок действия исчезает. */
 export function StatusChanged({ status }: { status: SiteStatus }) {
@@ -17,21 +17,6 @@ export function StatusChanged({ status }: { status: SiteStatus }) {
       Статус изменён: «{SITE_STATUS_META[status].label}». Источник добавлен в карточку.
     </Notice>
   )
-}
-
-export type StatusAction = 'confirm' | 'raise'
-
-/**
- * Какой шаг статуса доступен роли: краевед подтверждает место по архиву,
- * командир отряда отмечает подъём. Статусы идут только вперёд и по одному шагу.
- */
-export function statusActionFor(
-  role: RoleId | undefined,
-  status: SiteStatus,
-): StatusAction | undefined {
-  if (status === 'found_needs_check' && can(role, 'place.confirmArchive')) return 'confirm'
-  if (status === 'archive_confirmed' && can(role, 'place.markRaised')) return 'raise'
-  return undefined
 }
 
 type ArchiveKind = Extract<

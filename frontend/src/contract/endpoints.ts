@@ -29,6 +29,12 @@ export const endpoints = {
     summary: 'Захоронения (данные жюри)',
     response: z.array(s.Grave),
   }),
+  listMemorials: endpoint({
+    method: 'GET',
+    path: '/memorials',
+    summary: 'Памятники войны в регионе (OpenStreetMap, npm run memorials)',
+    response: z.array(s.Memorial),
+  }),
   listBattles: endpoint({
     method: 'GET',
     path: '/battles',

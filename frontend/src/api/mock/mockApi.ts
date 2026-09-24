@@ -14,6 +14,7 @@ import {
 } from '../../domain/lastBattle.ts'
 import { ApiError, type ApiClient } from '../client.ts'
 import jury from '../fixtures/jury.generated.json'
+import osm from '../fixtures/memorials.osm.json'
 import * as seed from '../fixtures/seed.ts'
 
 export interface MockOptions {
@@ -111,6 +112,8 @@ export function createMockApi(options: MockOptions = {}): ApiClient {
       db = createDb()
     },
     listGraves: () => respond(() => db.graves),
+    // Настоящие данные OSM, не демо: только чтение, в демо-базу не копируем
+    listMemorials: () => respond(() => endpoints.listMemorials.response.parse(osm.memorials)),
     listBattles: () => respond(() => db.battles),
     listTeams: () => respond(() => db.teams),
     getSearchStats: () =>
