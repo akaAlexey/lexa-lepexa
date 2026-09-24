@@ -1,6 +1,5 @@
 from alembic import op
 import sqlalchemy as sa
-from geoalchemy2 import Geography
 
 revision = "0002_full_domain_schema"
 down_revision = "0001_initial"
@@ -51,7 +50,8 @@ def upgrade():
         sa.Column("type", sa.String(50), nullable=False),
         sa.Column("description", sa.Text()),
         sa.Column("event_date", sa.Date()),
-        sa.Column("location", Geography(geometry_type="POINT", srid=4326), nullable=False),
+        sa.Column("lat", sa.Float(), nullable=False),
+        sa.Column("lon", sa.Float(), nullable=False),
         sa.Column("status", sa.String(50), nullable=False, server_default="PENDING"),
         sa.Column("created_by", sa.String(50), sa.ForeignKey("users.id")),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
@@ -82,7 +82,8 @@ def upgrade():
         sa.Column("name", sa.String(255), nullable=False),
         sa.Column("description", sa.Text()),
         sa.Column("type", sa.String(50), nullable=False),
-        sa.Column("location", Geography(geometry_type="POINT", srid=4326), nullable=False),
+        sa.Column("lat", sa.Float(), nullable=False),
+        sa.Column("lon", sa.Float(), nullable=False),
         sa.Column("event_date", sa.Date()),
         sa.Column("status", sa.String(50), nullable=False, server_default="PENDING"),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
@@ -116,7 +117,8 @@ def upgrade():
     op.create_table(
         "last_battle_cases",
         sa.Column("id", sa.String(50), primary_key=True),
-        sa.Column("location", Geography(geometry_type="POINT", srid=4326), nullable=False),
+        sa.Column("lat", sa.Float(), nullable=False),
+        sa.Column("lon", sa.Float(), nullable=False),
         sa.Column("description", sa.Text()),
         sa.Column("status", sa.String(50), nullable=False),
         sa.Column("source_description", sa.Text()),
@@ -214,7 +216,8 @@ def upgrade():
         sa.Column("team_id", sa.String(50), sa.ForeignKey("search_teams.id"), nullable=False),
         sa.Column("title", sa.String(255), nullable=False),
         sa.Column("description", sa.Text()),
-        sa.Column("location", Geography(geometry_type="POINT", srid=4326), nullable=False),
+        sa.Column("lat", sa.Float(), nullable=False),
+        sa.Column("lon", sa.Float(), nullable=False),
         sa.Column("start_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("end_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("max_participants", sa.Integer()),
@@ -277,8 +280,6 @@ def upgrade():
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     )
 
-    for table in ("historical_points", "historical_submissions", "last_battle_cases", "volunteer_events"):
-        op.create_index(f"ix_{table}_location", table, ["location"], postgresql_using="gist")
     op.create_index("ix_users_email", "users", ["email"])
     op.create_index("ix_users_username", "users", ["username"])
     op.create_index("ix_notifications_user_id", "notifications", ["user_id"])
