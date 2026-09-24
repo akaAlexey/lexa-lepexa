@@ -40,6 +40,15 @@ function Checklist({ tripId }: { tripId: string }) {
   return <p data-testid="checked">{checked.join(',') || 'пусто'}</p>
 }
 
+function Role() {
+  const [role, setRole] = useDeviceMemory(memory.role)
+  return (
+    <button type="button" data-testid="role" onClick={() => setRole(undefined)}>
+      {role ?? 'нет'}
+    </button>
+  )
+}
+
 describe('useDeviceMemory', () => {
   it('запись видна всем компонентам слота и сохраняется на устройстве', async () => {
     const { storage } = setup(
@@ -66,5 +75,13 @@ describe('useDeviceMemory', () => {
       ),
     )
     expect(screen.getByTestId('checked')).toHaveTextContent('gloves')
+  })
+
+  it('undefined забывает значение: в хранилище ничего не остаётся', async () => {
+    const { storage } = setup(<Role />)
+    storage.set('role', 'family')
+    await userEvent.click(screen.getByTestId('role'))
+    expect(storage.get('role')).toBeUndefined()
+    expect(screen.getByTestId('role')).toHaveTextContent('нет')
   })
 })
