@@ -40,7 +40,9 @@ jobs:
         run: npm run build -- --base=/lexa-lepexa/
         env:
           VITE_API_MODE: live
-          VITE_API_URL: https://a49734-6295.q.d-f.pw/api/v1
+          # Адрес API — переменная репозитория API_URL (Settings → Secrets and variables → Variables).
+          # Бэкенд должен разрешать CORS для https://team-shpilit.github.io (переменная CORS_ORIGINS).
+          VITE_API_URL: ${{ vars.API_URL || 'https://a49734-6295.q.d-f.pw/api/v1' }}
           VITE_TILES: openfreemap
 
       - name: SPA fallback for deep links

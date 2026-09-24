@@ -1,0 +1,126 @@
+name: Fullstack checks
+
+# Фронт и бэк проверяются вместе: миграции на настоящем Postgres, затем все эндпоинты
+# живого сервера сверяются со схемами контракта фронта (как их проверяет live-адаптер в браузере).
+on:
+  push:
+    branches: [main, frontend, integration/fullstack]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: fullstack-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Бэкенд — линтер и тесты
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check app tests migrations/env.py migrations/versions/0003_contract_tables.py start.py
+      - run: ruff format --check app tests migrations/env.py migrations/versions/0003_contract_tables.py start.py
+      - run: pytest -q
+
+  frontend:
+    name: Фронтенд — типы, линтер, тесты
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm test
+
+  contract:
+    name: Связка — Postgres, миграции, сверка контракта
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: memory_trail
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d memory_trail"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/memory_trail
+      SSE_POLL_SECONDS: '0.5'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Демо-данные бэка совпадают с фикстурами фронта
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run seed:backend
+          git diff --exit-code ../backend/app/seed_data.json || {
+            echo "::error::backend/app/seed_data.json устарел — выполните npm run seed:backend во frontend/"; exit 1; }
+
+      - name: Миграции вверх, вниз и снова вверх
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt
+          alembic upgrade head
+          alembic downgrade base
+          alembic upgrade head
+
+      - name: Демо-данные заливаются и не дублируются
+        working-directory: backend
+        run: |
+          python -m app.seed
+          python -m app.seed | tee seed.log
+          grep -q "добавлено записей — 0" seed.log
+
+      - name: Запуск API
+        working-directory: backend
+        run: |
+          nohup python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 > api.log 2>&1 &
+          for i in $(seq 1 30); do curl -fs http://127.0.0.1:8000/health && exit 0; sleep 1; done
+          cat api.log; exit 1
+
+      - name: Сверка всех эндпоинтов и потока уведомлений с контрактом фронта
+        working-directory: frontend
+        run: npm run contract:check -- http://127.0.0.1:8000/api/v1
+
+      - name: Лог API при ошибке
+        if: failure()
+        run: cat backend/api.log || true
+
+  docker:
+    name: Docker — образы собираются
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose build
