@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 import openapiFile from '../../../docs/openapi.json'
 import jury from '../api/fixtures/jury.generated.json'
+import osm from '../api/fixtures/memorials.osm.json'
 import * as seed from '../api/fixtures/seed.ts'
 import { pathLengthKm } from '../domain/geo.ts'
 import { buildOpenApi } from './openapi.ts'
@@ -25,12 +26,27 @@ describe('контракт и фикстуры', () => {
     ).toContain('Высота')
   })
 
+  it('памятники из OpenStreetMap проходят схему, лежат в Орловской области и ведут на OSM', () => {
+    const memorials = z.array(s.Memorial).parse(osm.memorials)
+    expect(memorials.length).toBeGreaterThan(50)
+    for (const m of memorials) {
+      expect(m.lat).toBeGreaterThan(51.9)
+      expect(m.lat).toBeLessThan(53.7)
+      expect(m.lon).toBeGreaterThan(34.7)
+      expect(m.lon).toBeLessThan(38.2)
+      expect(m.osmUrl).toMatch(/^https:\/\/www\.openstreetmap\.org\/(node|way|relation)\/\d+$/)
+    }
+    // Памятник морякам-тихоокеанцам из текста кейса
+    expect(memorials.some((m) => /Тихоокеанского флота/.test(m.name))).toBe(true)
+  })
+
   it('демо-контент проходит схемы, у каждого факта есть источник', () => {
     z.array(s.Route).parse(seed.routes)
     z.array(s.Trip).parse(seed.trips)
     z.array(s.Fundraiser).parse(seed.fundraisers)
     z.array(s.VolunteerRequest).parse(seed.requests)
     z.array(s.GroupApplication).parse(seed.groupApplications)
+    z.array(s.LivePhoto).parse(seed.livePhotos)
     const stories = z.array(s.ArchiveStory).parse(seed.stories)
     // Подтверждённая история — всегда с источником
     for (const story of stories.filter((x) => x.status === 'verified'))

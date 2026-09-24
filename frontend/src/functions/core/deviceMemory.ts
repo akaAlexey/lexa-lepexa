@@ -64,6 +64,27 @@ function perId<T>(make: (id: string) => MemorySlot<T>): (id: string) => MemorySl
 const stringList = (raw: unknown): string[] | undefined =>
   Array.isArray(raw) ? raw.filter((x): x is string => typeof x === 'string') : undefined
 
+/** «Живое фото», отправленное с этого устройства: превью снимка и текст речи. */
+export interface MyLivePhoto {
+  id: string
+  name: string
+  speech: string
+  /** Уменьшенный снимок (data URL). */
+  photo: string
+  createdAt: string
+}
+
+const livePhotoList = (raw: unknown): MyLivePhoto[] | undefined =>
+  Array.isArray(raw)
+    ? raw.filter(
+        (x): x is MyLivePhoto =>
+          typeof x === 'object' &&
+          x !== null &&
+          typeof (x as MyLivePhoto).id === 'string' &&
+          typeof (x as MyLivePhoto).photo === 'string',
+      )
+    : undefined
+
 /** Все слоты приложения. Новый слот — только здесь (ключи не должны совпадать). */
 export const memory = {
   /** Роль без регистрации. */
@@ -78,6 +99,8 @@ export const memory = {
   myGroups: memorySlot<string[]>('groups:mine', []),
   /** Истории, отправленные с этого устройства. */
   myStories: memorySlot<string[]>('archive:mine', []),
+  /** «Живые фото», загруженные с этого устройства и ждущие генерации. */
+  myLivePhotos: memorySlot<MyLivePhoto[]>('live:mine', [], livePhotoList),
   /** Подписка на находки рядом — восстанавливается при старте. */
   subscription: memorySlot<Subscription | undefined>('subscription', undefined),
   /** Демо-геопозиция с пульта. */

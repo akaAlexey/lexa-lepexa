@@ -7,6 +7,7 @@ import type {
   Fundraiser,
   GroupApplication,
   LastBattleSite,
+  LivePhoto,
   LatLon,
   Route,
   Source,
@@ -17,10 +18,6 @@ import type {
 const demoText: Source = {
   kind: 'demo',
   title: 'Демо-текст прототипа, требует проверки краеведом',
-}
-const caseNote: Source = {
-  kind: 'literature',
-  title: 'Историческая справка из кейса хакатона «Маршруты победы»',
 }
 const desantBook: Source = {
   kind: 'literature',
@@ -122,7 +119,7 @@ export const routes: Route[] = [
           answerIndex: 1,
           explanation: 'Три: 9-я, 10-я и 201-я воздушно-десантные бригады.',
         },
-        sources: [caseNote, desantBook],
+        sources: [desantBook],
       },
       {
         id: 'okop',
@@ -186,6 +183,8 @@ export const fundraisers: Fundraiser[] = [
     title: 'Бензин на Вахту Памяти',
     goalRub: 50000,
     collectedRub: 15000,
+    lat: 53.28,
+    lon: 36.57,
     demo: true,
   },
   {
@@ -195,6 +194,41 @@ export const fundraisers: Fundraiser[] = [
     title: 'Экипировать отряд: щупы и металлоискатель',
     goalRub: 40000,
     collectedRub: 9000,
+    lat: 53.21,
+    lon: 36.45,
+    demo: true,
+  },
+  {
+    id: 'F03',
+    teamId: 'T04',
+    purpose: 'raise_fighter',
+    title: 'Поднять бойца: овраг у д. Крупышино',
+    goalRub: 30000,
+    collectedRub: 21000,
+    lat: 52.74,
+    lon: 35.84,
+    demo: true,
+  },
+  {
+    id: 'F04',
+    teamId: 'T02',
+    purpose: 'fuel',
+    title: 'Бензин на разведку у р. Оптуха',
+    goalRub: 80000,
+    collectedRub: 32000,
+    lat: 53.15,
+    lon: 36.33,
+    demo: true,
+  },
+  {
+    id: 'F05',
+    teamId: 'T05',
+    purpose: 'equip',
+    title: 'Экипировать отряд: палатки и аптечки',
+    goalRub: 60000,
+    collectedRub: 12500,
+    lat: 52.97,
+    lon: 36.07,
     demo: true,
   },
 ]
@@ -209,6 +243,8 @@ export const requests: VolunteerRequest[] = [
     roles: [{ role: 'digger', count: 5 }],
     joined: 2,
     fundraiserId: 'F01',
+    lat: 53.28,
+    lon: 36.57,
     createdAt: '2026-09-20T09:00:00Z',
     demo: true,
   },
@@ -310,6 +346,50 @@ export const stories: ArchiveStory[] = [
     reviewNote:
       'Пришлите, пожалуйста, фото письма или номер полевой почты — без источника подтвердить нельзя.',
     createdAt: '2026-09-18T12:00:00Z',
+    demo: true,
+  },
+]
+
+/**
+ * «Живое фото»: ролики — реконструкция ИИ (облачные нейросети, см. frontend/docs/LIVE_PHOTO.md).
+ * Снимки — из открытых архивных публикаций; для размещения у памятника нужно согласие родственников.
+ */
+const openArchivePhoto: Source = {
+  kind: 'archive',
+  title: 'Архивный снимок из открытых публикаций (демо, требует атрибуции)',
+}
+
+export const livePhotos: LivePhoto[] = [
+  {
+    id: 'soldier',
+    title: 'Офицер-победитель',
+    caption: 'Портрет советского офицера, 1945 год. Архивный снимок',
+    speech:
+      'Здравствуй, потомок! Я прошёл эту войну до самой Победы. Мы выстояли, потому что были вместе — весь Советский Союз: и солдат на фронте, и мать у станка, и мальчишка в тылу. Победа досталась нам дорогой ценой. Береги мир, береги память и гордись своей страной. Помни нас!',
+    photoUrl: 'live/soldier.jpg',
+    videoUrl: 'live/soldier.mp4',
+    captionsUrl: 'live/soldier.vtt',
+    targetUrl: 'live/soldier.mind',
+    photoAspect: 716 / 500,
+    animation: 'lip_sync',
+    consent: 'Демо для хакатона. Для публикации нужно согласие родственников',
+    sources: [openArchivePhoto],
+    demo: true,
+  },
+  {
+    id: 'reichstag',
+    title: 'У Рейхстага',
+    caption: 'Советские бойцы у Рейхстага, Берлин, 1945 год. Колоризованный архивный снимок',
+    speech:
+      'Товарищи! Мы дошли до Берлина! Через огонь и потери, от Москвы и Орла — до самого Рейхстага! Враг разбит! Победа за нами! Ура!',
+    photoUrl: 'live/reichstag.jpg',
+    videoUrl: 'live/reichstag.mp4',
+    captionsUrl: 'live/reichstag.vtt',
+    targetUrl: 'live/reichstag.mind',
+    photoAspect: 689 / 959,
+    animation: 'neural_motion',
+    consent: 'Демо для хакатона. Для публикации нужно согласие родственников',
+    sources: [openArchivePhoto],
     demo: true,
   },
 ]

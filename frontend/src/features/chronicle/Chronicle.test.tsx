@@ -17,7 +17,9 @@ describe('хроника боёв', () => {
 
   it('фильтр «1943» оставляет только освобождение; метки на карте — только этого года', async () => {
     renderApp('/chronicle', { role: 'family' })
-    await userEvent.click(await screen.findByTestId('year-1943'))
+    // Памятники вне хронологии — для проверки фильтра лет выключаем их слой
+    await userEvent.click(await screen.findByTestId('layer-memorials'))
+    await userEvent.click(screen.getByTestId('year-1943'))
     expect(
       screen.queryByRole('heading', { level: 2, name: '1941 оборона' }),
     ).not.toBeInTheDocument()
@@ -73,5 +75,35 @@ describe('«Поделиться»', () => {
     ).toBeInTheDocument()
     expect(await screen.findByText('Ожидает проверки')).toBeInTheDocument()
     expect(screen.queryByTestId('story-share')).not.toBeInTheDocument()
+  })
+
+  it('слой «Памятники»: настоящие памятники из OpenStreetMap, карточка с источником по нажатию', async () => {
+    renderApp('/chronicle', { role: 'family' })
+    const map = await screen.findByTestId('chronicle-map')
+    const marker = await within(map).findByRole('button', {
+      name: /Тихоокеанского флота/,
+    })
+    await userEvent.click(marker)
+    const card = screen.getByTestId('memorial-card')
+    expect(card).toHaveTextContent('Тихоокеанского флота')
+    expect(within(card).getByRole('link', { name: 'OpenStreetMap' })).toHaveAttribute(
+      'href',
+      expect.stringMatching(/^https:\/\/www\.openstreetmap\.org\//),
+    )
+    expect(screen.getByTestId('memorial-list')).toHaveTextContent('Данные OpenStreetMap')
+  })
+
+  it('слои включаются и выключаются: без «Памятников» на карте только бои', async () => {
+    renderApp('/chronicle', { role: 'family' })
+    const map = await screen.findByTestId('chronicle-map')
+    expect(
+      await within(map).findAllByRole('button', { name: /^Памятник|^Братская|^Вечный|^Техника/ }),
+    ).not.toHaveLength(0)
+    await userEvent.click(screen.getByTestId('layer-memorials'))
+    expect(screen.getByTestId('layer-memorials')).toHaveAttribute('aria-pressed', 'false')
+    expect(
+      within(map).queryAllByRole('button', { name: /^Памятник|^Братская|^Вечный|^Техника/ }),
+    ).toHaveLength(0)
+    expect(screen.queryByTestId('memorial-list')).not.toBeInTheDocument()
   })
 })
