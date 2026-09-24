@@ -2,7 +2,7 @@ from copy import deepcopy
 from datetime import date,datetime,timezone
 from uuid import uuid4
 import asyncio,json,math
-from fastapi import FastAPI,APIRouter,Depends,Header,HTTPException,Request
+from fastapi import FastAPI,APIRouter,Depends,Header,HTTPException,Request,Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel,ConfigDict,Field,AliasChoices
@@ -162,12 +162,13 @@ async def unsubscribe(id,s=Depends(db)):
     if not x: raise HTTPException(404,detail={"message":"Подписка не найдена"})
     await s.delete(x);await s.commit();return {"ok":True}
 @api.get("/notifications/stream")
-async def stream(request:Request,x_demo_user:str=Header("demo")):
+async def stream(request:Request,x_demo_user:str=Header("demo"),user:str|None=Query(None)):
+    stream_user=user or x_demo_user
     async def gen():
         seen=set()
         while not await request.is_disconnected():
             async with Session() as s:
-                rows=(await s.execute(select(Notification).where(Notification.user_key==x_demo_user).order_by(Notification.created_at))).scalars().all()
+                rows=(await s.execute(select(Notification).where(Notification.user_key==stream_user).order_by(Notification.created_at))).scalars().all()
                 for n in rows:
                     if n.id in seen: continue
                     seen.add(n.id)
