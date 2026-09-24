@@ -35,10 +35,12 @@ jobs:
       - name: Build
         run: npm run build -- --base=/lexa-lepexa/
         env:
-          # Current Deploy-F backend. This is intentionally kept in the workflow
-          # so the Pages build does not depend on a repository Actions variable.
-          VITE_API_MODE: live
-          VITE_API_URL: https://a49782-3772.q-d-f.pw/api/v1
+          # Живой бэкенд — только когда задана переменная репозитория API_URL
+          # (Settings → Secrets and variables → Actions → Variables). Без неё — демо-данные в браузере:
+          # бесплатный туннель меняет адрес и падает, а жюри не должно увидеть пустой сайт.
+          # Бэкенд должен разрешать CORS для https://team-shpilit.github.io (переменная CORS_ORIGINS).
+          VITE_API_MODE: ${{ vars.API_URL && 'live' || 'mock' }}
+          VITE_API_URL: ${{ vars.API_URL }}
           VITE_TILES: openfreemap
 
       - name: SPA fallback for deep links
