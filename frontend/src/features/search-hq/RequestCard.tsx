@@ -6,8 +6,14 @@ import { Button } from '../../ui/Button.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Icon } from '../../ui/Icon.tsx'
-import { formatNumberRu } from './queries.ts'
 import s from './search.module.css'
+
+const numberRu = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 })
+
+/** 15000 → «15 000» (без знака валюты — для «Собрано: 15 000 из 50 000 ₽»). */
+function formatNumberRu(n: number): string {
+  return numberRu.format(n)
+}
 
 interface Props {
   request: VolunteerRequest
@@ -49,12 +55,7 @@ export function RequestCard({
           <label htmlFor={`fund-${r.id}`}>
             Собрано: {formatNumberRu(f.collectedRub)} из {formatNumberRu(f.goalRub)} ₽
           </label>
-          <progress
-            id={`fund-${r.id}`}
-            className={s.progress}
-            max={100}
-            value={fundProgress(f)}
-          />
+          <progress id={`fund-${r.id}`} className={s.progress} max={100} value={fundProgress(f)} />
         </>
       )}
       <div className={s.actions}>

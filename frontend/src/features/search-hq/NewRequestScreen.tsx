@@ -1,37 +1,34 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
-import { useApi } from '../../app/services.tsx'
-import { region } from '../../config/region.ts'
-import type {
-  NewVolunteerRequest,
-  Team,
-  VolunteerRequest,
-  VolunteerRole,
-} from '../../contract/schemas.ts'
-import { todayIso, tomorrowIso } from '../../domain/dates.ts'
+import type { Team, VolunteerRequest, VolunteerRole } from '../../contract/schemas.ts'
 import { formatDayRu } from '../../domain/format.ts'
-import { ROLE_LABELS, validateNewRequest, type RequestErrors } from '../../domain/requests.ts'
+import { ROLE_LABELS } from '../../domain/requests.ts'
+import { paths } from '../../functions/core/paths.ts'
+import {
+  commanderTeam,
+  publishedState,
+  REQUEST_COUNTS,
+  usePublishRequest,
+  useRequests,
+  useTeams,
+} from '../../functions/helpRequests/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { ChoiceChips } from '../../ui/ChoiceChips.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { SelectField, TextField } from '../../ui/Field.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { Screen } from '../../ui/Screen.tsx'
-import { qk, type PublishedState } from './queries.ts'
 import s from './search.module.css'
 
-const COUNTS = [5, 10, 20] as const
 const ROLE_OPTIONS = (Object.keys(ROLE_LABELS) as VolunteerRole[]).map((value) => ({
   value,
   label: ROLE_LABELS[value],
 }))
 
 export function NewRequestScreen() {
-  const api = useApi()
-  const teams = useQuery({ queryKey: qk.teams, queryFn: api.listTeams })
-  const requests = useQuery({ queryKey: qk.requests, queryFn: api.listRequests })
+  const teams = useTeams()
+  const requests = useRequests()
   return (
     <Screen
       title="Набрать волонтёров"
@@ -42,11 +39,9 @@ export function NewRequestScreen() {
         {(teamList) => (
           <QueryState query={requests} what="прошлые заявки">
             {(requestList) => {
-              const team = teamList.find((t) => t.id === region.demo.commanderTeamId)
-              if (!team) return <Notice tone="error">Отряд командира не найден.</Notice>
-              return (
-                <RequestForm team={team} last={requestList.find((r) => r.teamId === team.id)} />
-              )
+              const found = commanderTeam(teamList, requestList)
+              if (!found) return <Notice tone="error">Отряд командира не найден.</Notice>
+              return <RequestForm team={found.team} last={found.last} />
             }}
           </QueryState>
         )}
@@ -56,67 +51,16 @@ export function NewRequestScreen() {
 }
 
 function RequestForm({ team, last }: { team: Team; last: VolunteerRequest | undefined }) {
-  const api = useApi()
-  const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const [now] = useState(() => new Date())
-  const today = todayIso(now)
-  const tomorrow = tomorrowIso(now)
-
-  const [date, setDate] = useState(tomorrow)
-  const [count, setCount] = useState('5')
-  const [role, setRole] = useState<VolunteerRole>('digger')
-  const [place, setPlace] = useState(last?.place ?? '')
-  const [title, setTitle] = useState(last?.title ?? `Набор волонтёров — отряд «${team.name}»`)
-  const [errors, setErrors] = useState<RequestErrors>({})
-  const [sending, setSending] = useState(false)
-  const [failed, setFailed] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
-  const [attempt, setAttempt] = useState(0)
-
-  // После неудачной проверки фокус — на первое поле с ошибкой.
-  useEffect(() => {
-    if (attempt > 0) formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
-  }, [attempt])
-
-  const countNumber = Number(count)
-  const publish = async () => {
-    const input: NewVolunteerRequest = {
-      teamId: team.id,
-      title: title.trim(),
-      date,
-      place: place.trim(),
-      roles: [{ role, count: count.trim() === '' ? 0 : countNumber }],
-    }
-    const found = validateNewRequest(input, today)
-    setErrors(found)
-    setFailed(false)
-    if (Object.keys(found).length > 0) {
-      setAttempt((a) => a + 1)
-      return
-    }
-    setSending(true)
-    try {
-      const created = await api.createRequest({ body: input })
-      queryClient.setQueryData<VolunteerRequest[]>(qk.requests, (old) => [
-        created,
-        ...(old ?? []).filter((r) => r.id !== created.id),
-      ])
-      void queryClient.invalidateQueries({ queryKey: qk.requests })
-      navigate('/search', { state: { publishedId: created.id } satisfies PublishedState })
-    } catch {
-      setFailed(true)
-      setSending(false)
-    }
-  }
-
-  const onSubmit = (e: FormEvent) => {
-    e.preventDefault()
-    void publish()
-  }
+  const form = usePublishRequest(team, last, (created) =>
+    navigate(paths.search(), { state: publishedState(created.id) }),
+  )
+  const { values, errors, today, tomorrow } = form
+  const countNumber = Number(values.count)
 
   return (
-    <form ref={formRef} className={s.form} onSubmit={onSubmit} noValidate>
+    <form ref={formRef} className={s.form} onSubmit={form.submit} noValidate>
       <p className={s.team} data-testid="request-team">
         Отряд «{team.name}» {team.demo && <DemoBadge />}
       </p>
@@ -127,61 +71,62 @@ function RequestForm({ team, last }: { team: Team; last: VolunteerRequest | unde
             { value: today, label: 'Сегодня', testID: 'date-today' },
             { value: tomorrow, label: 'Завтра', testID: 'date-tomorrow' },
           ]}
-          value={date}
-          onChange={setDate}
+          value={values.date}
+          onChange={(v) => form.set('date', v)}
         />
         <p data-testid="request-date-label" aria-live="polite">
-          {formatDayRu(date)}
+          {formatDayRu(values.date)}
         </p>
         {errors.date && <Notice tone="error">{errors.date}</Notice>}
       </div>
       <ChoiceChips
         legend="Сколько людей нужно"
-        options={COUNTS.map((n) => ({ value: n, label: String(n), testID: `count-${n}` }))}
-        value={COUNTS.find((n) => n === countNumber)}
-        onChange={(n) => setCount(String(n))}
+        options={REQUEST_COUNTS.map((n) => ({ value: n, label: String(n), testID: `count-${n}` }))}
+        value={REQUEST_COUNTS.find((n) => n === countNumber)}
+        onChange={(n) => form.set('count', String(n))}
       />
       <TextField
         label="Или своё число"
         type="number"
         inputMode="numeric"
         min={1}
-        value={count}
-        onChange={setCount}
+        value={values.count}
+        onChange={(v) => form.set('count', v)}
         error={errors.count}
         testID="request-count"
       />
       <SelectField
         label="Кто нужен"
-        value={role}
+        value={values.role}
         options={ROLE_OPTIONS}
-        onChange={setRole}
+        onChange={(v) => form.set('role', v)}
         testID="request-role"
       />
       <TextField
         label="Место сбора"
-        value={place}
-        onChange={setPlace}
+        value={values.place}
+        onChange={(v) => form.set('place', v)}
         error={errors.place}
         autoComplete="off"
         testID="request-place"
       />
       <TextField
         label="Название заявки"
-        value={title}
-        onChange={setTitle}
+        value={values.title}
+        onChange={(v) => form.set('title', v)}
         error={errors.title}
         autoComplete="off"
         testID="request-title"
       />
-      {failed && (
+      {form.failed && (
         <Notice tone="error" testID="request-error">
           Не удалось опубликовать заявку. Проверьте связь и попробуйте ещё раз.
         </Notice>
       )}
       <BigButton
-        onClick={() => void publish()}
-        disabled={sending}
+        // главная кнопка — не submit (ui/BigButton), поэтому отправляем форму так же, как Enter
+        onClick={() => formRef.current?.requestSubmit()}
+        disabled={form.sending}
         icon="flag"
         testID="request-publish"
       >
