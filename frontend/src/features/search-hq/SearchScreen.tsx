@@ -23,12 +23,14 @@ import { ChoiceChips } from '../../ui/ChoiceChips.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { DonateDialog } from './DonateDialog.tsx'
 import { FundraiserCard } from './FundraiserCard.tsx'
 import { NeedsMap } from './NeedsMap.tsx'
 import { RequestCard } from './RequestCard.tsx'
 import s from './search.module.css'
+import { paths } from '../../functions/core/paths.ts'
 
 const VIEWS = [
   { value: 'list', label: 'Списком', testID: 'needs-view-list' },
@@ -64,6 +66,11 @@ export function SearchScreen() {
     <Screen
       title="Поисковикам"
       lead="Отрядам нужны люди и средства на экспедиции"
+      back={
+        <BackLink to={paths.events()} testID="back-link">
+          К мероприятиям
+        </BackLink>
+      }
       testID="screen-search"
     >
       {published && (

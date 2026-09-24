@@ -33,6 +33,24 @@ export function gridLines(step = GRID_STEP, b = GRID_BOUNDS) {
   }
 }
 
+/**
+ * Слой сетки добавляется после загрузки карты, под подписи населённых пунктов:
+ * декор не задерживает готовность карты и работает без сети.
+ */
+export function gridLayer(t: Tokens = defaultTokens) {
+  return {
+    source: { type: 'geojson' as const, data: gridLines() },
+    layer: {
+      id: 'grid',
+      type: 'line' as const,
+      source: 'grid',
+      minzoom: 10,
+      paint: { 'line-color': t.color.map.grid, 'line-width': 1 },
+    },
+    beforeId: 'place-label',
+  }
+}
+
 export function buildMapStyle(tiles: TileSource, t: Tokens = defaultTokens): StyleSpecification {
   const c = t.color.map
   const background = {
@@ -40,21 +58,8 @@ export function buildMapStyle(tiles: TileSource, t: Tokens = defaultTokens): Sty
     type: 'background' as const,
     paint: { 'background-color': c.land },
   }
-  const gridSource = { type: 'geojson' as const, data: gridLines() }
-  const grid = {
-    id: 'grid',
-    type: 'line' as const,
-    source: 'grid',
-    minzoom: 10,
-    paint: { 'line-color': c.grid, 'line-width': 1 },
-  }
   if (!tiles.tileJsonUrl) {
-    return {
-      version: 8,
-      name: 'tropa-paper',
-      sources: { grid: gridSource },
-      layers: [background, grid],
-    }
+    return { version: 8, name: 'tropa-paper', sources: {}, layers: [background] }
   }
   const src = 'omt'
   const label = ['coalesce', ['get', 'name:ru'], ['get', 'name']]
@@ -68,7 +73,6 @@ export function buildMapStyle(tiles: TileSource, t: Tokens = defaultTokens): Sty
         url: tiles.tileJsonUrl,
         ...(tiles.attribution ? { attribution: tiles.attribution } : {}),
       },
-      grid: gridSource,
     },
     layers: [
       background,
@@ -188,7 +192,6 @@ export function buildMapStyle(tiles: TileSource, t: Tokens = defaultTokens): Sty
         filter: ['<=', ['get', 'admin_level'], 4],
         paint: { 'line-color': c.boundary, 'line-width': 1.5, 'line-dasharray': [4, 2, 1, 2] },
       },
-      grid,
       {
         id: 'place-label',
         type: 'symbol',

@@ -7,7 +7,7 @@ import { env } from '../config/env.ts'
 import { tokens } from '../theme/tokens.ts'
 import { Icon, type IconName } from '../ui/Icon.tsx'
 import s from './map.module.css'
-import { buildMapStyle } from './style.ts'
+import { buildMapStyle, gridLayer } from './style.ts'
 import { tileSources } from './tiles.ts'
 
 export interface MapMarker {
@@ -95,7 +95,16 @@ export function MapView({
           attributionControl: { compact: false },
           cooperativeGestures: false,
         })
-        instance.on('load', () => !disposed && setMap(instance ?? null))
+        instance.on('load', () => {
+          if (disposed || !instance) return
+          setMap(instance)
+          const grid = gridLayer()
+          instance.addSource('grid', grid.source)
+          instance.addLayer(
+            grid.layer,
+            instance.getLayer(grid.beforeId) ? grid.beforeId : undefined,
+          )
+        })
       })
       .catch(() => !disposed && setFailed(true))
     return () => {

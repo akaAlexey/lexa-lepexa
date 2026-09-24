@@ -3,9 +3,9 @@
   border: 1px solid var(--color-ink);
   border-radius: var(--radius-card);
   overflow: hidden;
-  /* Бумажная подложка видна, пока тайлы грузятся или если сети нет. */
+  /* Подложка цвета суши видна, пока тайлы грузятся или если сети нет.
+     Фактуру бумаги поверх карты не кладём: mix-blend-mode вдвое замедлял отрисовку карты. */
   background-color: var(--color-map-land);
-  background-image: var(--paper-texture);
 }
 
 .map {
@@ -44,16 +44,6 @@
 
 .frameFill .map {
   height: 100%;
-}
-
-/* Фактура старой бумаги поверх подложки, не мешает нажатиям. */
-.frame::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: var(--paper-texture);
-  mix-blend-mode: multiply;
 }
 
 /* Метка точки из макета: залитый круг цвета типа, светлая обводка и светлая иконка. */

@@ -19,11 +19,13 @@ import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Icon } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { SourceList } from '../../ui/SourceList.tsx'
 import { StatusBadge } from '../../ui/StatusBadge.tsx'
 import { SiteStatusAction, StatusChanged } from './SiteStatusAction.tsx'
 import s from './lastBattle.module.css'
+import { paths } from '../../functions/core/paths.ts'
 
 function HelpAction({ site }: { site: LastBattleSite }) {
   const { done, busy, failed, help } = useHelpRaise(site.id)
@@ -150,6 +152,11 @@ export function SiteScreen() {
   return (
     <Screen
       title={notFound ? 'Место не найдено' : (site.data?.placeName ?? 'Место гибели')}
+      back={
+        <BackLink to={paths.lastBattle()} testID="back-link">
+          К местам поиска
+        </BackLink>
+      }
       testID="screen-site"
     >
       {notFound ? (

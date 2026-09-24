@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
+import { useRole } from '../../app/RoleContext.tsx'
 import { region } from '../../config/region.ts'
 import type { Battle, LastBattleSite, Route } from '../../contract/schemas.ts'
 import {
@@ -308,7 +309,7 @@ function SearchBox({ places, onPick }: { places: Place[]; onPick: (p: Place) => 
   )
 }
 
-function RouteCard({ route }: { route: Route }) {
+function RouteCard({ route, main }: { route: Route; main: boolean }) {
   const { progress } = useQuestProgress(route.id)
   const status = questStatus(route, progress)
   const next = status.next
@@ -322,13 +323,15 @@ function RouteCard({ route }: { route: Route }) {
         {route.summary}. {(route.lengthM / 1000).toFixed(1).replace('.', ',')} км, около{' '}
         {route.durationMin} мин. {route.demo && <DemoBadge />}
       </p>
-      <BigButton
-        to={next ? paths.point(route.id, next.id) : paths.finish(route.id)}
-        icon="route"
-        testID="hub-route-start"
-      >
-        {status.done === 0 ? 'Начать тропу' : next ? 'Продолжить тропу' : 'Тропа пройдена'}
-      </BigButton>
+      {main ? (
+        <BigButton
+          to={next ? paths.point(route.id, next.id) : paths.finish(route.id)}
+          icon="route"
+          testID="hub-route-start"
+        >
+          {status.done === 0 ? 'Начать тропу' : next ? 'Продолжить тропу' : 'Тропа пройдена'}
+        </BigButton>
+      ) : null}
       <Link to={paths.trail()} className={s.more}>
         Маршрут и задания для ребёнка
       </Link>
@@ -347,6 +350,8 @@ function Overview({
   places: Place[]
   onPick: (key: string) => void
 }) {
+  const { role } = useRole()
+  const isCommander = role?.id === 'commander'
   const counts = SITE_STATUS_ORDER.map((st) => ({
     status: st,
     n: sites.filter((x) => x.status === st).length,
@@ -354,7 +359,13 @@ function Overview({
   const list = places.filter((p) => p.kind === 'site' || p.kind === 'point')
   return (
     <>
-      {routes[0] && <RouteCard route={routes[0]} />}
+      {/* Главная кнопка карты зависит от роли (ADR 0010): командир отмечает находку, остальные идут по тропе */}
+      {isCommander && (
+        <BigButton to={paths.newSite()} icon="pin" testID="last-battle-add">
+          Отметить место гибели
+        </BigButton>
+      )}
+      {routes[0] && <RouteCard route={routes[0]} main={!isCommander} />}
       <section aria-labelledby="hub-sites" className={s.block}>
         <h2 id="hub-sites" className={s.blockTitle}>
           Места поиска

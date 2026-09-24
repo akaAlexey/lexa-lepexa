@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { useRole } from '../../app/RoleContext.tsx'
 import type { Fundraiser, VolunteerRequest } from '../../contract/schemas.ts'
 import { todayIso } from '../../domain/dates.ts'
@@ -110,6 +110,15 @@ export function EventsScreen() {
           ))}
         </div>
       </div>
+
+      <nav className={s.more} aria-label="Ещё в разделе">
+        <Link to={paths.weekends()} data-testid="events-weekends">
+          Все выезды и заявки групп
+        </Link>
+        <Link to={paths.search()} data-testid="events-search-hq">
+          Отряды и находки за месяц
+        </Link>
+      </nav>
 
       <ul className={s.feed} aria-label="Лента мероприятий">
         <li>

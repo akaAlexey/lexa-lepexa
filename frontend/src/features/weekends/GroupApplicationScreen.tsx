@@ -10,8 +10,10 @@ import { useTrip } from '../../functions/trips/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { TextAreaField, TextField } from '../../ui/Field.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import s from './weekends.module.css'
+import { paths } from '../../functions/core/paths.ts'
 
 /** Переход к списку выездов после подачи — показать «Заявка отправлена». */
 export interface GroupSentState {
@@ -25,6 +27,11 @@ export function GroupApplicationScreen() {
     <Screen
       title="Заявка группы"
       lead="Школа, клуб или семейная группа — одной заявкой. Командир отряда подтвердит состав и подготовку"
+      back={
+        <BackLink to={paths.events()} testID="back-link">
+          К мероприятиям
+        </BackLink>
+      }
       testID="screen-group-application"
     >
       <QueryState query={trip} what="выезд">

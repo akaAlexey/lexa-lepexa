@@ -59,7 +59,7 @@ export const ROLES: readonly Role[] = [
     short: 'Волонтёр',
     description: 'Помочь отряду делом или рублём',
     icon: 'shovel',
-    home: paths.search(),
+    home: paths.events(),
   },
   {
     id: 'commander',
@@ -67,7 +67,7 @@ export const ROLES: readonly Role[] = [
     short: 'Командир',
     description: 'Набрать людей и отметить находку',
     icon: 'flag',
-    home: paths.search(),
+    home: paths.events(),
   },
   {
     id: 'verifier',

@@ -7,10 +7,12 @@ import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import type { GroupSentState } from './GroupApplicationScreen.tsx'
 import { GroupList } from './GroupList.tsx'
 import s from './weekends.module.css'
+import { paths } from '../../functions/core/paths.ts'
 
 const groupSent = (state: unknown) =>
   typeof (state as Partial<GroupSentState> | null)?.groupSent === 'string'
@@ -22,6 +24,11 @@ export function WeekendsScreen() {
     <Screen
       title="Выходные с поисковиком"
       lead="Выберите дату выезда и подготовьтесь по чек-листу новичка"
+      back={
+        <BackLink to={paths.events()} testID="back-link">
+          К мероприятиям
+        </BackLink>
+      }
       testID="screen-weekends"
     >
       <QueryState query={trips} what="выезды">

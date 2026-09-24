@@ -30,7 +30,6 @@
     url('../theme/textures/newsprint.jpg') center / cover padding-box,
     linear-gradient(#ede2c6, #e6d8b6) padding-box,
     #3b2210 url('../theme/textures/desk.jpg') center / cover border-box;
-  background-attachment: fixed;
   box-shadow:
     inset 8px 0 9px -7px rgb(0 0 0 / 0.6),
     inset -8px 0 9px -7px rgb(0 0 0 / 0.6);
@@ -87,9 +86,16 @@
   text-transform: none;
 }
 
+/* Телефон: шапка в одну строку — регион и роль видны в «Другом» */
 @media (max-width: 30rem) {
-  .mastRegion {
+  .mastRegion,
+  .accountRole {
     display: none;
+  }
+
+  .masthead {
+    flex-wrap: nowrap;
+    padding: 0 var(--space-3);
   }
 }
 

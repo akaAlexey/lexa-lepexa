@@ -250,3 +250,16 @@
   margin: 0;
   padding: var(--space-2) var(--space-4);
 }
+
+.more {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-4);
+}
+
+.more a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  font-weight: 700;
+}
