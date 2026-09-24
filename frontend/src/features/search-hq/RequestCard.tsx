@@ -4,7 +4,6 @@ import { describeRoles } from '../../domain/requests.ts'
 import { fundProgress } from '../../functions/fundraising/index.ts'
 import { Button } from '../../ui/Button.tsx'
 import { Card } from '../../ui/Card.tsx'
-import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Icon } from '../../ui/Icon.tsx'
 import s from './search.module.css'
 
@@ -40,9 +39,7 @@ export function RequestCard({
   const headingId = `request-title-${r.id}`
   return (
     <Card testID={`request-card-${r.id}`} aria-labelledby={headingId}>
-      <h3 id={headingId}>
-        {r.title} {r.demo && <DemoBadge />}
-      </h3>
+      <h3 id={headingId}>{r.title}</h3>
       <p className={s.meta}>
         {team ? `Отряд «${team.name}»` : 'Поисковый отряд'} · {r.place}
       </p>

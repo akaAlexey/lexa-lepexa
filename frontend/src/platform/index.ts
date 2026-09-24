@@ -2,6 +2,7 @@ import { region } from '../config/region.ts'
 import type { LatLon } from '../contract/schemas.ts'
 import { createDemoGeo } from './demo/geo.ts'
 import type { Platform } from './types.ts'
+import { createWebAr } from './web/ar.ts'
 import { createWebGeo } from './web/geo.ts'
 import { createWebNotify } from './web/notify.ts'
 import { createWebShare } from './web/share.ts'
@@ -21,7 +22,7 @@ export function createWebPlatform(): Platform {
     storage.get<string>(GEO_MODE_KEY) === 'device'
       ? createWebGeo()
       : createDemoGeo(storage.get<LatLon>(DEMO_POSITION_KEY) ?? region.demoPosition)
-  return { geo, notify: createWebNotify(), storage, share: createWebShare() }
+  return { geo, notify: createWebNotify(), storage, share: createWebShare(), ar: createWebAr() }
 }
 
 export type { Platform, GeoService, NotifyService, ShareService, StorageService } from './types.ts'

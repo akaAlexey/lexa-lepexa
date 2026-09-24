@@ -1,15 +1,25 @@
 import { Link } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
+import { useRole } from '../../app/RoleContext.tsx'
 import type { ArchiveStory } from '../../contract/schemas.ts'
-import { isAwaitingReview } from '../../domain/archive.ts'
+import { paths } from '../../functions/core/paths.ts'
+import { can } from '../../functions/core/permissions.ts'
+import {
+  awaitingReview,
+  myStoriesIn,
+  publishedStories,
+  storyState,
+  useMyStories,
+  useStories,
+} from '../../functions/stories/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
+import { Icon } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { StatePill } from '../../ui/StatePill.tsx'
 import s from './archive.module.css'
-import { storyState, storyUrl, useCanVerify, useMyStories, useStories } from './stories.ts'
 
 function StoryList({ label, stories }: { label: string; stories: ArchiveStory[] }) {
   return (
@@ -18,7 +28,7 @@ function StoryList({ label, stories }: { label: string; stories: ArchiveStory[] 
         const state = storyState(story)
         return (
           <Card as="li" key={story.id} testID={`story-${story.id}`}>
-            <Link to={storyUrl(story.id)} className={s.storyLink}>
+            <Link to={paths.story(story.id)} className={s.storyLink}>
               <h3>{story.title}</h3>
             </Link>
             <p className={s.meta}>
@@ -40,7 +50,8 @@ function StoryList({ label, stories }: { label: string; stories: ArchiveStory[] 
  */
 export function ArchiveScreen() {
   const stories = useStories()
-  const canVerify = useCanVerify()
+  const { role } = useRole()
+  const canVerify = can(role?.id, 'story.verify')
   const mine = useMyStories()
   return (
     <Screen
@@ -50,20 +61,44 @@ export function ArchiveScreen() {
     >
       <QueryState query={stories} what="истории">
         {(list) => {
-          const awaiting = list.filter(isAwaitingReview)
-          const published = list.filter((x) => x.status === 'verified')
-          const my = list.filter((x) => mine.ids.includes(x.id))
+          const awaiting = awaitingReview(list)
+          const published = publishedStories(list)
+          const my = myStoriesIn(list, mine)
           return (
             <>
               {canVerify && awaiting[0] ? (
-                <BigButton to={storyUrl(awaiting[0].id)} icon="check" testID="archive-review-next">
+                <BigButton
+                  to={paths.story(awaiting[0].id)}
+                  icon="check"
+                  testID="archive-review-next"
+                >
                   Проверить истории · {awaiting.length}
                 </BigButton>
               ) : (
-                <BigButton to="/archive/new" icon="story" testID="archive-new">
+                <BigButton to={paths.newStory()} icon="story" testID="archive-new">
                   Рассказать историю
                 </BigButton>
               )}
+              <ul className={s.tiles} aria-label="Ещё в разделе">
+                <li>
+                  <Link to={paths.chronicle()} className={s.tile} data-testid="archive-chronicle">
+                    <Icon name="star" size={1.6} />
+                    <span className={s.tileTitle}>Хроника и памятники</span>
+                    <span className={s.tileText}>
+                      Бои 1941–1943 по годам и 84 памятника войны на карте
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link to={paths.livePhotos()} className={s.tile} data-testid="archive-live">
+                    <Icon name="user" size={1.6} />
+                    <span className={s.tileTitle}>Живое фото</span>
+                    <span className={s.tileText}>
+                      Наведите камеру на снимок — и боец заговорит. Или оживите своё фото
+                    </span>
+                  </Link>
+                </li>
+              </ul>
               {canVerify ? (
                 <section aria-labelledby="archive-queue">
                   <h2 id="archive-queue">Ждут проверки</h2>
@@ -81,11 +116,6 @@ export function ArchiveScreen() {
                   </section>
                 )
               )}
-              <p>
-                <Link to="/chronicle" className={s.chronicleLink} data-testid="archive-chronicle">
-                  Хроника боёв 1941–1943 — события по годам на карте
-                </Link>
-              </p>
               <section aria-labelledby="archive-published">
                 <h2 id="archive-published">Проверенные истории</h2>
                 <StoryList label="Проверенные истории" stories={published} />

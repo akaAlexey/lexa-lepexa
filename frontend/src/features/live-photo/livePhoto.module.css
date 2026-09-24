@@ -1,0 +1,239 @@
+.figure {
+  margin: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.photo {
+  display: block;
+  width: 100%;
+  max-width: 32rem;
+  height: auto;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-float);
+}
+
+.caption {
+  margin: 0;
+  color: var(--color-ink-muted);
+}
+
+/* Текст от первого лица — как запись на обороте фронтового снимка */
+.speech {
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-4);
+  border-left: 3px solid var(--color-accent-light);
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.draft {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: 0.95rem;
+}
+
+.consent {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.consent:has(input:checked) {
+  border-color: var(--color-olive);
+}
+
+.consent input {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: 0;
+  accent-color: var(--color-olive);
+}
+
+.player {
+  position: relative;
+  max-width: 32rem;
+}
+
+/* Ролик нужен камере как текстура, но на странице не виден */
+.hiddenPlayer {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.video {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius-card);
+  background: var(--color-rail);
+}
+
+.aiLabel,
+.aiLabelOnVideo {
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background: rgb(43 42 38 / 0.8);
+  color: var(--color-paper);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.aiLabelOnVideo {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  pointer-events: none;
+}
+
+/* ---------- Камера ---------- */
+
+.ar {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: var(--color-rail);
+  color: var(--color-paper);
+}
+
+.arCamera {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.arTop,
+.arBottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+.arTop {
+  top: 0;
+  justify-content: space-between;
+}
+
+.arBottom {
+  bottom: 0;
+  flex-direction: column;
+  padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, rgb(43 42 38 / 0.9), transparent);
+  text-align: center;
+}
+
+.arBottom p {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.arClose {
+  display: grid;
+  place-items: center;
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  border: 0;
+  border-radius: 50%;
+  background: rgb(43 42 38 / 0.8);
+  color: var(--color-paper);
+  cursor: pointer;
+}
+
+.arBottom .button,
+.arBottom button {
+  background: var(--color-surface);
+}
+
+/* ---------- Список ---------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-control);
+  margin-bottom: var(--space-3);
+}
+
+.itemTitle {
+  margin: 0 0 var(--space-1);
+}
+
+.itemTitle a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+}
+
+/* «Оживить своё фото»: выбор файла, вариант речи */
+.upload {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.uploadLabel {
+  font-weight: 700;
+}
+
+.upload input[type='file'] {
+  min-height: 48px;
+  font: inherit;
+}
+
+.uploadError {
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+.choice {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.choice legend {
+  margin-bottom: var(--space-1);
+  font-weight: 700;
+}
+
+.choice label {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  min-height: 48px;
+  cursor: pointer;
+}
+
+.choice input {
+  width: 1.4rem;
+  height: 1.4rem;
+  margin-top: 0.15rem;
+  flex: none;
+}

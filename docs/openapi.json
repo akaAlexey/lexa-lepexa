@@ -36,6 +36,30 @@
         }
       }
     },
+    "/memorials": {
+      "get": {
+        "operationId": "listMemorials",
+        "summary": "Памятники войны в регионе (OpenStreetMap, npm run memorials)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Memorial"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        }
+      }
+    },
     "/battles": {
       "get": {
         "operationId": "listBattles",
@@ -604,6 +628,61 @@
         }
       }
     },
+    "/live-photos": {
+      "get": {
+        "operationId": "listLivePhotos",
+        "summary": "«Живые фото» — снимки с QR-кодом и ролики-реконструкции",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LivePhoto"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        }
+      }
+    },
+    "/live-photos/{id}": {
+      "get": {
+        "operationId": "getLivePhoto",
+        "summary": "«Живое фото» по QR-коду",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LivePhoto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/sites": {
       "get": {
         "operationId": "listSites",
@@ -826,7 +905,10 @@
             "maximum": 180
           }
         },
-        "required": ["lat", "lon"],
+        "required": [
+          "lat",
+          "lon"
+        ],
         "additionalProperties": false,
         "description": "Координаты WGS84"
       },
@@ -859,7 +941,10 @@
             "format": "uri"
           }
         },
-        "required": ["kind", "title"],
+        "required": [
+          "kind",
+          "title"
+        ],
         "additionalProperties": false,
         "description": "Источник факта. У каждого факта в интерфейсе есть хотя бы один источник"
       },
@@ -893,9 +978,66 @@
             "description": "true — демо-данные, вымышлены или не проверены"
           }
         },
-        "required": ["id", "lat", "lon", "fullName", "unit", "demo"],
+        "required": [
+          "id",
+          "lat",
+          "lon",
+          "fullName",
+          "unit",
+          "demo"
+        ],
         "additionalProperties": false,
         "description": "Захоронение (mock_graves.csv: ID, lat, lon, ФИО, № части)"
+      },
+      "MemorialKind": {
+        "type": "string",
+        "enum": [
+          "grave",
+          "flame",
+          "vehicle",
+          "monument"
+        ],
+        "description": "Тип памятника: братская могила, вечный огонь, техника, памятник или стела"
+      },
+      "Memorial": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lon": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "$ref": "#/components/schemas/MemorialKind"
+          },
+          "osmUrl": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "id",
+          "lat",
+          "lon",
+          "name",
+          "kind",
+          "osmUrl"
+        ],
+        "additionalProperties": false,
+        "description": "Памятник Великой Отечественной войны. Источник — OpenStreetMap (historic=memorial|monument)"
       },
       "Battle": {
         "type": "object",
@@ -935,7 +1077,11 @@
                 "maximum": 180
               }
             },
-            "required": ["name", "lat", "lon"],
+            "required": [
+              "name",
+              "lat",
+              "lon"
+            ],
             "additionalProperties": false
           },
           "demo": {
@@ -943,7 +1089,13 @@
             "description": "true — демо-данные, вымышлены или не проверены"
           }
         },
-        "required": ["id", "date", "text", "archiveUrl", "demo"],
+        "required": [
+          "id",
+          "date",
+          "text",
+          "archiveUrl",
+          "demo"
+        ],
         "additionalProperties": false,
         "description": "Бой (mock_battles.json: дата боя, текст подвига, ссылка на архив)"
       },
@@ -997,7 +1149,11 @@
       },
       "PointKind": {
         "type": "string",
-        "enum": ["battle", "trench", "hq"],
+        "enum": [
+          "battle",
+          "trench",
+          "hq"
+        ],
         "description": "Тип точки маршрута: battle — Звезда (бой), trench — Шлем (окоп), hq — Книга (штаб)"
       },
       "ChildTask": {
@@ -1030,7 +1186,12 @@
             "description": "Что сказать после ответа"
           }
         },
-        "required": ["question", "options", "answerIndex", "explanation"],
+        "required": [
+          "question",
+          "options",
+          "answerIndex",
+          "explanation"
+        ],
         "additionalProperties": false,
         "description": "Задание для ребёнка на точке маршрута"
       },
@@ -1146,7 +1307,14 @@
       },
       "VolunteerRole": {
         "type": "string",
-        "enum": ["digger", "prober", "cook", "driver", "medic", "any"],
+        "enum": [
+          "digger",
+          "prober",
+          "cook",
+          "driver",
+          "medic",
+          "any"
+        ],
         "description": "Кого ищет отряд"
       },
       "VolunteerRequest": {
@@ -1190,7 +1358,10 @@
                   "maximum": 9007199254740991
                 }
               },
-              "required": ["role", "count"],
+              "required": [
+                "role",
+                "count"
+              ],
               "additionalProperties": false
             }
           },
@@ -1203,10 +1374,21 @@
             "type": "string",
             "minLength": 1
           },
+          "lat": {
+            "description": "Где нужны люди — для карты потребностей",
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lon": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
             "description": "Дата и время ISO 8601, UTC"
           },
           "demo": {
@@ -1265,18 +1447,31 @@
                   "maximum": 9007199254740991
                 }
               },
-              "required": ["role", "count"],
+              "required": [
+                "role",
+                "count"
+              ],
               "additionalProperties": false
             }
           }
         },
-        "required": ["teamId", "title", "date", "place", "roles"],
+        "required": [
+          "teamId",
+          "title",
+          "date",
+          "place",
+          "roles"
+        ],
         "additionalProperties": false,
         "description": "Создание заявки командиром"
       },
       "FundraiserPurpose": {
         "type": "string",
-        "enum": ["fuel", "raise_fighter", "equip"],
+        "enum": [
+          "fuel",
+          "raise_fighter",
+          "equip"
+        ],
         "description": "fuel — «Пожертвовать на бензин», raise_fighter — «Поднять бойца», equip — «Экипировать отряд»"
       },
       "Fundraiser": {
@@ -1309,6 +1504,17 @@
             "maximum": 9007199254740991,
             "description": "Сумма в рублях"
           },
+          "lat": {
+            "description": "Куда пойдут деньги — для карты потребностей",
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lon": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
           "demo": {
             "type": "boolean",
             "description": "true — демо-данные, вымышлены или не проверены"
@@ -1340,7 +1546,10 @@
             "description": "Сумма в рублях"
           }
         },
-        "required": ["fundraiserId", "amountRub"],
+        "required": [
+          "fundraiserId",
+          "amountRub"
+        ],
         "additionalProperties": false,
         "description": "Пожертвование. Только тестовый режим платёжного провайдера"
       },
@@ -1353,13 +1562,19 @@
           },
           "status": {
             "type": "string",
-            "enum": ["test_succeeded"]
+            "enum": [
+              "test_succeeded"
+            ]
           },
           "fundraiser": {
             "$ref": "#/components/schemas/Fundraiser"
           }
         },
-        "required": ["paymentId", "status", "fundraiser"],
+        "required": [
+          "paymentId",
+          "status",
+          "fundraiser"
+        ],
         "additionalProperties": false,
         "description": "Результат тестового платежа"
       },
@@ -1376,7 +1591,10 @@
             "maximum": 9007199254740991
           }
         },
-        "required": ["month", "foundThisMonth"],
+        "required": [
+          "month",
+          "foundThisMonth"
+        ],
         "additionalProperties": false,
         "description": "Счётчик «Найдено бойцов за месяц»"
       },
@@ -1396,7 +1614,10 @@
             "format": "uri"
           }
         },
-        "required": ["id", "label"],
+        "required": [
+          "id",
+          "label"
+        ],
         "additionalProperties": false,
         "description": "Пункт чек-листа новичка"
       },
@@ -1476,7 +1697,11 @@
       },
       "GroupApplicationStatus": {
         "type": "string",
-        "enum": ["pending", "confirmed", "clarify"],
+        "enum": [
+          "pending",
+          "confirmed",
+          "clarify"
+        ],
         "description": "pending — «На рассмотрении», confirmed — «Подтверждена», clarify — «Нужно уточнение»"
       },
       "GroupApplication": {
@@ -1518,7 +1743,7 @@
           "createdAt": {
             "type": "string",
             "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
             "description": "Дата и время ISO 8601, UTC"
           },
           "demo": {
@@ -1587,16 +1812,26 @@
         "properties": {
           "status": {
             "type": "string",
-            "enum": ["confirmed", "clarify"]
+            "enum": [
+              "confirmed",
+              "clarify"
+            ]
           }
         },
-        "required": ["status"],
+        "required": [
+          "status"
+        ],
         "additionalProperties": false,
         "description": "Решение командира по коллективной заявке"
       },
       "ArchiveStatus": {
         "type": "string",
-        "enum": ["pending", "clarify", "verified", "rejected"],
+        "enum": [
+          "pending",
+          "clarify",
+          "verified",
+          "rejected"
+        ],
         "description": "pending — «Ожидает проверки», clarify — «Нужно уточнение», verified — «Подтверждено», rejected — «Отклонено»"
       },
       "ArchiveStory": {
@@ -1640,7 +1875,7 @@
           "createdAt": {
             "type": "string",
             "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
             "description": "Дата и время ISO 8601, UTC"
           },
           "demo": {
@@ -1687,7 +1922,13 @@
             "description": "Подпись автора; контакты автора не публикуются"
           }
         },
-        "required": ["title", "place", "story", "sourceText", "author"],
+        "required": [
+          "title",
+          "place",
+          "story",
+          "sourceText",
+          "author"
+        ],
         "additionalProperties": false,
         "description": "Отправить историю на проверку"
       },
@@ -1696,7 +1937,10 @@
         "properties": {
           "decision": {
             "type": "string",
-            "enum": ["verified", "clarify"]
+            "enum": [
+              "verified",
+              "clarify"
+            ]
           },
           "reviewer": {
             "type": "string",
@@ -1706,13 +1950,110 @@
             "type": "string"
           }
         },
-        "required": ["decision", "reviewer", "note"],
+        "required": [
+          "decision",
+          "reviewer",
+          "note"
+        ],
         "additionalProperties": false,
         "description": "Решение проверяющего. Подтвердить — только с источником; «уточнить» — только с комментарием"
       },
+      "LivePhoto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "caption": {
+            "type": "string",
+            "description": "Кто на снимке и откуда снимок"
+          },
+          "speech": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Текст от первого лица — виден до просмотра, смысл не меняется"
+          },
+          "photoUrl": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Снимок с QR-кодом для печати; он же — метка для камеры"
+          },
+          "videoUrl": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Ролик-реконструкция того же кадра, со звуком"
+          },
+          "captionsUrl": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Субтитры речи (WebVTT) — для глухих и слабослышащих"
+          },
+          "targetUrl": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Скомпилированная метка MindAR (.mind) для распознавания снимка"
+          },
+          "photoAspect": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "description": "Отношение высоты снимка к ширине"
+          },
+          "animation": {
+            "type": "string",
+            "enum": [
+              "lip_sync",
+              "neural_motion",
+              "draft"
+            ],
+            "description": "lip_sync — нейросеть оживила лицо и синхронизировала губы; neural_motion — нейросеть оживила кадр, губы не синхронизированы; draft — черновик без нейросети"
+          },
+          "consent": {
+            "type": "string",
+            "description": "Чьё согласие получено на использование снимка"
+          },
+          "sources": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Source"
+            }
+          },
+          "demo": {
+            "type": "boolean",
+            "description": "true — демо-данные, вымышлены или не проверены"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "caption",
+          "speech",
+          "photoUrl",
+          "videoUrl",
+          "captionsUrl",
+          "targetUrl",
+          "photoAspect",
+          "animation",
+          "consent",
+          "sources",
+          "demo"
+        ],
+        "additionalProperties": false,
+        "description": "«Живое фото»: снимок с QR-кодом и заранее созданный ролик-реконструкция ИИ. Показывается только после согласия зрителя"
+      },
       "SiteStatus": {
         "type": "string",
-        "enum": ["found_needs_check", "archive_confirmed", "remains_raised"],
+        "enum": [
+          "found_needs_check",
+          "archive_confirmed",
+          "remains_raised"
+        ],
         "description": "found_needs_check — «Обнаружено место (требуется проверка)», archive_confirmed — «Подтверждено архивом», remains_raised — «Останки подняты». Переходы только вперёд"
       },
       "Fighter": {
@@ -1795,7 +2136,7 @@
           "createdAt": {
             "type": "string",
             "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
             "description": "Дата и время ISO 8601, UTC"
           },
           "demo": {
@@ -1901,7 +2242,10 @@
             "maximum": 9007199254740991
           }
         },
-        "required": ["site", "notifiedCount"],
+        "required": [
+          "site",
+          "notifiedCount"
+        ],
         "additionalProperties": false,
         "description": "Созданная точка и число подписчиков в радиусе 20 км, которым ушло уведомление"
       },
@@ -1915,7 +2259,10 @@
             "$ref": "#/components/schemas/Source"
           }
         },
-        "required": ["status", "source"],
+        "required": [
+          "status",
+          "source"
+        ],
         "additionalProperties": false,
         "description": "Смена статуса точки (краевед или отряд)"
       },
@@ -1944,11 +2291,18 @@
             "type": "array",
             "items": {
               "type": "string",
-              "enum": ["search"]
+              "enum": [
+                "search"
+              ]
             }
           }
         },
-        "required": ["lat", "lon", "radiusKm", "topics"],
+        "required": [
+          "lat",
+          "lon",
+          "radiusKm",
+          "topics"
+        ],
         "additionalProperties": false,
         "description": "Подписка на поисковую деятельность рядом с точкой"
       },
@@ -1960,7 +2314,9 @@
             "minLength": 1
           }
         },
-        "required": ["id"],
+        "required": [
+          "id"
+        ],
         "additionalProperties": false,
         "description": "Созданная подписка"
       },
@@ -1973,7 +2329,9 @@
           },
           "kind": {
             "type": "string",
-            "enum": ["site_found"]
+            "enum": [
+              "site_found"
+            ]
           },
           "siteId": {
             "type": "string",
@@ -1992,7 +2350,7 @@
           "createdAt": {
             "type": "string",
             "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
             "description": "Дата и время ISO 8601, UTC"
           }
         },
@@ -2013,10 +2371,14 @@
         "properties": {
           "ok": {
             "type": "boolean",
-            "enum": [true]
+            "enum": [
+              true
+            ]
           }
         },
-        "required": ["ok"],
+        "required": [
+          "ok"
+        ],
         "additionalProperties": false,
         "description": "Подтверждение действия"
       }

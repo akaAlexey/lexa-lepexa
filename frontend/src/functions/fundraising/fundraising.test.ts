@@ -1,7 +1,14 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest'
 import { createTestDeps } from '../../test/testDeps.ts'
-import { DEFAULT_DONATION, donate, DONATION_AMOUNTS, fundProgress } from './fundraising.ts'
+import type { Fundraiser } from '../../contract/schemas.ts'
+import {
+  DEFAULT_DONATION,
+  donate,
+  DONATION_AMOUNTS,
+  fundProgress,
+  neediestFundraiserOfTeam,
+} from './fundraising.ts'
 
 describe('сборы отрядов', () => {
   it('прогресс сбора — проценты для шкалы, переполнение не ломает шкалу', () => {
@@ -42,5 +49,20 @@ describe('тестовое пожертвование', () => {
   it('сумма не больше нуля отклоняется контрактом', async () => {
     const deps = createTestDeps()
     await expect(donate(deps, 'F01', 0)).rejects.toThrow(/amountRub/)
+  })
+})
+
+describe('«Пожертвовать отряду»', () => {
+  const f = (id: string, teamId: string, collectedRub: number, goalRub: number) =>
+    ({ id, teamId, collectedRub, goalRub }) as Fundraiser
+
+  it('ведёт в открытый сбор отряда с наибольшим дефицитом', () => {
+    const list = [f('A', 'T1', 40, 50), f('B', 'T1', 10, 100), f('C', 'T2', 0, 1000)]
+    expect(neediestFundraiserOfTeam(list, 'T1')?.id).toBe('B')
+  })
+
+  it('закрытые сборы и чужие отряды не предлагает', () => {
+    const list = [f('A', 'T1', 50, 50), f('C', 'T2', 0, 1000)]
+    expect(neediestFundraiserOfTeam(list, 'T1')).toBeUndefined()
   })
 })

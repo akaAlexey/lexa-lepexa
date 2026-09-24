@@ -4,6 +4,7 @@ export {
   donate,
   DONATION_AMOUNTS,
   fundProgress,
+  neediestFundraiserOfTeam,
   type DonationResult,
 } from './fundraising.ts'
 export { useDonate, type DonateStatus } from './useDonate.ts'

@@ -100,4 +100,43 @@ describe('«Последний бой» по ролям', () => {
     await userEvent.click(await screen.findByTestId('marker-site-S02'))
     expect(router.state.location.pathname).toBe('/last-battle/S02')
   })
+
+  it('краевед подтверждает место по архиву: без источника не пускает, с источником — новый статус', async () => {
+    renderApp('/last-battle/S01', { role: 'verifier' })
+    await userEvent.click(await screen.findByTestId('site-confirm-submit'))
+    expect(screen.getByTestId('site-confirm-detail')).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByTestId('status-found_needs_check')).toBeInTheDocument()
+
+    await userEvent.type(screen.getByTestId('site-confirm-detail'), 'т. 5, с. 112')
+    await userEvent.click(screen.getByTestId('site-confirm-submit'))
+    expect(await screen.findByTestId('site-status-done')).toHaveTextContent('Подтверждено архивом')
+    expect(screen.getByTestId('status-archive_confirmed')).toBeInTheDocument()
+    expect(screen.getByTestId('site-sources')).toHaveTextContent(
+      'Книга Памяти. Орловская область, т. 5, с. 112',
+    )
+  })
+
+  it('командир отмечает подъём подтверждённого места — «Останки подняты», подъём больше не нужен', async () => {
+    renderApp('/last-battle/S02', { role: 'commander' })
+    await userEvent.type(
+      await screen.findByTestId('site-raise-detail'),
+      'акт № 14, братская могила д. Кромы',
+    )
+    await userEvent.click(screen.getByTestId('site-raise-submit'))
+    expect(await screen.findByTestId('status-remains_raised')).toBeInTheDocument()
+    expect(screen.queryByTestId('site-need')).not.toBeInTheDocument()
+    expect(screen.getByTestId('site-sources')).toHaveTextContent('Акт подъёма: акт № 14')
+  })
+
+  it.each([
+    ['volunteer', 'S01'],
+    ['family', 'S02'],
+    ['commander', 'S01'],
+    ['verifier', 'S02'],
+  ] as const)('%s на %s не меняет статус: шаг не его', async (role, id) => {
+    renderApp(`/last-battle/${id}`, { role })
+    expect(await screen.findByTestId('site-sources')).toBeInTheDocument()
+    expect(screen.queryByTestId('site-confirm')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('site-raise')).not.toBeInTheDocument()
+  })
 })

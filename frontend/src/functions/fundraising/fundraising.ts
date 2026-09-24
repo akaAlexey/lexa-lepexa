@@ -15,6 +15,16 @@ export function fundProgress(f: Pick<Fundraiser, 'collectedRub' | 'goalRub'>): n
   return progressPercent(f.collectedRub, f.goalRub)
 }
 
+/** Открытый сбор отряда с наибольшим дефицитом — туда ведёт «Пожертвовать отряду». */
+export function neediestFundraiserOfTeam(
+  fundraisers: readonly Fundraiser[],
+  teamId: string,
+): Fundraiser | undefined {
+  return fundraisers
+    .filter((f) => f.teamId === teamId && f.collectedRub < f.goalRub)
+    .sort((a, b) => b.goalRub - b.collectedRub - (a.goalRub - a.collectedRub))[0]
+}
+
 /**
  * Пожертвование — только тестовый режим платёжного провайдера: деньги не списываются.
  * Кэш сборов после ответа обновляет хук `useDonate`.
