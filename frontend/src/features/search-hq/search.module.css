@@ -88,3 +88,55 @@
 .team {
   font-weight: 700;
 }
+
+/* Целевой сбор: назначение с иконкой над заголовком */
+.purpose {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-olive);
+}
+
+/* Карта потребностей */
+.needsMap {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.needsLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.needsLegend li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.needsList {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.needsItem {
+  width: 100%;
+  min-height: 48px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}

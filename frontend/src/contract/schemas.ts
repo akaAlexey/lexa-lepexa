@@ -169,6 +169,8 @@ export const VolunteerRequest = entity(
     roles: z.array(z.object({ role: VolunteerRole, count: z.number().int().positive() })).min(1),
     joined: z.number().int().nonnegative(),
     fundraiserId: id.optional(),
+    lat: lat.optional().describe('Где нужны люди — для карты потребностей'),
+    lon: lon.optional(),
     createdAt: isoDateTime,
     demo,
   }),
@@ -196,6 +198,8 @@ export const Fundraiser = entity(
     title: z.string().min(1),
     goalRub: rub,
     collectedRub: rub,
+    lat: lat.optional().describe('Куда пойдут деньги — для карты потребностей'),
+    lon: lon.optional(),
     demo,
   }),
 )
@@ -460,6 +464,7 @@ export type LatLon = z.infer<typeof LatLon>
 export type Source = z.infer<typeof Source>
 export type Grave = z.infer<typeof Grave>
 export type Memorial = z.infer<typeof Memorial>
+export type FundraiserPurpose = z.infer<typeof FundraiserPurpose>
 export type MemorialKind = z.infer<typeof MemorialKind>
 export type Battle = z.infer<typeof Battle>
 export type Team = z.infer<typeof Team>
