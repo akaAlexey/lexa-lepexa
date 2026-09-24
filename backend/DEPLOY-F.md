@@ -9,7 +9,7 @@ Do not use the local Docker Compose database for the hosted deployment. Deploy-F
 ## Hosted files
 
 - `app/`
-- `alembic/`
+- `migrations/`
 - `alembic.ini`
 - `pyproject.toml`
 - `requirements.txt`
