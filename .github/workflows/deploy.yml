@@ -33,12 +33,13 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npm run build -- --base=/lexa-lepexa/
+        run: npm run build -- --base=/
         env:
           # Живой бэкенд — только когда задана переменная репозитория API_URL
           # (Settings → Secrets and variables → Actions → Variables). Без неё — демо-данные в браузере:
           # бесплатный туннель меняет адрес и падает, а жюри не должно увидеть пустой сайт.
-          # Бэкенд должен разрешать CORS для https://team-shpilit.github.io (переменная CORS_ORIGINS).
+          # Сайт живёт на своём домене https://marshrutypobedy.ru (Settings → Pages → Custom domain), поэтому base=/.
+          # Бэкенд должен разрешать CORS для https://marshrutypobedy.ru (переменная CORS_ORIGINS).
           VITE_API_MODE: ${{ vars.API_URL && 'live' || 'mock' }}
           VITE_API_URL: ${{ vars.API_URL }}
           VITE_TILES: openfreemap
@@ -49,7 +50,7 @@ jobs:
       - name: Smoke check of the build
         run: |
           test -f dist/index.html
-          grep -q '/lexa-lepexa/assets/' dist/index.html
+          grep -q '"/assets/' dist/index.html
 
       - uses: actions/upload-pages-artifact@v3
         with:
