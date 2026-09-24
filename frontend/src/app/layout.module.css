@@ -1,0 +1,313 @@
+.shell {
+  min-height: 100dvh;
+  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + var(--toast-space, 0px));
+}
+
+.skip {
+  position: absolute;
+  left: var(--space-2);
+  top: -10rem;
+  z-index: 100;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.skip:focus {
+  top: var(--space-2);
+}
+
+/* Телефон: шапка сверху и нижняя панель разделов живут отдельно — обёртка не создаёт блок. */
+.rail {
+  display: contents;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: inherit;
+  text-decoration: none;
+  min-height: var(--touch-min);
+  white-space: nowrap;
+}
+
+.brandText {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.brandSub {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-ink-muted);
+}
+
+/* Роль — пилюля, как кнопка аккаунта на макете */
+.roleLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-2);
+  border: 2px solid var(--color-olive);
+  border-radius: var(--radius-pill);
+  color: var(--color-olive);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.nav {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 10;
+  background: var(--color-rail);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.navList {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navLink {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  min-height: var(--nav-height);
+  padding: var(--space-1) 0.15rem;
+  color: var(--color-rail-text);
+  text-decoration: none;
+  font-size: 0.9rem;
+  line-height: 1.15;
+  /* «Поисковикам» на 360 px переносится с дефисом, а не упирается в край */
+  hyphens: auto;
+  overflow-wrap: anywhere;
+  text-align: center;
+  border-top: 0.25rem solid transparent;
+}
+
+/* Активный раздел — не только цветом: жирный текст и полоса */
+.navLink[aria-current='page'] {
+  color: var(--color-accent-on-dark);
+  border-top-color: var(--color-accent-on-dark);
+  font-weight: 700;
+}
+
+.main:focus {
+  outline: none;
+}
+
+/* Ноутбук: плавающая тёмная панель разделов слева. В rem — при масштабе 200 % включается мобильная раскладка. */
+@media (min-width: 64rem) {
+  .shell {
+    display: grid;
+    grid-template-columns: calc(var(--rail-width) + var(--float-gap)) minmax(0, 1fr);
+    align-items: start;
+    padding-bottom: var(--toast-space, 0px);
+  }
+
+  .rail {
+    position: sticky;
+    top: var(--float-gap);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    width: var(--rail-width);
+    height: calc(100dvh - 2 * var(--float-gap));
+    margin: var(--float-gap) 0 0 var(--float-gap);
+    padding: var(--space-3) 0;
+    overflow-y: auto;
+    border-radius: var(--radius-card);
+    background: var(--color-rail);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .header {
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: var(--space-2);
+    padding: 0 var(--space-2);
+    background: transparent;
+    color: var(--color-surface);
+    border-bottom: 0;
+  }
+
+  .brand {
+    flex-direction: column;
+    gap: var(--space-1);
+    white-space: normal;
+    text-align: center;
+  }
+
+  .brandText {
+    font-size: 0.85rem;
+    line-height: 1.15;
+  }
+
+  .brandSub {
+    margin-top: 0.15rem;
+    color: var(--color-rail-text);
+  }
+
+  /* В узкой панели — только «Демо» */
+  .brandRegion {
+    display: none;
+  }
+
+  .roleLink {
+    flex-direction: column;
+    gap: 0.1rem;
+    min-height: 3.5rem;
+    width: calc(var(--rail-width) - 1rem);
+    padding: var(--space-1);
+    border-color: var(--color-rail-text);
+    border-radius: var(--radius-control);
+    color: var(--color-rail-text);
+    font-size: 0.9rem;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .roleLink[aria-current='page'] {
+    border-color: var(--color-accent-on-dark);
+    color: var(--color-accent-on-dark);
+  }
+
+  .nav {
+    position: static;
+    flex: 1;
+    padding-bottom: 0;
+    background: transparent;
+  }
+
+  .navList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    height: 100%;
+    padding: 0 var(--space-2);
+  }
+
+  .navLink {
+    min-height: 4.25rem;
+    padding: var(--space-2) var(--space-1);
+    border-top: 0;
+    border-left: 0.25rem solid transparent;
+    border-radius: var(--radius-control);
+  }
+
+  .navLink[aria-current='page'] {
+    background: var(--color-rail-active);
+    border-left-color: var(--color-accent-on-dark);
+  }
+}
+
+/* Уведомление: на телефоне — внизу над меню, на ноутбуке — справа внизу. Заголовок экрана не закрывает. */
+.toasts {
+  position: fixed;
+  z-index: 50;
+  inset: auto var(--space-3) calc(var(--nav-height) + env(safe-area-inset-bottom) + var(--space-2));
+  display: grid;
+  justify-items: center;
+  pointer-events: none;
+}
+
+/* Уведомление как пуш на макете «Последний бой»: тёмная плашка, красный значок */
+.toast {
+  pointer-events: auto;
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  width: min(100%, 30rem);
+  max-height: 35dvh;
+  overflow: auto;
+  padding: var(--space-3) var(--space-2) var(--space-3) var(--space-3);
+  border-radius: var(--radius-card);
+  background: var(--color-rail);
+  color: var(--color-paper);
+  box-shadow: var(--shadow-panel);
+}
+
+.toast p {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+.toastIcon {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0.4rem;
+  border-radius: var(--radius-control);
+  background: var(--color-danger);
+  color: var(--color-surface);
+}
+
+.toastBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.toastActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  color: var(--color-rail-text);
+}
+
+.toastAction {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.toastClose {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  border: 0;
+  background: transparent;
+  color: var(--color-paper);
+  cursor: pointer;
+}
+
+@media (min-width: 64rem) {
+  .toasts {
+    inset: auto var(--space-6) var(--space-6) auto;
+    justify-items: end;
+  }
+}

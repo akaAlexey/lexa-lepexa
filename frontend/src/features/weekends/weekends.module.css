@@ -1,0 +1,127 @@
+.tripLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  font-weight: 700;
+}
+
+.meta {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+}
+
+.meta div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-2);
+}
+
+.meta dt {
+  color: var(--color-ink-muted);
+}
+
+.meta dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.spots {
+  margin: 0 0 var(--space-2);
+  font-weight: 700;
+}
+
+.checklist {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.checklist legend {
+  padding: 0;
+  margin-bottom: var(--space-2);
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 500;
+}
+
+.item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+}
+
+/* Вся строка — зона нажатия чекбокса. */
+.check {
+  display: flex;
+  flex: 1 1 14rem;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.check:has(input:checked) {
+  border-color: var(--color-olive);
+}
+
+.check input {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: 0;
+  accent-color: var(--color-olive);
+  cursor: pointer;
+}
+
+.itemLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  padding: 0 var(--space-2);
+}
+
+.progress {
+  margin: var(--space-4) 0 var(--space-2);
+  font-weight: 700;
+}
+
+.form {
+  display: grid;
+  gap: var(--space-4);
+  /* На ноутбуке поля не растягиваются во всю ширину — так их легче читать */
+  max-width: 40rem;
+}
+
+.tripTitle {
+  margin: 0;
+  font-weight: 700;
+}
+
+.groupMeta {
+  margin: 0 0 var(--space-2);
+  color: var(--color-ink-muted);
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}

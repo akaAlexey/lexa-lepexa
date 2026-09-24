@@ -1,0 +1,104 @@
+.frame {
+  position: relative;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  box-shadow: var(--shadow-float);
+  /* Бумажная подложка видна, пока тайлы грузятся или если сети нет. */
+  background-color: var(--color-map-land);
+  background-image: var(--paper-texture);
+}
+
+.map {
+  width: 100%;
+  height: min(60dvh, 32rem);
+}
+
+/*
+ * Ноутбук: карта на всё место справа от панели экрана, как на макете.
+ * Панель экрана — в ui.module.css (.screen:has([data-map-frame])).
+ */
+@media (min-width: 64rem) {
+  .frame {
+    position: fixed;
+    z-index: 1;
+    top: var(--float-gap);
+    right: var(--float-gap);
+    bottom: var(--float-gap);
+    left: calc(var(--rail-width) + 3 * var(--float-gap) + var(--panel-width));
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .map {
+    height: 100%;
+  }
+}
+
+/* Фактура старой бумаги поверх подложки, не мешает нажатиям. */
+.frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--paper-texture);
+  mix-blend-mode: multiply;
+}
+
+/* Метка точки из макета: залитый круг цвета типа, светлая обводка и светлая иконка. */
+.marker {
+  display: grid;
+  place-items: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  padding: 0;
+  border: 2px solid var(--color-surface);
+  border-radius: 50%;
+  background: currentColor;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 0.3);
+}
+
+.marker svg {
+  color: var(--color-surface);
+}
+
+/*
+ * «Последний бой» — не булавка, а круг-зона с пунктирной границей: место известно примерно.
+ * Нажимается только центр (зона нажатия 3rem), кольцо — декор и не перехватывает нажатия соседних меток.
+ */
+.markerZone {
+  composes: marker;
+  position: relative;
+}
+
+.markerZone::before {
+  content: '';
+  position: absolute;
+  inset: -1.1rem;
+  border: 2px dashed currentColor;
+  border-radius: 50%;
+  background: color-mix(in srgb, currentColor 18%, transparent);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.fallback {
+  padding: var(--space-4);
+  border: 2px dashed var(--color-line-strong);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+/* Фоновый слой (захоронения): светлые компактные метки, зона нажатия 2rem — главные метки всегда поверх. */
+.markerSmall {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  background: var(--color-surface);
+  opacity: 0.9;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+}

@@ -1,0 +1,289 @@
+/* Главная кнопка экрана — оранжевый акцент из макета */
+.bigButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--touch-main);
+  padding: var(--space-3) var(--space-6);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-float);
+}
+
+.bigButton:active {
+  transform: translateY(0.1rem);
+  box-shadow: var(--shadow-card);
+}
+
+.bigButton[aria-disabled='true'],
+.bigButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (min-width: 64rem) {
+  .bigButton {
+    align-self: flex-start;
+    width: auto;
+    min-width: 20rem;
+  }
+}
+
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-card);
+}
+
+/* Плашка-пилюля: демо-данные, статусы */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.1rem 0.6rem;
+  border: 2px solid currentColor;
+  border-radius: var(--radius-pill);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.4;
+  background: var(--color-surface);
+}
+
+/* Статус на макете — залитая плашка с белым текстом; цвет приходит через --badge */
+.statusBadge {
+  composes: badge;
+  justify-self: start;
+  border-color: var(--badge);
+  background: var(--badge);
+  color: #fff;
+}
+
+.demoBadge {
+  composes: badge;
+  color: var(--color-ink-muted);
+  border: 1.5px dashed var(--color-sepia);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+/*
+ * Экран с картой на ноутбуке — как на макете: карта занимает всё справа,
+ * содержимое экрана — плавающая панель слева (карта и панель не перекрываются).
+ */
+@media (min-width: 64rem) {
+  .screen:has([data-map-frame]) {
+    width: var(--panel-width);
+    max-width: none;
+    margin: var(--float-gap);
+    padding: var(--space-4) var(--space-4) var(--space-6);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .screen:has([data-map-frame]) .card {
+    background: var(--color-paper);
+    box-shadow: none;
+  }
+}
+
+.screenTitle:focus,
+.screenTitle:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.lead {
+  color: var(--color-ink-muted);
+  font-size: 1.05rem;
+}
+
+/* ---------- Вторичные действия ---------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-4);
+  border: 2px solid var(--color-olive);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-olive);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button[aria-pressed='true'] {
+  background: var(--color-olive);
+  color: var(--color-surface);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---------- Формы ---------- */
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.label {
+  font-weight: 700;
+}
+
+.hint {
+  color: var(--color-ink-muted);
+  font-size: 0.95rem;
+}
+
+.input {
+  min-height: var(--touch-min);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background: #fff;
+  color: var(--color-ink);
+}
+
+.input[aria-invalid='true'],
+.textarea[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.textarea {
+  composes: input;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.error {
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+/* Выбор варианта — чипсы-пилюли, выбранный залит оливковым */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.chips legend {
+  margin-bottom: var(--space-1);
+  font-weight: 700;
+}
+
+.chips .button {
+  border-radius: var(--radius-pill);
+  border-color: var(--color-control-border);
+  color: var(--color-ink);
+}
+
+.chips .button[aria-pressed='true'] {
+  border-color: var(--color-olive);
+  color: var(--color-surface);
+}
+
+/* ---------- Сообщения и диалог ---------- */
+
+.notice {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3) var(--space-4);
+  border-left: 0.3rem solid var(--color-olive);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+}
+
+.noticeSuccess {
+  composes: notice;
+  border-left-color: var(--color-status-remains-raised);
+}
+
+.noticeSuccess .noticeIcon {
+  color: var(--color-status-remains-raised);
+}
+
+.noticeIcon {
+  flex-shrink: 0;
+  color: var(--color-danger);
+}
+
+.noticeError {
+  composes: notice;
+  border-left-color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: rgb(43 42 38 / 0.55);
+}
+
+.dialog {
+  display: grid;
+  gap: var(--space-3);
+  width: min(100%, 32rem);
+  max-height: 100%;
+  overflow: auto;
+  padding: var(--space-6);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-panel);
+}
+
+/* Источники — моноширинным, как архивные ссылки на макете */
+.sourcesTitle {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-ink-muted);
+}
+
+.sources {
+  margin: 0;
+  padding-left: var(--space-6);
+  color: var(--color-ink-muted);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "T01",
+    "name": "Высота",
+    "region": "Орловская обл.",
+    "budgetGoalRub": 50000,
+    "budgetCollectedRub": 15000,
+    "foundThisMonth": 7
+  },
+  {
+    "id": "T02",
+    "name": "Поиск-Орёл",
+    "region": "Орловская обл.",
+    "budgetGoalRub": 80000,
+    "budgetCollectedRub": 32000,
+    "foundThisMonth": 4
+  },
+  {
+    "id": "T03",
+    "name": "Десант",
+    "region": "Мценский р-н",
+    "budgetGoalRub": 40000,
+    "budgetCollectedRub": 9000,
+    "foundThisMonth": 3
+  },
+  {
+    "id": "T04",
+    "name": "Кромы",
+    "region": "Кромской р-н",
+    "budgetGoalRub": 30000,
+    "budgetCollectedRub": 21000,
+    "foundThisMonth": 2
+  },
+  {
+    "id": "T05",
+    "name": "Память Оки",
+    "region": "Орловская обл.",
+    "budgetGoalRub": 60000,
+    "budgetCollectedRub": 12500,
+    "foundThisMonth": 5
+  }
+]

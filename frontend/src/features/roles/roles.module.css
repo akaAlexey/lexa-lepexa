@@ -1,0 +1,49 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Карточка роли: светлая панель, знак роли — в оливковом круге */
+.role {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 8rem;
+  padding: var(--space-4);
+  border: 2px solid transparent;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  color: var(--color-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.role svg {
+  box-sizing: content-box;
+  padding: 0.6rem;
+  border-radius: 50%;
+  background: var(--color-olive);
+  color: var(--color-surface);
+}
+
+/* Выбранная роль — толстой рамкой, не только цветом */
+.role[aria-pressed='true'] {
+  border: 3px solid var(--color-accent);
+}
+
+.roleLabel {
+  color: var(--color-ink);
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 500;
+}
+
+.roleDescription {
+  color: var(--color-ink-muted);
+}

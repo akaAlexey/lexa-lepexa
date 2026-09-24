@@ -1,0 +1,21 @@
+# Caddy на VPS в РФ: сам выпускает сертификат Let's Encrypt и продлевает его.
+# Замените домен и адрес бэкенда. Проверка: caddy validate --config Caddyfile
+tropa.example.ru {
+	encode zstd gzip
+
+	# API на том же домене: нет mixed content и не нужен CORS
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8000
+	}
+
+	handle {
+		root * /var/www/tropa
+		# Прямые ссылки на вложенные экраны (/last-battle/S01) отдают index.html
+		try_files {path} /index.html
+		file_server
+
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		header /index.html Cache-Control "no-cache"
+	}
+}

@@ -1,0 +1,248 @@
+.step,
+.progress {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 700;
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+  font-size: 1.2rem;
+}
+
+/* ---------- Прогресс маршрута: точки-кружки, как на макете семейного маршрута ---------- */
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stepLine {
+  flex: 1;
+  height: 0.25rem;
+  border-radius: 2px;
+  background: var(--color-line);
+}
+
+.stepLineDone {
+  composes: stepLine;
+  background: var(--color-olive);
+}
+
+.stepDot {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid var(--color-control-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-ink-muted);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.stepDotDone {
+  composes: stepDot;
+  border-color: var(--color-olive);
+  background: var(--color-olive);
+  color: var(--color-surface);
+}
+
+.stepDotCurrent {
+  composes: stepDot;
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgb(180 83 26 / 0.25);
+}
+
+/* ---------- Задание для ребёнка: главное действие, пока ответ не дан ---------- */
+
+.task {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 2px solid var(--color-accent-light);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.task .cardTitle {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-accent-text);
+}
+
+.question {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+  gap: var(--space-2);
+}
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-main);
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background: #fff;
+  color: var(--color-ink);
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.option[aria-pressed='true'] {
+  background: var(--color-olive);
+  color: var(--color-surface);
+}
+
+.option:disabled {
+  cursor: default;
+}
+
+.option:disabled:not([aria-pressed='true']) {
+  opacity: 0.6;
+}
+
+.feedbackTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* ---------- Список точек на экране «Тропа» ---------- */
+
+.pointList {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pointLink {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+/* На ноутбуке список — внутри светлой панели рядом с картой */
+@media (min-width: 64rem) {
+  .pointLink {
+    background: var(--color-paper);
+    box-shadow: none;
+  }
+}
+
+/* Иконка типа точки — как метка на карте: залитый круг цвета типа */
+.pointIcon {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.pointIcon svg {
+  color: var(--color-surface);
+}
+
+.pointTitle {
+  flex: 1;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.doneMark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-olive);
+  font-weight: 700;
+}
+
+/* ---------- Финиш: штампы маршрута ---------- */
+
+.stampsCount {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-heading);
+  font-size: 2.2rem;
+  font-weight: 600;
+}
+
+.stamps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stamp,
+.stampEmpty {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 2px solid var(--color-olive);
+  border-radius: var(--radius-card);
+  color: var(--color-olive);
+  font-weight: 700;
+  text-align: center;
+}
+
+.stampEmpty {
+  border-style: dashed;
+  color: var(--color-ink-muted);
+}
+
+/* Выбранный вариант: верный — зелёный с ✓, неверный — красный с ✗ (не только цвет) */
+.optionRight {
+  composes: option;
+  border-color: var(--color-status-remains-raised) !important;
+  background: var(--color-status-remains-raised) !important;
+  color: #fff !important;
+  opacity: 1 !important;
+}
+
+.optionWrong {
+  composes: option;
+  border-color: var(--color-danger) !important;
+  background: var(--color-surface) !important;
+  color: var(--color-danger) !important;
+}

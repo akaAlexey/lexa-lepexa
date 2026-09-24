@@ -1,0 +1,134 @@
+@import '@fontsource/pt-sans/400.css';
+@import '@fontsource/pt-sans/700.css';
+@import '@fontsource/oswald/500.css';
+@import '@fontsource/oswald/600.css';
+@import '@fontsource/pt-mono/400.css';
+
+/* Значения переменных задаёт applyTheme() из tokens.ts; здесь — только фолбэк до старта JS. */
+:root {
+  color-scheme: light;
+  --paper-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .42 0 0 0 0 .29 0 0 0 0 .12 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --nav-height: 4.5rem;
+  /* Ноутбук: узкая тёмная панель разделов и панель экрана рядом с картой */
+  --rail-width: 7rem;
+  --panel-width: 27rem;
+  --float-gap: 1rem;
+  font-size: var(--font-size-base, 112.5%);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+/* Прокрутка к элементу учитывает нижнее меню на телефоне — оно не закрывает цель. */
+html {
+  scroll-padding-bottom: calc(var(--nav-height) + var(--toast-space, 0px) + 1rem);
+}
+
+/* На ноутбуке меню слева, уведомление справа внизу */
+@media (min-width: 64rem) {
+  html {
+    scroll-padding-bottom: calc(var(--toast-space, 0px) + 1rem);
+  }
+}
+
+body {
+  min-height: 100dvh;
+  font-family: var(--font-body);
+  line-height: 1.5;
+  color: var(--color-ink, #2b2a26);
+  background-color: var(--color-paper, #f2e8d5);
+  -webkit-text-size-adjust: 100%;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  margin: 0 0 var(--space-3);
+  overflow-wrap: anywhere;
+}
+
+/* Заголовки экранов и разделов — Oswald, как на макетах; заголовки карточек — PT Sans */
+h1,
+h2 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+h1 {
+  font-size: 1.9rem;
+}
+
+h2 {
+  font-size: 1.4rem;
+}
+
+h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+p {
+  margin: 0 0 var(--space-3);
+}
+
+a {
+  color: var(--color-olive);
+  text-underline-offset: 0.15em;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+/* Видимый фокус для клавиатуры: двойное кольцо читается на любом фоне. */
+:focus-visible {
+  outline: 3px solid var(--color-focus, #b4531a);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px var(--color-surface, #fbf6ec);
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Вертикальный список карточек */
+.stack-list {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

@@ -1,0 +1,151 @@
+/* Легенда карты: иконка статуса + подпись, статус не передаётся только цветом. */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Легенда повторяет метки карты: место — залитый круг в пунктирной зоне, захоронение — светлый круг. */
+.legendIcon {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: currentColor;
+  outline: 2px dashed currentColor;
+  outline-offset: 2px;
+}
+
+.legendIcon svg {
+  color: var(--color-surface);
+}
+
+.legendIconGrave {
+  composes: legendIcon;
+  border: 1.5px solid currentColor;
+  background: var(--color-surface);
+  outline: 0;
+}
+
+.legendIconGrave svg {
+  color: inherit;
+}
+
+/* Карточка места в списке — вся строка-ссылка, зона нажатия не меньше 3rem. */
+.siteLink {
+  display: grid;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  color: inherit;
+  text-decoration: none;
+}
+
+.siteLink h3 {
+  margin: 0;
+  color: var(--color-olive);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.siteLink p {
+  margin: 0;
+}
+
+.form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.coords {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border: 2px solid var(--color-control-border);
+  border-radius: var(--radius-card);
+  min-width: 0;
+}
+
+.coords legend {
+  padding: 0 var(--space-1);
+  font-weight: 700;
+}
+
+.coordsRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  gap: var(--space-3);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+}
+
+.facts dt {
+  color: var(--color-ink-muted);
+}
+
+.facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 30rem) {
+  .facts {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .facts dd {
+    margin-bottom: var(--space-2);
+  }
+}
+
+.need {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-danger);
+}
+
+.coordsValue {
+  font-family: var(--font-mono);
+}
+
+/* Закрытые координаты — плашка с замком, как на макете «Последний бой» */
+.closedCoords {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--color-danger-soft);
+  color: var(--color-danger-text);
+}
+
+.closedCoords svg {
+  flex-shrink: 0;
+  color: var(--color-danger);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}

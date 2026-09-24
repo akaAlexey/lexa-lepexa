@@ -1,0 +1,222 @@
+/**
+ * Сверка живого сервера с контрактом фронта: вызывает все эндпоинты из src/contract/endpoints.ts
+ * и проверяет каждый ответ той же zod-схемой, что и live-адаптер. Плюс поток уведомлений (SSE):
+ * подписка → новое место от другого пользователя → событие в потоке.
+ *
+ *   npm run contract:check -- http://127.0.0.1:8000/api/v1
+ *
+ * Меняет данные на сервере (создаёт заявки, места, истории) — запускайте на тестовой базе.
+ * Код выхода 1, если хоть одна проверка не прошла.
+ */
+import { endpoints, notificationStream, type EndpointName } from '../src/contract/endpoints.ts'
+
+const BASE = (process.argv[2] ?? process.env.API_URL ?? 'http://127.0.0.1:8000/api/v1').replace(
+  /\/$/,
+  '',
+)
+const run = Date.now().toString(36)
+
+type Row = { ok: boolean; line: string }
+const rows: Row[] = []
+const pass = (line: string) => rows.push({ ok: true, line: `OK      ${line}` })
+const failRow = (line: string) => rows.push({ ok: false, line: `FAIL    ${line}` })
+
+async function call(
+  name: EndpointName,
+  args: { id?: string; body?: unknown } = {},
+  user = `cc-${run}`,
+) {
+  const e = endpoints[name]
+  const path = e.path.replace('{id}', encodeURIComponent(args.id ?? ''))
+  const res = await fetch(BASE + path, {
+    method: e.method,
+    headers: { 'Content-Type': 'application/json', 'X-Demo-User': user },
+    body: args.body === undefined ? undefined : JSON.stringify(args.body),
+  })
+  const label = `${e.method.padEnd(5)} ${e.path}`
+  if (!res.ok) {
+    failRow(`${label} → HTTP ${res.status} ${(await res.text()).slice(0, 160)}`)
+    return undefined
+  }
+  const parsed = e.response.safeParse(await res.json())
+  if (!parsed.success) {
+    const issues = parsed.error.issues
+      .slice(0, 3)
+      .map((i) => `${i.path.join('.')}: ${i.message}`)
+      .join('; ')
+    failRow(`${label} → не по контракту: ${issues}`)
+    return undefined
+  }
+  pass(label)
+  return parsed.data as Record<string, unknown> & { id: string }
+}
+
+async function first(name: EndpointName) {
+  const list = (await call(name)) as unknown as { id: string }[] | undefined
+  return list?.[0]
+}
+
+/** Ждёт первое событие в потоке уведомлений пользователя, не дольше timeoutMs. */
+async function nextEvent(user: string, timeoutMs: number, trigger: () => Promise<void>) {
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs)
+  try {
+    const res = await fetch(`${BASE}${notificationStream.path}?user=${encodeURIComponent(user)}`, {
+      signal: ctrl.signal,
+      headers: { Accept: 'text/event-stream' },
+    })
+    if (!res.ok || !res.body) return { error: `HTTP ${res.status}` }
+    const reader = res.body.pipeThrough(new TextDecoderStream()).getReader()
+    let buffer = ''
+    let triggered = false
+    for (;;) {
+      if (!triggered) {
+        triggered = true
+        void trigger()
+      }
+      const { value, done } = await reader.read()
+      if (done) return { error: 'поток закрылся' }
+      buffer += value
+      // События разделяются пустой строкой — ровно так их режет EventSource в браузере.
+      const events = buffer.split('\n\n')
+      buffer = events.pop() ?? ''
+      for (const block of events) {
+        const data = block
+          .split('\n')
+          .filter((l) => l.startsWith('data:'))
+          .map((l) => l.slice(5).trimStart())
+          .join('\n')
+        if (data) return { data }
+      }
+    }
+  } catch (e) {
+    return { error: ctrl.signal.aborted ? `нет события за ${timeoutMs / 1000} с` : String(e) }
+  } finally {
+    clearTimeout(timer)
+    ctrl.abort()
+  }
+}
+
+// ---------- Данные жюри и списки ----------
+await call('listGraves')
+await call('listBattles')
+const teams = (await call('listTeams')) as unknown as { id: string }[] | undefined
+await call('getSearchStats')
+const route = await first('listRoutes')
+if (route) await call('getRoute', { id: route.id })
+
+// ---------- Поисковый штаб ----------
+const teamId = teams?.[0]?.id ?? 'T01'
+const request = await call('createRequest', {
+  body: {
+    teamId,
+    title: `Проверка контракта ${run}`,
+    date: '2026-10-10',
+    place: 'Орловская обл.',
+    roles: [{ role: 'digger', count: 2 }],
+  },
+})
+await call('listRequests')
+if (request) await call('joinRequest', { id: request.id })
+const fundraiser = await first('listFundraisers')
+if (fundraiser) await call('donate', { body: { fundraiserId: fundraiser.id, amountRub: 100 } })
+
+// ---------- Выезды ----------
+const trips = (await call('listTrips')) as unknown as
+  { id: string; spotsTaken: number; spotsTotal: number }[] | undefined
+const trip = trips?.[0]
+if (trip) {
+  await call('getTrip', { id: trip.id })
+  const free = trips?.find((t) => t.spotsTaken < t.spotsTotal)
+  if (free) await call('registerTrip', { id: free.id })
+  const application = await call('createGroupApplication', {
+    body: {
+      tripId: trip.id,
+      organization: 'Школа (проверка контракта)',
+      contactName: 'Ответственный',
+      contact: '+7 900 000-00-00',
+      peopleCount: 10,
+      comment: '',
+    },
+  })
+  await call('listGroupApplications')
+  if (application)
+    await call('decideGroupApplication', { id: application.id, body: { status: 'clarify' } })
+}
+
+// ---------- Народный архив ----------
+const story = await call('createStory', {
+  body: {
+    title: `Проверка ${run}`,
+    place: 'Орёл',
+    story: 'Текст истории для проверки контракта: не короче тридцати символов.',
+    sourceText: 'Семейный архив',
+    author: 'Проверка',
+  },
+})
+await call('listStories')
+if (story) {
+  await call('getStory', { id: story.id })
+  await call('reviewStory', {
+    id: story.id,
+    body: { decision: 'verified', reviewer: 'Краевед', note: '' },
+  })
+}
+
+// ---------- Последний бой и уведомления ----------
+const point = { lat: 52.9651, lon: 36.0785 }
+const subscriber = `cc-sub-${run}`
+await call('subscribe', { body: { ...point, radiusKm: 20, topics: ['search'] } }, subscriber)
+const newSite = {
+  ...point,
+  placeName: `Проверка контракта ${run}`,
+  fightersCount: 1,
+  fighters: [{}],
+  unit: 'Неизвестно',
+  dateText: 'октябрь 1941',
+  circumstances: '',
+  sources: [{ kind: 'archive' as const, title: 'Отчёт отряда' }],
+  teamId,
+}
+let createdSiteId: string | undefined
+const event = await nextEvent(subscriber, 15_000, async () => {
+  const created = (await call('createSite', { body: newSite }, `cc-cmd-${run}`)) as
+    { site: { id: string } } | undefined
+  createdSiteId = created?.site.id
+})
+if ('data' in event && event.data) {
+  const parsed = notificationStream.event.safeParse(JSON.parse(event.data))
+  if (parsed.success && parsed.data.siteId === createdSiteId)
+    pass(`SSE   ${notificationStream.path}`)
+  else
+    failRow(
+      `SSE   ${notificationStream.path} → событие не по контракту: ${event.data.slice(0, 160)}`,
+    )
+} else {
+  failRow(`SSE   ${notificationStream.path} → ${event.error}`)
+}
+await call('listSites')
+if (createdSiteId) {
+  await call('getSite', { id: createdSiteId })
+  await call('changeSiteStatus', {
+    id: createdSiteId,
+    body: {
+      status: 'archive_confirmed',
+      source: { kind: 'obd_memorial', title: 'ОБД «Мемориал»' },
+    },
+  })
+  await call('volunteerForSite', { id: createdSiteId })
+}
+
+// ---------- Итог ----------
+const tested = new Set(rows.map((r) => r.line.split(/\s+/).slice(1, 3).join(' ')))
+const missing = (Object.keys(endpoints) as EndpointName[])
+  .map((n) => `${endpoints[n].method} ${endpoints[n].path}`)
+  .filter((k) => !tested.has(k))
+for (const k of missing) failRow(`${k} → не проверен (нет данных для вызова)`)
+
+console.log(`Сверка ${BASE} с контрактом фронта\n`)
+console.log(rows.map((r) => r.line).join('\n'))
+const failed = rows.filter((r) => !r.ok).length
+console.log(`\n${rows.length - failed} из ${rows.length} проверок прошли`)
+process.exit(failed ? 1 : 0)
