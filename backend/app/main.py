@@ -1,7 +1,6 @@
 from datetime import date,datetime,timezone
 from uuid import uuid4
-from typing import Any
-import asyncio,json
+import asyncio,json,math
 from fastapi import FastAPI,APIRouter,Depends,Header,HTTPException,Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -10,8 +9,6 @@ from pydantic_settings import BaseSettings,SettingsConfigDict
 from sqlalchemy import String,Text,Integer,Float,Boolean,Date,DateTime,JSON,ForeignKey,select,func
 from sqlalchemy.ext.asyncio import create_async_engine,async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase,Mapped,mapped_column
-from geoalchemy2 import Geography
-from geoalchemy2.functions import ST_DWithin,ST_Distance,ST_SetSRID,ST_MakePoint
 
 class Settings(BaseSettings):
     database_url:str="postgresql+asyncpg://postgres:postgres@localhost:5432/memory_trail"
@@ -26,6 +23,15 @@ class Base(DeclarativeBase): pass
 def now(): return datetime.now(timezone.utc)
 def gid(p): return p+"_"+uuid4().hex[:10]
 
+EARTH_RADIUS_KM = 6371.0088
+
+def distance_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lon2 - lon1)
+    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
+    return EARTH_RADIUS_KM * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
 class Team(Base):
     __tablename__="teams"
     id:Mapped[str]=mapped_column(String(50),primary_key=True)
@@ -36,12 +42,12 @@ class Grave(Base):
     __tablename__="graves"
     id:Mapped[str]=mapped_column(String(50),primary_key=True);lat:Mapped[float]=mapped_column(Float);lon:Mapped[float]=mapped_column(Float)
     full_name:Mapped[str]=mapped_column(String(255));unit:Mapped[str]=mapped_column(String(255));demo:Mapped[bool]=mapped_column(Boolean)
-    location:Mapped[Any]=mapped_column(Geography(geometry_type="POINT",srid=4326))
+    
 class Battle(Base):
     __tablename__="battles"
     id:Mapped[str]=mapped_column(String(50),primary_key=True);date:Mapped[date]=mapped_column(Date);text:Mapped[str]=mapped_column(Text)
     archive_url:Mapped[str]=mapped_column(Text);place_name:Mapped[str|None]=mapped_column(String(255));lat:Mapped[float|None]=mapped_column(Float);lon:Mapped[float|None]=mapped_column(Float)
-    demo:Mapped[bool]=mapped_column(Boolean);location:Mapped[Any|None]=mapped_column(Geography(geometry_type="POINT",srid=4326))
+    demo:Mapped[bool]=mapped_column(Boolean);
 class Site(Base):
     __tablename__="last_battle_sites"
     id:Mapped[str]=mapped_column(String(50),primary_key=True);lat:Mapped[float]=mapped_column(Float);lon:Mapped[float]=mapped_column(Float)
@@ -49,12 +55,12 @@ class Site(Base):
     unit:Mapped[str]=mapped_column(String(255));date_text:Mapped[str]=mapped_column(String(255));circumstances:Mapped[str]=mapped_column(Text)
     status:Mapped[str]=mapped_column(String(50));sources:Mapped[list]=mapped_column(JSON);team_id:Mapped[str|None]=mapped_column(ForeignKey("teams.id"))
     volunteers_ready:Mapped[int]=mapped_column(Integer);created_at:Mapped[datetime]=mapped_column(DateTime(timezone=True),default=now);demo:Mapped[bool]=mapped_column(Boolean)
-    location:Mapped[Any]=mapped_column(Geography(geometry_type="POINT",srid=4326))
+    
 class Subscription(Base):
     __tablename__="subscriptions"
     id:Mapped[str]=mapped_column(String(50),primary_key=True);lat:Mapped[float]=mapped_column(Float);lon:Mapped[float]=mapped_column(Float)
     radius_km:Mapped[float]=mapped_column(Float);topics:Mapped[list]=mapped_column(JSON);team_id:Mapped[str|None]=mapped_column(String(50))
-    user_key:Mapped[str]=mapped_column(String(255));location:Mapped[Any]=mapped_column(Geography(geometry_type="POINT",srid=4326))
+    user_key:Mapped[str]=mapped_column(String(255));
 class Notification(Base):
     __tablename__="notifications"
     id:Mapped[str]=mapped_column(String(50),primary_key=True)
@@ -112,11 +118,22 @@ async def site(id,s=Depends(db)):
     return site_json(x)
 @api.post("/sites")
 async def create_site(b:NewSite,s=Depends(db)):
-    x=Site(id=gid("SITE"),lat=b.lat,lon=b.lon,place_name=b.place_name,fighters_count=b.fighters_count,fighters=b.fighters,unit=b.unit,date_text=b.date_text,circumstances=b.circumstances,status="found_needs_check",sources=[z.model_dump() for z in b.sources],team_id=b.team_id,volunteers_ready=0,demo=False,location=f"SRID=4326;POINT({b.lon} {b.lat})")
-    s.add(x);await s.flush();target=ST_SetSRID(ST_MakePoint(b.lon,b.lat),4326)
-    rows=(await s.execute(select(Subscription,ST_Distance(Subscription.location,target)/1000).where(ST_DWithin(Subscription.location,target,Subscription.radius_km*1000),Subscription.team_id.is_distinct_from(b.team_id)))).all()
+    x=Site(id=gid("SITE"),lat=b.lat,lon=b.lon,place_name=b.place_name,fighters_count=b.fighters_count,fighters=b.fighters,unit=b.unit,date_text=b.date_text,circumstances=b.circumstances,status="found_needs_check",sources=[z.model_dump() for z in b.sources],team_id=b.team_id,volunteers_ready=0,demo=False)
+    s.add(x)
+    await s.flush()
+
+    rows=[]
+    subscriptions=(await s.execute(select(Subscription))).scalars().all()
+    for sub in subscriptions:
+        if sub.team_id == b.team_id:
+            continue
+        d=distance_km(sub.lat,sub.lon,b.lat,b.lon)
+        if d <= sub.radius_km:
+            rows.append((sub,d))
+
     for sub,d in rows:
-        km=max(1,round(float(d)));s.add(Notification(id=gid("NTF"),kind="site_found",site_id=x.id,user_key=sub.user_key,distance_km=km,title="Обнаружено место гибели",body=f"В {km} км от вас обнаружено место гибели бойца. Требуется помощь в идентификации"))
+        km=max(1,round(d))
+        s.add(Notification(id=gid("NTF"),kind="site_found",site_id=x.id,user_key=sub.user_key,distance_km=km,title="Обнаружено место гибели",body=f"В {km} км от вас обнаружено место гибели бойца. Требуется помощь в идентификации"))
     await s.commit();await s.refresh(x);return {"site":site_json(x),"notifiedCount":len(rows)}
 @api.patch("/sites/{id}/status")
 async def status(id,b:StatusChange,s=Depends(db)):
@@ -133,7 +150,7 @@ async def volunteer(id,s=Depends(db)):
 
 @api.post("/subscriptions")
 async def subscribe(b:SubIn,x_demo_user:str=Header("demo"),x_demo_team_id:str|None=Header(None),s=Depends(db)):
-    x=Subscription(id=gid("SUB"),lat=b.lat,lon=b.lon,radius_km=b.radius_km,topics=b.topics,team_id=x_demo_team_id,user_key=x_demo_user,location=f"SRID=4326;POINT({b.lon} {b.lat})")
+    x=Subscription(id=gid("SUB"),lat=b.lat,lon=b.lon,radius_km=b.radius_km,topics=b.topics,team_id=x_demo_team_id,user_key=x_demo_user)
     s.add(x);await s.commit();return {"id":x.id}
 @api.delete("/subscriptions/{id}")
 async def unsubscribe(id,s=Depends(db)):
@@ -200,7 +217,8 @@ class HistoricalPoint(Base):
     type: Mapped[str] = mapped_column(String(50))
     description: Mapped[str | None] = mapped_column(Text)
     event_date: Mapped[date | None] = mapped_column(Date)
-    location: Mapped[Any] = mapped_column(Geography(geometry_type="POINT", srid=4326))
+    lat: Mapped[float] = mapped_column(Float)
+    lon: Mapped[float] = mapped_column(Float)
     status: Mapped[str] = mapped_column(String(50), default="PENDING")
     created_by: Mapped[str | None] = mapped_column(String(50), ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
@@ -231,7 +249,8 @@ class HistoricalSubmission(Base):
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[str | None] = mapped_column(Text)
     type: Mapped[str] = mapped_column(String(50))
-    location: Mapped[Any] = mapped_column(Geography(geometry_type="POINT", srid=4326))
+    lat: Mapped[float] = mapped_column(Float)
+    lon: Mapped[float] = mapped_column(Float)
     event_date: Mapped[date | None] = mapped_column(Date)
     status: Mapped[str] = mapped_column(String(50), default="PENDING")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
@@ -265,7 +284,8 @@ class Soldier(Base):
 class LastBattleCase(Base):
     __tablename__ = "last_battle_cases"
     id: Mapped[str] = mapped_column(String(50), primary_key=True)
-    location: Mapped[Any] = mapped_column(Geography(geometry_type="POINT", srid=4326))
+    lat: Mapped[float] = mapped_column(Float)
+    lon: Mapped[float] = mapped_column(Float)
     description: Mapped[str | None] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(50))
     source_description: Mapped[str | None] = mapped_column(Text)
@@ -363,7 +383,8 @@ class VolunteerEvent(Base):
     team_id: Mapped[str] = mapped_column(String(50), ForeignKey("search_teams.id"))
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str | None] = mapped_column(Text)
-    location: Mapped[Any] = mapped_column(Geography(geometry_type="POINT", srid=4326))
+    lat: Mapped[float] = mapped_column(Float)
+    lon: Mapped[float] = mapped_column(Float)
     start_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     end_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     max_participants: Mapped[int | None] = mapped_column(Integer)
