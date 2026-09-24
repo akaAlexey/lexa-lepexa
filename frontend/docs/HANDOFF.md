@@ -160,6 +160,7 @@
 | 24.09 | 1.1 main → frontend | FEATURES объединён (X6 уточнён, X8 → «Сделано»); починены `useState` в LastBattleScreen и `platform.ar` в testDeps. verify: 209 unit, 84 e2e; visual 44/44 — эталон переснят только для 16 снимков, изменённых main (пары в `docs/screenshots/merge-main/`) | 1.2 ветки агентов: trail → weekends → archive → search-hq → last-battle |
 | 24.09 | 1.2 trail           | Влита: FEATURES слит по строкам; 223 unit, 84 e2e, visual 44/44                                                                                                                                                                                             | weekends                                                                |
 | 24.09 | 1.2 weekends        | Влита: 257 unit, 84 e2e, visual 44/44                                                                                                                                                                                                                       | archive                                                                 |
+| 24.09 | 1.2 archive         | Влита: плитки main («Хроника», «Живое фото») на paths; 277 unit, 84 e2e, visual 44/44; таймауты агента были от нагрузки                                                                                                                                     | search-hq                                                               |
 
 ## Состояние (2026-09-24, шаг A в работе)
 
