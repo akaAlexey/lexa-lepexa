@@ -1,10 +1,8 @@
-import { useQuery } from '@tanstack/react-query'
 import { Link, useLocation } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
-import { useApi } from '../../app/services.tsx'
-import type { Trip } from '../../contract/schemas.ts'
-import { todayIso } from '../../domain/dates.ts'
 import { formatDayRu } from '../../domain/format.ts'
+import { paths } from '../../functions/core/paths.ts'
+import { nearestTrip, spotsText, useTrips } from '../../functions/trips/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
@@ -12,22 +10,14 @@ import { Notice } from '../../ui/Notice.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import type { GroupSentState } from './GroupApplicationScreen.tsx'
 import { GroupList } from './GroupList.tsx'
-import { freeSpots, spotsText } from './trips.ts'
 import s from './weekends.module.css'
-
-/** Ближайший выезд, на который ещё можно записаться (список отсортирован по дате). */
-function nearestTrip(list: readonly Trip[], today: string): Trip | undefined {
-  const upcoming = list.filter((t) => t.date >= today)
-  return upcoming.find((t) => freeSpots(t) > 0) ?? upcoming[0]
-}
 
 const groupSent = (state: unknown) =>
   typeof (state as Partial<GroupSentState> | null)?.groupSent === 'string'
 
 export function WeekendsScreen() {
-  const api = useApi()
   const location = useLocation()
-  const trips = useQuery({ queryKey: ['trips'], queryFn: api.listTrips })
+  const trips = useTrips()
   return (
     <Screen
       title="Выходные с поисковиком"
@@ -36,7 +26,7 @@ export function WeekendsScreen() {
     >
       <QueryState query={trips} what="выезды">
         {(list) => {
-          const nearest = nearestTrip(list, todayIso(new Date()))
+          const nearest = nearestTrip(list, new Date())
           return (
             <>
               {groupSent(location.state) && (
@@ -45,11 +35,7 @@ export function WeekendsScreen() {
                 </Notice>
               )}
               {nearest ? (
-                <BigButton
-                  to={`/weekends/${nearest.id}`}
-                  icon="calendar"
-                  testID="weekends-register"
-                >
+                <BigButton to={paths.trip(nearest.id)} icon="calendar" testID="weekends-register">
                   Ближайший выезд — {formatDayRu(nearest.date)}
                 </BigButton>
               ) : (
@@ -69,7 +55,7 @@ export function WeekendsScreen() {
               <ul aria-label="Выезды" className="stack-list">
                 {list.map((t) => (
                   <Card as="li" key={t.id} testID={`trip-${t.id}`}>
-                    <Link to={`/weekends/${t.id}`} className={s.tripLink}>
+                    <Link to={paths.trip(t.id)} className={s.tripLink}>
                       {formatDayRu(t.date)}. {t.title}
                     </Link>
                     <p className={s.spots}>{spotsText(t)}</p>

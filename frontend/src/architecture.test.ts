@@ -41,10 +41,7 @@ const EXCEPTIONS: Record<string, readonly Rule[]> = {
   'features/trail/useTrail.ts': ['page-services', 'paths'],
   'features/weekends/GroupApplicationScreen.tsx': ['page-services', 'paths'],
   'features/weekends/GroupList.tsx': ['page-services'],
-  'features/weekends/TripScreen.tsx': ['page-services', 'paths'],
-  'features/weekends/WeekendsScreen.tsx': ['page-services', 'paths'],
   'features/weekends/groups.ts': ['page-services', 'paths'],
-  'features/weekends/routes.tsx': ['paths'],
 }
 
 type Rule = 'page-services' | 'function-purity' | 'core-independent' | 'pure-layers' | 'paths'
