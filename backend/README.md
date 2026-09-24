@@ -1,6 +1,12 @@
-# Тропа памяти — backend
+# Тропа памяти — backend (No PostGIS)
 
-FastAPI + PostgreSQL/PostGIS backend aligned with the frontend API contract.
+FastAPI + PostgreSQL backend for environments where PostGIS is unavailable.
+
+## Геоданные
+
+Эта ветка не требует PostGIS, GeoAlchemy2 или spatial SQL. Координаты хранятся в обычных числовых полях `lat` и `lon`.
+
+Проверка радиуса подписки выполняется в приложении по формуле Haversine. Это сохраняет текущий API-контракт и поведение уведомлений для небольшого количества данных.
 
 ## Local development
 
@@ -14,29 +20,26 @@ Swagger: `http://localhost:8000/docs`
 
 API base path: `/api/v1`
 
-Demo identity headers: `X-Demo-User` and `X-Demo-Team-Id`.
-
 ## Database schema
 
-Database migrations build the P0 schema and the full domain schema.
+Миграции находятся в `migrations/`.
 
-```text
-alembic/versions/0001_initial.py
-alembic/versions/0002_full_domain_schema.py
-```
-
-The full domain design contains 25 target tables. The current P0 implementation also keeps the legacy frontend tables, so the physical PostgreSQL database contains 30 tables until that compatibility layer is consolidated.
+Полная доменная модель содержит 25 целевых таблиц. Существующий P0-слой также сохраняется для совместимости с текущим frontend-контрактом.
 
 ## Deploy-F
 
-Deploy this directory as a **Python web application**.
-
-Hosted start command:
+Start command:
 
 ```text
 python start.py
 ```
 
-The startup script applies `alembic upgrade head` and then starts Uvicorn. Set `DATABASE_URL` to the Deploy-F PostgreSQL/PostGIS connection string. See [DEPLOY-F.md](DEPLOY-F.md) for the deployment checklist.
+Required environment:
 
-The `Dockerfile` and `docker-compose.yml` remain for local development or Docker hosting.
+```text
+DATABASE_URL=postgresql+asyncpg://USER:PASSWORD@HOST:PORT/DATABASE
+```
+
+Swagger UI: `/docs`
+
+Health check: `/health`
