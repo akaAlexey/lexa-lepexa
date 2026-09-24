@@ -28,6 +28,13 @@ def main() -> None:
         check=True,
     )
 
+    # Load demo/reference data after migrations. The seed is idempotent,
+    # so restarting the service will not create duplicate rows.
+    subprocess.run(
+        [sys.executable, str(ROOT / "app" / "seed.py")],
+        check=True,
+    )
+
     host = os.getenv("HOST", "0.0.0.0")
     port = os.getenv("PORT", "8000")
 
