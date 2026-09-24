@@ -6,3 +6,4 @@ e2e/screenshots
 src/api/fixtures/jury.generated.json
 package-lock.json
 dist-e2e-*
+docs/design/reference.html
