@@ -1,11 +1,18 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
-import { useServices } from '../../app/services.tsx'
-import type { LatLon, Route } from '../../contract/schemas.ts'
-import { distanceKm, formatDistance } from '../../domain/geo.ts'
-import { questStatus } from '../../domain/trail.ts'
-import { MapView, type MapMarker } from '../../map/MapView.tsx'
+import type { Route } from '../../contract/schemas.ts'
+import { formatDistance } from '../../domain/geo.ts'
+import { paths } from '../../functions/core/paths.ts'
+import { routeMarkers } from '../../functions/mapLayers/index.ts'
+import {
+  POINT_ICON,
+  questOverview,
+  useQuestProgress,
+  useRoutes,
+} from '../../functions/quest/index.ts'
+import { distanceFromMe, useWhereAmI } from '../../functions/whereAmI/index.ts'
+import { MapView } from '../../map/MapView.tsx'
 import { tokens } from '../../theme/tokens.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Button } from '../../ui/Button.tsx'
@@ -13,51 +20,16 @@ import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Icon } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { Screen } from '../../ui/Screen.tsx'
-import { POINT_ICON } from './pointKinds.ts'
 import s from './trail.module.css'
-import { finishUrl, pointUrl, useQuestProgress, useRoutes } from './useTrail.ts'
 
 function RouteOverview({ route }: { route: Route }) {
   const navigate = useNavigate()
-  const { progress } = useQuestProgress(route.id)
-  const status = questStatus(route, progress)
-  const done = useMemo(() => new Set(progress.donePointIds), [progress])
-  const { platform } = useServices()
+  const { progress, done } = useQuestProgress(route.id)
+  const status = questOverview(route, progress)
   // «Где я?» из единого макета: метка положения и расстояние до следующей точки
-  const [me, setMe] = useState<LatLon>()
-  const [geoFailed, setGeoFailed] = useState(false)
-  const locate = () => {
-    setGeoFailed(false)
-    platform.geo.getPosition().then(setMe, () => setGeoFailed(true))
-  }
-
-  const markers = useMemo<MapMarker[]>(
-    () => [
-      ...route.points.map((p, i) => ({
-        id: p.id,
-        lat: p.lat,
-        lon: p.lon,
-        icon: done.has(p.id) ? 'check' : POINT_ICON[p.kind].icon,
-        label: `Точка ${i + 1}: ${p.title} (${POINT_ICON[p.kind].label})${done.has(p.id) ? ', пройдена' : ''}`,
-        color: done.has(p.id) ? tokens.color.point.done : tokens.color.point[p.kind],
-      })),
-      ...(me
-        ? [
-            {
-              id: 'me',
-              lat: me.lat,
-              lon: me.lon,
-              icon: 'locate' as const,
-              label: 'Вы здесь',
-              color: tokens.color.map.me,
-              interactive: false,
-            },
-          ]
-        : []),
-    ],
-    [route, done, me],
-  )
-  const target = status.next ?? route.points[0]
+  const { me, failed: geoFailed, locate } = useWhereAmI()
+  const markers = useMemo(() => routeMarkers(route, done, me), [route, done, me])
+  const target = status.target
 
   return (
     <>
@@ -69,11 +41,11 @@ function RouteOverview({ route }: { route: Route }) {
         <Icon name="flag" /> Пройдено {status.done} из {status.total}
       </p>
       {status.next ? (
-        <BigButton to={pointUrl(route.id, status.next.id)} icon="route" testID="trail-start">
+        <BigButton to={status.continueTo} icon="route" testID="trail-start">
           {status.done === 0 ? 'Начать тропу' : 'Продолжить тропу'}
         </BigButton>
       ) : (
-        <BigButton to={finishUrl(route.id)} icon="check" testID="trail-start">
+        <BigButton to={status.continueTo} icon="check" testID="trail-start">
           Тропа пройдена — штампы
         </BigButton>
       )}
@@ -83,7 +55,7 @@ function RouteOverview({ route }: { route: Route }) {
       {me && target && (
         <Notice testID="trail-distance">
           Вы здесь — синяя метка на карте. До точки «{target.title}»{' '}
-          {formatDistance(distanceKm(me, target))} по прямой.
+          {formatDistance(distanceFromMe(me, target))} по прямой.
         </Notice>
       )}
       {geoFailed && (
@@ -98,7 +70,7 @@ function RouteOverview({ route }: { route: Route }) {
         zoom={14}
         route={route.path}
         markers={markers}
-        onMarkerSelect={(id) => void navigate(pointUrl(route.id, id))}
+        onMarkerSelect={(id) => void navigate(paths.point(route.id, id))}
         fitToContent
         testID="trail-map"
       />
@@ -106,7 +78,7 @@ function RouteOverview({ route }: { route: Route }) {
         {route.points.map((p, i) => (
           <li key={p.id}>
             <Link
-              to={pointUrl(route.id, p.id)}
+              to={paths.point(route.id, p.id)}
               className={s.pointLink}
               data-testid={`point-${p.id}`}
             >

@@ -10,6 +10,15 @@
       content="Тропа памяти: семейные маршруты по местам боёв, помощь поисковым отрядам и карта «Последний бой» — Орловская область"
     />
     <title>Тропа памяти</title>
+    <!-- «Живое фото»: MindAR с jsDelivr импортирует three по имени; версии — как в src/platform/web/ar.ts -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
   </head>
   <body>
     <noscript>Для работы приложения включите JavaScript.</noscript>

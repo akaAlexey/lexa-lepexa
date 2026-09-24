@@ -1,0 +1,54 @@
+# Весь сайт одной командой: база, API и фронт за Caddy на одном домене (нет CORS и mixed content).
+#
+#   docker compose up -d --build        → http://localhost:8080
+#
+# На сервере с доменом: SITE_ADDRESS=tropa.example.ru docker compose up -d --build —
+# Caddy сам выпустит HTTPS-сертификат (нужны открытые порты 80 и 443).
+# Пароль базы задайте в .env рядом с этим файлом (см. .env.example), в git его не кладите.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: memory_trail
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes: [db_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d memory_trail"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:${POSTGRES_PASSWORD:-postgres}@db:5432/memory_trail
+      # Фронт и API на одном домене — CORS не нужен.
+      CORS_ORIGINS: ""
+      SEED_DEMO: ${SEED_DEMO:-1}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_TILES: ${VITE_TILES:-openfreemap}
+    restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+      - "${HTTPS_PORT:-8443}:443"
+    volumes: [caddy_data:/data, caddy_config:/config]
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  db_data:
+  caddy_data:
+  caddy_config:

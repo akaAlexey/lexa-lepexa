@@ -14,6 +14,7 @@ import {
 } from '../../domain/lastBattle.ts'
 import { ApiError, type ApiClient } from '../client.ts'
 import jury from '../fixtures/jury.generated.json'
+import osm from '../fixtures/memorials.osm.json'
 import * as seed from '../fixtures/seed.ts'
 
 export interface MockOptions {
@@ -40,6 +41,7 @@ function createDb() {
     trips: seed.trips,
     groupApplications: seed.groupApplications,
     stories: seed.stories,
+    livePhotos: seed.livePhotos,
     sites: seed.sites,
     subscriptions: [] as StoredSubscription[],
   })
@@ -110,6 +112,8 @@ export function createMockApi(options: MockOptions = {}): ApiClient {
       db = createDb()
     },
     listGraves: () => respond(() => db.graves),
+    // Настоящие данные OSM, не демо: только чтение, в демо-базу не копируем
+    listMemorials: () => respond(() => endpoints.listMemorials.response.parse(osm.memorials)),
     listBattles: () => respond(() => db.battles),
     listTeams: () => respond(() => db.teams),
     getSearchStats: () =>
@@ -211,6 +215,8 @@ export function createMockApi(options: MockOptions = {}): ApiClient {
         if (input.note.trim()) story.reviewNote = input.note.trim()
         return story
       }),
+    listLivePhotos: () => respond(() => db.livePhotos),
+    getLivePhoto: ({ id }) => respond(() => find(db.livePhotos, id, 'Живое фото')),
     listSites: () => respond(() => db.sites),
     getSite: ({ id }) => respond(() => find(db.sites, id, 'Место')),
     createSite: ({ body }) =>

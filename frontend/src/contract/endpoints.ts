@@ -29,6 +29,12 @@ export const endpoints = {
     summary: 'Захоронения (данные жюри)',
     response: z.array(s.Grave),
   }),
+  listMemorials: endpoint({
+    method: 'GET',
+    path: '/memorials',
+    summary: 'Памятники войны в регионе (OpenStreetMap, npm run memorials)',
+    response: z.array(s.Memorial),
+  }),
   listBattles: endpoint({
     method: 'GET',
     path: '/battles',
@@ -154,6 +160,18 @@ export const endpoints = {
     summary: 'Решение краеведа или отряда по истории',
     body: s.ArchiveReview,
     response: s.ArchiveStory,
+  }),
+  listLivePhotos: endpoint({
+    method: 'GET',
+    path: '/live-photos',
+    summary: '«Живые фото» — снимки с QR-кодом и ролики-реконструкции',
+    response: z.array(s.LivePhoto),
+  }),
+  getLivePhoto: endpoint({
+    method: 'GET',
+    path: '/live-photos/{id}',
+    summary: '«Живое фото» по QR-коду',
+    response: s.LivePhoto,
   }),
   listSites: endpoint({
     method: 'GET',
