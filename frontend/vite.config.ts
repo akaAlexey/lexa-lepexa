@@ -20,6 +20,10 @@ export default defineConfig({
   // MapLibre 6 грузит свой воркер по относительному URL — предсборка Vite его ломает.
   optimizeDeps: { exclude: ['maplibre-gl'] },
   worker: { format: 'es' },
+  server: {
+    // Локально с бэкендом: VITE_API_MODE=live, VITE_API_URL=/api/v1 — запросы уходят на FastAPI без CORS.
+    proxy: { '/api': process.env.VITE_API_PROXY ?? 'http://127.0.0.1:8000' },
+  },
   preview: {
     // Временный HTTPS-туннель localhost.run (см. docs/adr/0002-hosting.md)
     allowedHosts: ['.lhr.life'],

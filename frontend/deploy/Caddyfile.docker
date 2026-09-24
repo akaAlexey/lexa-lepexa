@@ -1,0 +1,25 @@
+# Caddy в docker compose (корень репозитория). SITE_ADDRESS:
+#   :80                 — локально, без HTTPS (http://localhost:8080)
+#   tropa.example.ru    — на сервере: Caddy сам выпустит и продлит сертификат Let's Encrypt
+{$SITE_ADDRESS::80} {
+	encode zstd gzip
+
+	# API на том же домене: нет mixed content и не нужен CORS.
+	# flush_interval -1 — поток уведомлений (SSE) уходит в браузер сразу, без буфера.
+	handle /api/* {
+		reverse_proxy api:8000 {
+			flush_interval -1
+		}
+	}
+
+	handle {
+		root * /srv
+		# Прямые ссылки на вложенные экраны (/last-battle/S01) отдают index.html
+		try_files {path} /index.html
+		file_server
+
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		header /index.html Cache-Control "no-cache"
+	}
+}
