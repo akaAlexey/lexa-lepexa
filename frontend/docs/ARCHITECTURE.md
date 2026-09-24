@@ -4,18 +4,32 @@
 
 ## Слои и направление зависимостей
 
+Итерация «релизная раскладка» (ADR 0008): **функции отдельно от страниц**.
+
 ```
-features/*  ──►  app/ (сервисы, роли, раскладка)  ──►  ui/, map/, theme/
-    │                                                    │
-    └──────────►  api/ (ApiClient)  ──►  contract/  ◄────┘
-                  platform/ (Geo, Notify, Storage, Share)
-                  domain/ (чистая логика)  ──►  contract/ (только типы)
+screens/* (сейчас features/*) ──►  functions/<функция>/index.ts  ──►  functions/core
+      │                                   │                                │
+      ├──► ui/, map/, theme/              ├──► domain/ (чистая логика)     ├──► api/ (ApiClient) ──► contract/
+      └──► app/ (оболочка, меню)          └──► contract/ (типы)            └──► platform/ (Geo, Notify, Storage, Share)
 ```
 
-- `domain/`, `contract/`, `api/` не импортируют React и DOM — переносятся в любой стек (ADR 0001).
-- Экраны берут API и платформу только через `useServices()` / `useApi()` — не импортируют адаптеры напрямую.
-- Модули `features/*` не импортируют друг друга. Общее выносится в `ui/`, `map/` или `domain/`.
+- **Экран** собирает раскладку из `ui/`, `map/` и хуков функций. Сам не ходит в API, платформу и кэш.
+- **Функция** (`src/functions/<функция>/`) — сценарии `(deps, input) → Result` без React, DOM и роутера, тонкие хуки `use*.ts` на TanStack Query, тесты на mock-API, `index.ts` как публичный API.
+- **`functions/core`** — общие механизмы: зависимости (`useDeps` — единственный вызов `useServices`), память на устройстве, модель формы, ключи кэша, адреса экранов, права ролей. От функций не зависит.
+- `domain/`, `contract/`, `api/`, `platform/` не импортируют React и DOM. Они переносятся в любой стек (ADR 0001).
 - Внутри `src/contract` импорты с расширением `.ts`: эти файлы читает и Node-скрипт генерации OpenAPI.
+
+### Правила импорта (проверяет `src/architecture.test.ts`)
+
+| #   | Правило                                                                                                                                                                                             |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Экраны (`features/`, `screens/`) и оболочка (`app/`) не импортируют `api/`, `platform/`, `@tanstack/react-query`, `app/services`. Корень композиции — `main.tsx`, `app/App.tsx`, `app/services.tsx` |
+| 2   | В `functions/` нет `.tsx`, `react-router`, экранов и `app/`. Исключение — `functions/core/useDeps.ts` (подключает сервисы). Сценарии (не `use*.ts`) не импортируют React                            |
+| 3   | Между функциями нет циклов. `functions/core` не импортирует функции                                                                                                                                 |
+| 4   | `domain/`, `contract/`, `api/` не импортируют React, React DOM и роутер                                                                                                                             |
+| 5   | Адреса экранов записаны только в `functions/core/paths.ts`                                                                                                                                          |
+
+Файлы, которые ещё не переведены, записаны в тесте списком исключений. Тест падает и на новое нарушение, и на исключение, которое уже не нужно. К концу шага A список пуст.
 
 ## Папки
 
@@ -30,14 +44,16 @@ frontend/
     theme/      tokens.ts (цвета, шрифты, размеры) · global.css
     ui/         BigButton · Card · StatusBadge · StatePill · DemoBadge · Icon · Logo · Screen · Field · siteStatus
     app/        App · routes · Layout (шапка, вкладки/меню) · RoleContext · roles · services · Toaster · QueryState · ShareButton
-    features/   roles · trail · search-hq · weekends · last-battle · archive · chronicle — у каждого свой routes.tsx
+    functions/  core/ (deps · deviceMemory · form · queryKeys · paths · permissions) · <функция>/ (сценарии, хуки, тесты, index.ts)
+    features/   roles · trail · search-hq · weekends · last-battle · archive · chronicle — экраны; на шаге B → screens/<раздел>
     config/     env.ts (проверка переменных окружения) · region.ts (регион, тексты, источники)
     test/       setup · renderApp · MapViewStub
   fixtures/jury/   данные в формате жюри (сейчас — демо, сгенерированы по схеме)
   scripts/         build-fixtures · gen-openapi · tunnel.sh · deploy.sh
   deploy/          Caddyfile
   e2e/             Playwright: сценарии, helpers (скриншоты, axe, ошибки консоли)
-  docs/            ARCHITECTURE · adr/ · HANDOFF
+  e2e-visual/      визуальный контроль рефакторинга: эталонные снимки 22 экранов × 2 вьюпорта (`npm run visual`)
+  docs/            ARCHITECTURE · FEATURES (реестр функций) · adr/ · HANDOFF · design/reference.html
 ```
 
 ## Публичный API общих модулей (зафиксирован до запуска агентов)
@@ -78,12 +94,14 @@ frontend/
 - Роль (`app/roles.ts`) задаёт порядок вкладок и домашний экран: семья → `/trail`, волонтёр и командир → `/search`, краевед → `/last-battle`.
 - Телефон: вкладки снизу. Ноутбук (от 64rem): меню слева. Точки перелома в rem — при масштабе 200 % включается мобильная раскладка.
 
-## Как добавить модуль
+## Как добавить функцию
 
-1. Создайте `src/features/<модуль>/` с экранами и `routes.tsx` (массив `RouteObject`).
-2. Подключите `routes` в `src/app/routes.tsx`, при необходимости — вкладку в `app/roles.ts`.
-3. Новые данные — сначала сущность в `contract/schemas.ts` и эндпоинт в `contract/endpoints.ts`, затем реализация в `api/mock/mockApi.ts` (TypeScript не даст забыть), затем `npm run contract`.
-4. Тесты модуля — рядом (`*.test.tsx`) и сценарий в `e2e/`.
+1. `src/functions/<функция>/`: сценарии `(deps, input) → Result` с тестами на mock-API, хуки `use*.ts`, `index.ts`. Строка в `docs/FEATURES.md` с модулем и тестами.
+2. Ключи кэша — в `functions/core/queryKeys.ts`, адреса — в `functions/core/paths.ts`, память на устройстве — слот в `functions/core/deviceMemory.ts`, права — действие в `functions/core/permissions.ts`.
+3. Экран собирает её из хуков: `src/features/<модуль>/` с экранами и `routes.tsx` (массив `RouteObject`).
+4. Подключите `routes` в `src/app/routes.tsx`, при необходимости — вкладку в `app/roles.ts`.
+5. Новые данные — сначала сущность в `contract/schemas.ts` и эндпоинт в `contract/endpoints.ts`, затем реализация в `api/mock/mockApi.ts` (TypeScript не даст забыть), затем `npm run contract`.
+6. Компонентные тесты экрана — рядом (`*.test.tsx`), сценарий — в `e2e/`.
 
 ## Переключение на живой бэкенд
 
