@@ -19,10 +19,6 @@ const demoText: Source = {
   kind: 'demo',
   title: 'Демо-текст прототипа, требует проверки краеведом',
 }
-const caseNote: Source = {
-  kind: 'literature',
-  title: 'Историческая справка из кейса хакатона «Маршруты победы»',
-}
 const desantBook: Source = {
   kind: 'literature',
   title: 'Овчинников А. «Десант в Орле» (1998)',
@@ -123,7 +119,7 @@ export const routes: Route[] = [
           answerIndex: 1,
           explanation: 'Три: 9-я, 10-я и 201-я воздушно-десантные бригады.',
         },
-        sources: [caseNote, desantBook],
+        sources: [desantBook],
       },
       {
         id: 'okop',

@@ -105,12 +105,14 @@ export function SearchScreen() {
           </Notice>
         </div>
       )}
+      {/* Одна пометка на экран вместо плашки на каждой карточке: данные честно помечены, экран не пестрит */}
+      <p className={s.demoNote} data-testid="search-demo-note">
+        <DemoBadge /> Отряды, заявки, сборы и счётчик на этом экране — демонстрационные
+      </p>
       <QueryState query={stats} what="счётчик">
         {(st) => (
           <p className={s.counter} data-testid="found-counter">
-            <span className={s.counterLabel}>
-              Найдено бойцов за месяц: <DemoBadge />
-            </span>
+            <span className={s.counterLabel}>Найдено бойцов за месяц:</span>
             <strong className={s.counterValue}>{st.foundThisMonth}</strong>
             <small className={s.counterSource}>
               Источник: сводки поисковых отрядов региона (демо).
@@ -198,9 +200,7 @@ export function SearchScreen() {
                   .map((t) => (
                     <li key={t.id}>
                       <Card as="div" testID={`team-${t.id}`}>
-                        <h3>
-                          Отряд «{t.name}» {t.demo && <DemoBadge />}
-                        </h3>
+                        <h3>Отряд «{t.name}»</h3>
                         <p className={s.meta}>{t.region}</p>
                         <label htmlFor={`budget-${t.id}`}>
                           Собрано {formatRub(t.budgetCollectedRub)} из {formatRub(t.budgetGoalRub)}
