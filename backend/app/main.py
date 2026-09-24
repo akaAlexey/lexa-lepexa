@@ -57,9 +57,22 @@ class Subscription(Base):
     user_key:Mapped[str]=mapped_column(String(255));location:Mapped[Any]=mapped_column(Geography(geometry_type="POINT",srid=4326))
 class Notification(Base):
     __tablename__="notifications"
-    id:Mapped[str]=mapped_column(String(50),primary_key=True);kind:Mapped[str]=mapped_column(String(50));site_id:Mapped[str]=mapped_column(ForeignKey("last_battle_sites.id"))
-    user_key:Mapped[str]=mapped_column(String(255));distance_km:Mapped[float]=mapped_column(Float);title:Mapped[str]=mapped_column(String(255))
-    body:Mapped[str]=mapped_column(Text);created_at:Mapped[datetime]=mapped_column(DateTime(timezone=True),default=now)
+    id:Mapped[str]=mapped_column(String(50),primary_key=True)
+    kind:Mapped[str]=mapped_column(String(50))
+    site_id:Mapped[str]=mapped_column(ForeignKey("last_battle_sites.id"))
+    user_key:Mapped[str]=mapped_column(String(255))
+    distance_km:Mapped[float]=mapped_column(Float)
+    title:Mapped[str]=mapped_column(String(255))
+    body:Mapped[str]=mapped_column(Text)
+    created_at:Mapped[datetime]=mapped_column(DateTime(timezone=True),default=now)
+    # Full-domain notification fields. The legacy P0 fields above are kept
+    # for backward compatibility with the current frontend contract.
+    user_id:Mapped[str|None]=mapped_column(String(50),ForeignKey("users.id"))
+    type:Mapped[str|None]=mapped_column(String(50))
+    message:Mapped[str|None]=mapped_column(Text)
+    data:Mapped[dict|None]=mapped_column(JSON)
+    is_read:Mapped[bool]=mapped_column(Boolean,default=False)
+    read_at:Mapped[datetime|None]=mapped_column(DateTime(timezone=True))
 
 class M(BaseModel): model_config=ConfigDict(populate_by_name=True)
 class Source(M): kind:str;title:str;url:str|None=None
@@ -399,18 +412,6 @@ class Media(Base):
     description: Mapped[str | None] = mapped_column(Text)
     size_bytes: Mapped[int | None] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
-
-class AppNotification(Base):
-    __tablename__ = "app_notifications"
-    id: Mapped[str] = mapped_column(String(50), primary_key=True)
-    user_id: Mapped[str] = mapped_column(String(50), ForeignKey("users.id"))
-    type: Mapped[str] = mapped_column(String(50))
-    title: Mapped[str] = mapped_column(String(255))
-    message: Mapped[str] = mapped_column(Text)
-    data: Mapped[dict | None] = mapped_column(JSON)
-    is_read: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
-    read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 class AuditLog(Base):
     __tablename__ = "audit_logs"
