@@ -34,6 +34,7 @@ const EXCEPTIONS: Record<string, readonly Rule[]> = {
   'features/last-battle/LastBattleScreen.tsx': ['page-services', 'paths'],
   'features/last-battle/NewSiteScreen.tsx': ['page-services', 'paths'],
   'features/last-battle/SiteScreen.tsx': ['page-services', 'paths'],
+  'features/last-battle/SiteStatusAction.tsx': ['page-services'],
   'features/last-battle/routes.tsx': ['paths'],
   'features/live-photo/ArView.tsx': ['page-services'],
   'features/live-photo/LivePhotoScreen.tsx': ['page-services'],
