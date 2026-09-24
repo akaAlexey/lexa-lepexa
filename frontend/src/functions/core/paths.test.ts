@@ -29,6 +29,9 @@ const SAMPLE: Record<ScreenId, string> = {
   newStory: paths.newStory(),
   story: paths.story('ST01'),
   chronicle: paths.chronicle(),
+  livePhotos: paths.livePhotos(),
+  newLivePhoto: paths.newLivePhoto(),
+  livePhoto: paths.livePhoto('soldier'),
   demo: paths.demo(),
 }
 
@@ -51,6 +54,9 @@ describe('адреса экранов', () => {
       newStory: '/archive/new',
       story: '/archive/ST01',
       chronicle: '/chronicle',
+      livePhotos: '/live',
+      newLivePhoto: '/live/new',
+      livePhoto: '/live/soldier',
       demo: '/demo',
     })
   })

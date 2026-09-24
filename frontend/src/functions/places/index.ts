@@ -1,4 +1,4 @@
-/** Функция «Места гибели» (L1–L4): места и захоронения, карточка, «готов помочь», публикация места. */
+/** Функция «Места гибели» (L1–L5): места и захоронения, карточка, «готов помочь», публикация места. */
 export {
   getPlace,
   helpRaise,
@@ -16,6 +16,17 @@ export {
   type NewPlaceContext,
   type NewPlaceValues,
 } from './newPlaceForm.ts'
+export {
+  ARCHIVE_KINDS,
+  changeStatus,
+  statusActionFor,
+  statusChangeProblem,
+  statusSource,
+  type ArchiveKind,
+  type StatusAction,
+  type StatusChangeInput,
+} from './changeStatus.ts'
+export { useChangeStatus } from './useChangeStatus.ts'
 export { useGraves, usePlace, usePlaces } from './usePlaces.ts'
 export { useHelpRaise } from './useHelpRaise.ts'
 export { useNewPlaceForm, type NewPlaceForm, type NewPlaceProblem } from './useNewPlaceForm.ts'

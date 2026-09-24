@@ -1,13 +1,18 @@
 import type { Fundraiser, Team, VolunteerRequest } from '../../contract/schemas.ts'
 import { formatDayRu } from '../../domain/format.ts'
-import { progressPercent } from '../../domain/fundraising.ts'
 import { describeRoles } from '../../domain/requests.ts'
+import { fundProgress } from '../../functions/fundraising/index.ts'
 import { Button } from '../../ui/Button.tsx'
 import { Card } from '../../ui/Card.tsx'
-import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Icon } from '../../ui/Icon.tsx'
-import { formatNumberRu } from './queries.ts'
 import s from './search.module.css'
+
+const numberRu = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 })
+
+/** 15000 → «15 000» (без знака валюты — для «Собрано: 15 000 из 50 000 ₽»). */
+function formatNumberRu(n: number): string {
+  return numberRu.format(n)
+}
 
 interface Props {
   request: VolunteerRequest
@@ -34,9 +39,7 @@ export function RequestCard({
   const headingId = `request-title-${r.id}`
   return (
     <Card testID={`request-card-${r.id}`} aria-labelledby={headingId}>
-      <h3 id={headingId}>
-        {r.title} {r.demo && <DemoBadge />}
-      </h3>
+      <h3 id={headingId}>{r.title}</h3>
       <p className={s.meta}>
         {team ? `Отряд «${team.name}»` : 'Поисковый отряд'} · {r.place}
       </p>
@@ -49,12 +52,7 @@ export function RequestCard({
           <label htmlFor={`fund-${r.id}`}>
             Собрано: {formatNumberRu(f.collectedRub)} из {formatNumberRu(f.goalRub)} ₽
           </label>
-          <progress
-            id={`fund-${r.id}`}
-            className={s.progress}
-            max={100}
-            value={progressPercent(f.collectedRub, f.goalRub)}
-          />
+          <progress id={`fund-${r.id}`} className={s.progress} max={100} value={fundProgress(f)} />
         </>
       )}
       <div className={s.actions}>

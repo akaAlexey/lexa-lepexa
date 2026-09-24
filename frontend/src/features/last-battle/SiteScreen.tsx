@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
 import { ShareButton } from '../../app/ShareButton.tsx'
-import type { LastBattleSite } from '../../contract/schemas.ts'
+import type { LastBattleSite, SiteStatus } from '../../contract/schemas.ts'
 import { describeFighters, NOTIFY_RADIUS_KM } from '../../domain/lastBattle.ts'
 import { useRole } from '../../app/RoleContext.tsx'
 import { paths } from '../../functions/core/paths.ts'
@@ -9,6 +10,7 @@ import { can } from '../../functions/core/permissions.ts'
 import {
   needsRaising as siteNeedsRaising,
   readNotified,
+  statusActionFor,
   useHelpRaise,
   usePlace,
 } from '../../functions/places/index.ts'
@@ -20,6 +22,7 @@ import { Notice } from '../../ui/Notice.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { SourceList } from '../../ui/SourceList.tsx'
 import { StatusBadge } from '../../ui/StatusBadge.tsx'
+import { SiteStatusAction, StatusChanged } from './SiteStatusAction.tsx'
 import s from './lastBattle.module.css'
 
 function HelpAction({ site }: { site: LastBattleSite }) {
@@ -54,6 +57,10 @@ function SiteCard({ site, notified }: { site: LastBattleSite; notified: number |
   // Защита от «чёрных копателей»: точные координаты — только поисковикам и краеведам.
   // Это витрина; настоящее скрытие должен делать сервер (docs/BACKEND_REQUESTS.md).
   const seesExactCoords = can(roleId, 'place.exactCoords')
+  const statusAction = statusActionFor(roleId, site.status)
+  // Проверка по архиву — главное дело краеведа на этом месте: большая кнопка у неё
+  const confirmIsMain = statusAction === 'confirm'
+  const [changedTo, setChangedTo] = useState<SiteStatus>()
   return (
     <>
       {notified !== undefined && (
@@ -76,7 +83,16 @@ function SiteCard({ site, notified }: { site: LastBattleSite; notified: number |
           Отметить ещё одно место
         </BigButton>
       ) : (
-        needsRaising && <HelpAction site={site} />
+        needsRaising && !confirmIsMain && <HelpAction site={site} />
+      )}
+      {changedTo && <StatusChanged status={changedTo} />}
+      {statusAction && (
+        <SiteStatusAction
+          site={site}
+          action={statusAction}
+          main={confirmIsMain}
+          onDone={setChangedTo}
+        />
       )}
       <Card as="section" aria-labelledby="site-facts">
         <h2 id="site-facts">Что известно</h2>
