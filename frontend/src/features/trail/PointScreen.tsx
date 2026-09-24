@@ -1,9 +1,17 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
 import { ShareButton } from '../../app/ShareButton.tsx'
 import type { Route, RoutePoint } from '../../contract/schemas.ts'
-import { checkAnswer } from '../../domain/trail.ts'
+import { paths } from '../../functions/core/paths.ts'
+import {
+  afterPoint,
+  findPoint,
+  findRoute,
+  POINT_ICON,
+  useQuestProgress,
+  useRoutes,
+} from '../../functions/quest/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
@@ -11,14 +19,20 @@ import { Icon } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { SourceList } from '../../ui/SourceList.tsx'
-import { POINT_ICON } from './pointKinds.ts'
 import s from './trail.module.css'
-import { finishUrl, pointUrl, useQuestProgress, useRoutes } from './useTrail.ts'
 
 type Answer = { index: number; correct: boolean }
 
 /** Прогресс маршрута кружками из макета: пройденные — ✓, текущая — оранжевая. Для скринридера — текст «Точка N из M». */
-function Stepper({ route, index, done }: { route: Route; index: number; done: Set<string> }) {
+function Stepper({
+  route,
+  index,
+  done,
+}: {
+  route: Route
+  index: number
+  done: ReadonlySet<string>
+}) {
   return (
     <ol className={s.stepper} aria-hidden="true">
       {route.points.map((p, i) => (
@@ -38,11 +52,10 @@ function Stepper({ route, index, done }: { route: Route; index: number; done: Se
 }
 
 function PointCard({ route, point, index }: { route: Route; point: RoutePoint; index: number }) {
-  const { progress, markDone } = useQuestProgress(route.id)
-  const done = useMemo(() => new Set(progress.donePointIds), [progress])
+  const { done, answer: check } = useQuestProgress(route.id)
   const [answer, setAnswer] = useState<Answer>()
   const solved = answer?.correct === true
-  const next = route.points[index + 1]
+  const after = afterPoint(route, index)
   const kind = POINT_ICON[point.kind]
 
   // Ответ и кнопка «дальше» появляются под вариантами — на телефоне за краем экрана. Показываем их.
@@ -52,9 +65,7 @@ function PointCard({ route, point, index }: { route: Route; point: RoutePoint; i
   }, [answer])
 
   const choose = (optionIndex: number) => {
-    const correct = checkAnswer(point, optionIndex)
-    setAnswer({ index: optionIndex, correct })
-    if (correct) markDone(point.id)
+    setAnswer({ index: optionIndex, correct: check(point, optionIndex) })
   }
 
   return (
@@ -134,12 +145,12 @@ function PointCard({ route, point, index }: { route: Route; point: RoutePoint; i
 
       <div ref={resultRef}>
         {solved &&
-          (next ? (
-            <BigButton to={pointUrl(route.id, next.id)} icon="route" testID="point-next">
+          (!after.finish ? (
+            <BigButton to={after.to} icon="route" testID="point-next">
               К следующей точке
             </BigButton>
           ) : (
-            <BigButton to={finishUrl(route.id)} icon="flag" testID="point-next">
+            <BigButton to={after.to} icon="flag" testID="point-next">
               Завершить тропу
             </BigButton>
           ))}
@@ -152,7 +163,7 @@ function PointNotFound() {
   return (
     <Screen title="Точка не найдена" testID="screen-point-not-found">
       <p>Такой точки на маршруте нет. Вернитесь к карте и выберите точку там.</p>
-      <BigButton to="/trail" icon="route" testID="point-back">
+      <BigButton to={paths.trail()} icon="route" testID="point-back">
         К маршруту
       </BigButton>
     </Screen>
@@ -165,11 +176,12 @@ export function PointScreen() {
   return (
     <QueryState query={routes} what="маршрут">
       {(list) => {
-        const route = list.find((r) => r.id === routeId)
-        const index = route?.points.findIndex((p) => p.id === pointId) ?? -1
-        const point = route?.points[index]
-        if (!route || !point) return <PointNotFound />
-        return <PointCard key={point.id} route={route} point={point} index={index} />
+        const route = findRoute(list, routeId)
+        const found = findPoint(route, pointId)
+        if (!route || !found) return <PointNotFound />
+        return (
+          <PointCard key={found.point.id} route={route} point={found.point} index={found.index} />
+        )
       }}
     </QueryState>
   )
