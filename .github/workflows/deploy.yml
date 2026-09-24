@@ -2,7 +2,7 @@ name: Deploy frontend to GitHub Pages
 
 on:
   push:
-    branches: [frontend]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -29,22 +29,26 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Router basename for project Pages
-        run: |
-          sed -i 's#createBrowserRouter(appRoutes)#createBrowserRouter(appRoutes, { basename: import.meta.env.BASE_URL })#' src/main.tsx
-
       - name: Install deps
         run: npm ci
 
       - name: Build
         run: npm run build -- --base=/lexa-lepexa/
         env:
-          VITE_API_MODE: live
-          VITE_API_URL: https://a49734-6295.q.d-f.pw/api/v1
+          # Демо для жюри не зависит от сервера: адрес бесплатного туннеля меняется, а на live
+          # пока нет 16 из 27 операций контракта. Live включать, когда бэкенд закроет контракт:
+          # VITE_API_MODE: live
+          # VITE_API_URL: https://<постоянный-домен>/api/v1
+          VITE_API_MODE: mock
           VITE_TILES: openfreemap
 
       - name: SPA fallback for deep links
         run: cp dist/index.html dist/404.html
+
+      - name: Smoke check of the build
+        run: |
+          test -f dist/index.html
+          grep -q '/lexa-lepexa/assets/' dist/index.html
 
       - uses: actions/upload-pages-artifact@v3
         with:
