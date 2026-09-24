@@ -2,14 +2,32 @@ import { paths } from '../functions/core/paths.ts'
 import type { RoleId } from '../functions/core/permissions.ts'
 import type { IconName } from '../ui/Icon.tsx'
 
-export type TabId = 'trail' | 'search' | 'weekends' | 'lastBattle' | 'archive'
+/** Четыре раздела дизайна «Стол и газета» (ADR 0011). Подписи в меню видны всегда. */
+export type TabId = 'map' | 'events' | 'stories' | 'other'
 
-export const TABS: Record<TabId, { path: string; label: string; icon: IconName }> = {
-  trail: { path: paths.trail(), label: 'Тропа', icon: 'route' },
-  search: { path: paths.search(), label: 'Поисковикам', icon: 'shovel' },
-  weekends: { path: paths.weekends(), label: 'Выходные', icon: 'calendar' },
-  lastBattle: { path: paths.lastBattle(), label: 'Последний бой', icon: 'pin' },
-  archive: { path: paths.archive(), label: 'Истории', icon: 'story' },
+export const TAB_ORDER: readonly TabId[] = ['map', 'events', 'stories', 'other']
+
+export const TABS: Record<TabId, { path: string; label: string; icon: IconName; section: RegExp }> =
+  {
+    map: {
+      path: paths.map(),
+      label: 'Карта',
+      icon: 'map',
+      section: /^\/(map|trail|last-battle|chronicle)(\/|$)/,
+    },
+    events: {
+      path: paths.events(),
+      label: 'Мероприятия',
+      icon: 'calendar',
+      section: /^\/(events|search|weekends)(\/|$)/,
+    },
+    stories: { path: paths.archive(), label: 'Истории', icon: 'book', section: /^\/archive(\/|$)/ },
+    other: { path: paths.other(), label: 'Другое', icon: 'menu', section: /^\/(other|demo|live)?(\/|$)/ },
+  }
+
+/** Раздел меню, к которому относится адрес: вложенные экраны подсвечивают свой раздел. */
+export function tabOf(pathname: string): TabId | undefined {
+  return TAB_ORDER.find((id) => TABS[id].section.test(pathname))
 }
 
 export type { RoleId } from '../functions/core/permissions.ts'
@@ -21,8 +39,8 @@ export interface Role {
   short: string
   description: string
   icon: IconName
-  /** Порядок вкладок: первая — домашний экран роли. */
-  tabs: readonly TabId[]
+  /** Домашний экран роли: главный сценарий — не больше 3 нажатий отсюда (ADR 0010). */
+  home: string
 }
 
 /** Роли P0. Школа/клуб и гид — P2 (коллективные заявки). */
@@ -33,7 +51,7 @@ export const ROLES: readonly Role[] = [
     short: 'Семья',
     description: 'Прогулка-квест с ребёнком по местам боёв',
     icon: 'family',
-    tabs: ['trail', 'lastBattle', 'weekends', 'search', 'archive'],
+    home: paths.trail(),
   },
   {
     id: 'volunteer',
@@ -41,7 +59,7 @@ export const ROLES: readonly Role[] = [
     short: 'Волонтёр',
     description: 'Помочь отряду делом или рублём',
     icon: 'shovel',
-    tabs: ['search', 'weekends', 'lastBattle', 'trail', 'archive'],
+    home: paths.search(),
   },
   {
     id: 'commander',
@@ -49,7 +67,7 @@ export const ROLES: readonly Role[] = [
     short: 'Командир',
     description: 'Набрать людей и отметить находку',
     icon: 'flag',
-    tabs: ['search', 'lastBattle', 'weekends', 'trail', 'archive'],
+    home: paths.search(),
   },
   {
     id: 'verifier',
@@ -57,16 +75,8 @@ export const ROLES: readonly Role[] = [
     short: 'Краевед',
     description: 'Проверить истории и подтвердить данные',
     icon: 'book',
-    tabs: ['archive', 'lastBattle', 'trail', 'search', 'weekends'],
+    home: paths.archive(),
   },
-]
-
-export const DEFAULT_TABS: readonly TabId[] = [
-  'trail',
-  'search',
-  'weekends',
-  'lastBattle',
-  'archive',
 ]
 
 export function roleById(id: string | undefined): Role | undefined {
@@ -74,5 +84,5 @@ export function roleById(id: string | undefined): Role | undefined {
 }
 
 export function homePath(role: Role): string {
-  return TABS[role.tabs[0] ?? 'trail'].path
+  return role.home
 }

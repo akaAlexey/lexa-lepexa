@@ -1,8 +1,8 @@
 .frame {
   position: relative;
+  border: 1px solid var(--color-ink);
   border-radius: var(--radius-card);
   overflow: hidden;
-  box-shadow: var(--shadow-float);
   /* Бумажная подложка видна, пока тайлы грузятся или если сети нет. */
   background-color: var(--color-map-land);
   background-image: var(--paper-texture);
@@ -21,12 +21,13 @@
   .frame {
     position: fixed;
     z-index: 1;
-    top: var(--float-gap);
-    right: var(--float-gap);
-    bottom: var(--float-gap);
-    left: calc(var(--rail-width) + 3 * var(--float-gap) + var(--panel-width));
-    border-radius: var(--radius-panel);
-    box-shadow: var(--shadow-panel);
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: calc(var(--rail-width) + var(--edge) + var(--panel-width));
+    border-radius: 0;
+    border-left: 1px solid var(--color-ink);
+    box-shadow: none;
   }
 
   .map {

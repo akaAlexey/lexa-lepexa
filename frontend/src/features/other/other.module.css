@@ -1,0 +1,196 @@
+/* «Другое»: одна большая панель, шапка — раскрывающийся список разделов (ADR 0011) */
+.hub {
+  border: 1px solid var(--color-ink);
+  background: rgb(251 246 236 / 0.86);
+}
+
+.hubHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 4.5rem;
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  border-bottom: 1px solid var(--color-ink);
+  background: rgb(232 222 196 / 0.7);
+  color: var(--color-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.hubTitle {
+  display: grid;
+}
+
+.hubName {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.hubHint {
+  color: var(--color-ink-muted);
+  font-size: 0.9rem;
+}
+
+.arrowDown {
+  transition: transform 0.15s;
+}
+
+.arrowUp {
+  transform: rotate(180deg);
+  transition: transform 0.15s;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list li + li {
+  border-top: 1px solid var(--color-line-strong);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 4.5rem;
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  background: transparent;
+  color: var(--color-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.item:hover,
+.item[aria-current='true'] {
+  background: rgb(43 42 38 / 0.05);
+}
+
+.itemIcon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  background: var(--color-olive);
+  color: var(--color-surface);
+}
+
+.itemText {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.itemTitle {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.itemHint {
+  color: var(--color-ink-muted);
+  font-size: 0.95rem;
+}
+
+.lock {
+  display: inline-grid;
+  grid-template-columns: auto 3.6rem;
+  align-items: center;
+  gap: 0.2rem;
+  flex: none;
+  color: var(--color-ink-muted);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.body {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.body p {
+  margin: 0;
+}
+
+.form {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 30rem;
+}
+
+.password {
+  position: relative;
+}
+
+.showPassword {
+  position: absolute;
+  right: var(--space-1);
+  bottom: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-2);
+  border: 0;
+  background: transparent;
+  color: var(--color-olive);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.password input {
+  padding-right: 7.5rem;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+}
+
+.check input {
+  width: 1.3rem;
+  height: 1.3rem;
+  accent-color: var(--color-olive);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+
+.linkButton {
+  min-height: var(--touch-min);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-olive);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+}
+
+.muted {
+  color: var(--color-ink-muted);
+  font-size: 0.95rem;
+}
+
+.profile {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+}

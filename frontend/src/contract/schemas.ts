@@ -22,6 +22,16 @@ const isoDateTime = z.iso.datetime({ offset: true }).describe('Дата и вр�
 const rub = z.number().int().nonnegative().describe('Сумма в рублях')
 const lat = z.number().min(-90).max(90)
 const lon = z.number().min(-180).max(180)
+const minAge = z
+  .number()
+  .int()
+  .min(10)
+  .max(99)
+  .optional()
+  .describe('Минимальный возраст волонтёра, лет: в ленте «16+». Младше — только с родителями')
+const postedAt = isoDateTime
+  .optional()
+  .describe('Когда опубликовано: лента «Мероприятия» идёт по этой дате, новые сверху')
 
 export const LatLon = entity('LatLon', 'Координаты WGS84', z.object({ lat, lon }))
 
@@ -169,6 +179,7 @@ export const VolunteerRequest = entity(
     place: z.string().min(1),
     roles: z.array(z.object({ role: VolunteerRole, count: z.number().int().positive() })).min(1),
     joined: z.number().int().nonnegative(),
+    minAge,
     fundraiserId: id.optional(),
     lat: lat.optional().describe('Где нужны люди — для карты потребностей'),
     lon: lon.optional(),
@@ -180,7 +191,14 @@ export const VolunteerRequest = entity(
 export const NewVolunteerRequest = entity(
   'NewVolunteerRequest',
   'Создание заявки командиром',
-  VolunteerRequest.pick({ teamId: true, title: true, date: true, place: true, roles: true }),
+  VolunteerRequest.pick({
+    teamId: true,
+    title: true,
+    date: true,
+    place: true,
+    roles: true,
+    minAge: true,
+  }),
 )
 
 export const FundraiserPurpose = entity(
@@ -201,6 +219,7 @@ export const Fundraiser = entity(
     collectedRub: rub,
     lat: lat.optional().describe('Куда пойдут деньги — для карты потребностей'),
     lon: lon.optional(),
+    createdAt: postedAt,
     demo,
   }),
 )
@@ -242,7 +261,9 @@ export const Trip = entity(
     lon,
     spotsTotal: z.number().int().positive(),
     spotsTaken: z.number().int().nonnegative(),
+    minAge,
     checklist: z.array(ChecklistItem).min(1),
+    createdAt: postedAt,
     demo,
   }),
 )

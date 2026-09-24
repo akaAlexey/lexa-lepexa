@@ -2,8 +2,10 @@ import type { RouteObject } from 'react-router'
 import { routes as archive } from '../features/archive/routes.tsx'
 import { routes as chronicle } from '../features/chronicle/routes.tsx'
 import { routes as demoConsole } from '../features/demo-console/routes.tsx'
+import { routes as events } from '../features/events/routes.tsx'
 import { routes as lastBattle } from '../features/last-battle/routes.tsx'
 import { routes as livePhoto } from '../features/live-photo/routes.tsx'
+import { routes as other } from '../features/other/routes.tsx'
 import { RolePickerScreen } from '../features/roles/RolePickerScreen.tsx'
 import { routes as searchHq } from '../features/search-hq/routes.tsx'
 import { routes as trail } from '../features/trail/routes.tsx'
@@ -20,6 +22,7 @@ export const appRoutes: RouteObject[] = [
     element: <Layout />,
     children: [
       { index: true, element: <RolePickerScreen /> },
+      ...events,
       ...trail,
       ...searchHq,
       ...weekends,
@@ -27,6 +30,7 @@ export const appRoutes: RouteObject[] = [
       ...archive,
       ...chronicle,
       ...livePhoto,
+      ...other,
       ...demoConsole,
       { path: '*', element: <NotFoundScreen /> },
     ],

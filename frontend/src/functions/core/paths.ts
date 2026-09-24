@@ -1,10 +1,14 @@
 /**
  * Адреса экранов — единственное место, где записаны URL (правило теста архитектуры).
  * `patterns` — шаблоны для роутера, `paths` — готовые ссылки для экранов, уведомлений и «Поделиться».
- * Шаг A: адреса прежние. Шаг B (ADR 0009) меняет их здесь, а старые уходят в таблицу редиректов.
+ * Шаг B (ADR 0011): новые разделы «Карта» (/map), «Мероприятия» (/events), «Другое» (/other);
+ * прежние адреса остаются вложенными экранами этих разделов.
  */
 export const patterns = {
   home: '/',
+  map: '/map',
+  events: '/events',
+  other: '/other',
   trail: '/trail',
   point: '/trail/:routeId/point/:pointId',
   finish: '/trail/:routeId/finish',
@@ -32,6 +36,9 @@ const seg = encodeURIComponent
 
 export const paths = {
   home: () => patterns.home,
+  map: () => patterns.map,
+  events: () => patterns.events,
+  other: () => patterns.other,
   trail: () => patterns.trail,
   point: (routeId: string, pointId: string) => `/trail/${seg(routeId)}/point/${seg(pointId)}`,
   finish: (routeId: string) => `/trail/${seg(routeId)}/finish`,

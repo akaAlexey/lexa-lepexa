@@ -87,6 +87,23 @@ const livePhotoList = (raw: unknown): MyLivePhoto[] | undefined =>
 
 /** Все слоты приложения. Новый слот — только здесь (ключи не должны совпадать). */
 export const memory = {
+  /** Вход на этом устройстве (витрина ADR 0011): только логин в скрытом виде, пароль не хранится. */
+  account: memorySlot<{ login: string; since: string } | undefined>('account', undefined, (raw) =>
+    raw && typeof raw === 'object' && typeof (raw as { login?: unknown }).login === 'string'
+      ? (raw as { login: string; since: string })
+      : undefined,
+  ),
+  /** Изображения к историям, добавленные с этого устройства (до загрузки на сервер). */
+  storyImages: perId((storyId) =>
+    memorySlot<{ src: string; caption: string }[]>(`archive:images:${storyId}`, [], (raw) =>
+      Array.isArray(raw)
+        ? raw.filter(
+            (x): x is { src: string; caption: string } =>
+              typeof x?.src === 'string' && typeof x?.caption === 'string',
+          )
+        : undefined,
+    ),
+  ),
   /** Роль без регистрации. */
   role: memorySlot<string | undefined>('role', undefined),
   /** Прогресс квеста по маршруту. */
