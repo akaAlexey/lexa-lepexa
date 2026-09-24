@@ -2,31 +2,69 @@ import { endpoints, notificationStream, type EndpointName } from '../../contract
 import { ApiError, ContractError, type ApiClient, type EndpointMethods } from '../client.ts'
 
 interface LiveOptions {
+  /** Абсолютный (https://…/api/v1) или относительный (/api/v1 — тот же домен) адрес API. */
   baseUrl: string
+  /** Ключ демо-пользователя (X-Demo-User), пока нет входа. */
+  userKey?: string
   fetch?: typeof fetch
+  EventSource?: typeof EventSource
 }
 
 function fillPath(path: string, args: Record<string, unknown>): string {
   return path.replace(/\{(\w+)\}/g, (_, key: string) => encodeURIComponent(String(args[key])))
 }
 
+/** Текст ошибки сервера: FastAPI кладёт его в detail.message (свои ошибки) или detail[0].msg (валидация). */
+async function serverMessage(res: Response): Promise<string | undefined> {
+  try {
+    const body: unknown = await res.json()
+    const detail = (body as { detail?: unknown }).detail
+    if (detail && typeof detail === 'object' && 'message' in detail) {
+      return String((detail as { message: unknown }).message)
+    }
+    if (Array.isArray(detail) && detail[0] && typeof detail[0] === 'object' && 'msg' in detail[0]) {
+      return String((detail[0] as { msg: unknown }).msg)
+    }
+  } catch {
+    /* тело не JSON */
+  }
+  return undefined
+}
+
 /** Адаптер к реальному серверу. Каждый ответ проверяется схемой контракта. */
-export function createLiveApi({ baseUrl, fetch: fetchImpl = fetch }: LiveOptions): ApiClient {
+export function createLiveApi({
+  baseUrl,
+  userKey,
+  fetch: fetchImpl = (...args) => fetch(...args),
+  EventSource: EventSourceImpl = globalThis.EventSource,
+}: LiveOptions): ApiClient {
   const root = baseUrl.replace(/\/$/, '')
+  const identity: Record<string, string> = userKey ? { 'X-Demo-User': userKey } : {}
 
   const call = async (name: EndpointName, args: Record<string, unknown> = {}) => {
     const e = endpoints[name]
-    const init: RequestInit = { method: e.method, headers: { Accept: 'application/json' } }
+    const init: RequestInit = {
+      method: e.method,
+      headers: { Accept: 'application/json', ...identity },
+    }
     if ('body' in e && e.body) {
       init.body = JSON.stringify(e.body.parse(args.body))
       init.headers = { ...init.headers, 'Content-Type': 'application/json' }
     }
-    const res = await fetchImpl(root + fillPath(e.path, args), init)
-    if (!res.ok) throw new ApiError(`${e.method} ${e.path}: HTTP ${res.status}`, res.status)
+    let res: Response
+    try {
+      res = await fetchImpl(root + fillPath(e.path, args), init)
+    } catch {
+      throw new ApiError('Нет связи с сервером. Проверьте интернет и попробуйте ещё раз', 0)
+    }
+    if (!res.ok) {
+      const message = await serverMessage(res)
+      throw new ApiError(message ?? `${e.method} ${e.path}: HTTP ${res.status}`, res.status)
+    }
     const parsed = e.response.safeParse(await res.json())
     if (!parsed.success) {
       const error = new ContractError(`${e.method} ${e.path}`, parsed.error.message)
-      if (import.meta.env.DEV) console.error(error)
+      console.error(error)
       throw error
     }
     return parsed.data
@@ -42,9 +80,18 @@ export function createLiveApi({ baseUrl, fetch: fetchImpl = fetch }: LiveOptions
   return {
     ...methods,
     onNotification(listener) {
-      const source = new EventSource(root + notificationStream.path)
+      if (!EventSourceImpl) return () => undefined
+      // EventSource не умеет заголовки — ключ пользователя идёт параметром.
+      const query = userKey ? `?user=${encodeURIComponent(userKey)}` : ''
+      const source = new EventSourceImpl(root + notificationStream.path + query)
       source.onmessage = (msg: MessageEvent<string>) => {
-        const parsed = notificationStream.event.safeParse(JSON.parse(msg.data))
+        let data: unknown
+        try {
+          data = JSON.parse(msg.data)
+        } catch {
+          return
+        }
+        const parsed = notificationStream.event.safeParse(data)
         if (parsed.success) listener(parsed.data)
         else console.error(new ContractError(notificationStream.path, parsed.error.message))
       }
