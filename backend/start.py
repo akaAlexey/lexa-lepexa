@@ -28,6 +28,14 @@ def main() -> None:
         check=True,
     )
 
+    # Load the demo records required by the live hackathon MVP.
+    # seed.py is idempotent, so restarting the service does not create
+    # duplicate rows or fail on existing demo data.
+    subprocess.run(
+        [sys.executable, str(ROOT / "app" / "seed.py")],
+        check=True,
+    )
+
     host = os.getenv("HOST", "0.0.0.0")
     port = os.getenv("PORT", "8000")
 
