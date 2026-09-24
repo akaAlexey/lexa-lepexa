@@ -32,10 +32,6 @@ const EXCEPTIONS: Record<string, readonly Rule[]> = {
   'features/live-photo/LivePhotoScreen.tsx': ['page-services'],
   'features/live-photo/livePhotos.ts': ['page-services'],
   'features/live-photo/routes.tsx': ['paths'],
-  'features/search-hq/DonateDialog.tsx': ['page-services'],
-  'features/search-hq/NewRequestScreen.tsx': ['page-services', 'paths'],
-  'features/search-hq/SearchScreen.tsx': ['page-services', 'paths'],
-  'features/search-hq/routes.tsx': ['paths'],
 }
 
 type Rule = 'page-services' | 'function-purity' | 'core-independent' | 'pure-layers' | 'paths'
