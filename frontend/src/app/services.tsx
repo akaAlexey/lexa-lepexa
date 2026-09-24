@@ -1,33 +1,15 @@
 import { createContext, useContext, type ReactNode } from 'react'
 import type { ApiClient } from '../api/index.ts'
+import type { Services } from '../functions/core/deps.ts'
 import { BUILD_ID } from '../config/build.ts'
-import type { LatLon, Subscription } from '../contract/schemas.ts'
+import type { Subscription } from '../contract/schemas.ts'
 import { NOTIFY_RADIUS_KM } from '../domain/lastBattle.ts'
 import { DEMO_POSITION_KEY, type Platform } from '../platform/index.ts'
 
 /** Ключ подписки на поисковую деятельность рядом — переживает перезагрузку. */
 export const SUBSCRIPTION_KEY = 'subscription'
 
-export interface DemoControls {
-  readonly buildId: string
-  /** Подставить демо-геопозицию (сохраняется на устройстве). */
-  setPosition(p: LatLon): void
-  /** Забыть всё на устройстве и вернуть mock-данные к исходным. */
-  reset(): void
-}
-
-/** Собственные действия пользователя: уведомления, пришедшие во время них, — о нём самом. */
-export interface OwnActions {
-  run<T>(action: () => Promise<T>): Promise<T>
-  active(): boolean
-}
-
-export interface Services {
-  api: ApiClient
-  platform: Platform
-  demo: DemoControls
-  own: OwnActions
-}
+export type { DemoControls, OwnActions, Services } from '../functions/core/deps.ts'
 
 export function createServices(api: ApiClient, platform: Platform): Services {
   let running = 0

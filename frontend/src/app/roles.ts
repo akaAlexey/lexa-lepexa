@@ -1,3 +1,4 @@
+import type { RoleId } from '../functions/core/permissions.ts'
 import type { IconName } from '../ui/Icon.tsx'
 
 export type TabId = 'trail' | 'search' | 'weekends' | 'lastBattle' | 'archive'
@@ -10,7 +11,7 @@ export const TABS: Record<TabId, { path: string; label: string; icon: IconName }
   archive: { path: '/archive', label: 'Истории', icon: 'story' },
 }
 
-export type RoleId = 'family' | 'volunteer' | 'commander' | 'verifier'
+export type { RoleId } from '../functions/core/permissions.ts'
 
 export interface Role {
   id: RoleId

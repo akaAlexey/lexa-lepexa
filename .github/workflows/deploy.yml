@@ -29,17 +29,18 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install deps
-        run: npm ci
-
       - name: Router basename for project Pages
         run: |
           sed -i 's#createBrowserRouter(appRoutes)#createBrowserRouter(appRoutes, { basename: import.meta.env.BASE_URL })#' src/main.tsx
 
+      - name: Install deps
+        run: npm ci
+
       - name: Build
         run: npm run build -- --base=/lexa-lepexa/
         env:
-          VITE_API_MODE: mock
+          VITE_API_MODE: live
+          VITE_API_URL: https://a49734-6295.q.d-f.pw/api/v1
           VITE_TILES: openfreemap
 
       - name: SPA fallback for deep links

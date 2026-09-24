@@ -1,3 +1,4 @@
+import { paths } from '../../functions/core/paths.ts'
 import { useQuery } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
 import { Link, useParams } from 'react-router'
@@ -131,7 +132,7 @@ function LivePhotoCard({ photo }: { photo: LivePhoto }) {
         </a>
       </p>
       <p>
-        <Link to="/live">Все «живые фото»</Link>
+        <Link to={paths.livePhotos()}>Все «живые фото»</Link>
       </p>
 
       {mode === 'camera' && video && (
@@ -158,7 +159,7 @@ export function LivePhotoScreen() {
     >
       {notFound ? (
         <p data-testid="live-not-found">
-          Такого снимка нет. <Link to="/live">Все «живые фото»</Link>
+          Такого снимка нет. <Link to={paths.livePhotos()}>Все «живые фото»</Link>
         </p>
       ) : (
         <QueryState query={photo} what="снимок">
