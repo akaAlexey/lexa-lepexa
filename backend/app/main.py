@@ -1,7 +1,8 @@
+from copy import deepcopy
 from datetime import date,datetime,timezone
 from uuid import uuid4
 import asyncio,json,math
-from fastapi import FastAPI,APIRouter,Depends,Header,HTTPException,Request
+from fastapi import FastAPI,APIRouter,Depends,Header,HTTPException,Request,Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel,ConfigDict,Field,AliasChoices
@@ -161,12 +162,13 @@ async def unsubscribe(id,s=Depends(db)):
     if not x: raise HTTPException(404,detail={"message":"Подписка не найдена"})
     await s.delete(x);await s.commit();return {"ok":True}
 @api.get("/notifications/stream")
-async def stream(request:Request,x_demo_user:str=Header("demo")):
+async def stream(request:Request,x_demo_user:str=Header("demo"),user:str|None=Query(None)):
+    stream_user=user or x_demo_user
     async def gen():
         seen=set()
         while not await request.is_disconnected():
             async with Session() as s:
-                rows=(await s.execute(select(Notification).where(Notification.user_key==x_demo_user).order_by(Notification.created_at))).scalars().all()
+                rows=(await s.execute(select(Notification).where(Notification.user_key==stream_user).order_by(Notification.created_at))).scalars().all()
                 for n in rows:
                     if n.id in seen: continue
                     seen.add(n.id)
@@ -174,6 +176,323 @@ async def stream(request:Request,x_demo_user:str=Header("demo")):
                     yield "data: "+json.dumps(p,ensure_ascii=False)+"\\n\\n"
             await asyncio.sleep(2)
     return StreamingResponse(gen(),media_type="text/event-stream")
+
+
+# ---------------------------------------------------------------------------
+# Demo domain API
+# The frontend contract already contains these modules. Until the full
+# database-backed services are split out, the demo content lives in memory.
+# This keeps the hackathon prototype fully navigable in live mode.
+# ---------------------------------------------------------------------------
+
+DEMO_MEMORIALS = [
+    {"id":"osm-node-5832583820","lat":53.02707,"lon":36.95299,"name":"Блиндаж Горбатова","kind":"monument","osmUrl":"https://www.openstreetmap.org/node/5832583820"},
+    {"id":"osm-node-1659573526","lat":53.27615,"lon":35.67959,"name":"Братская могила","kind":"grave","osmUrl":"https://www.openstreetmap.org/node/1659573526"},
+    {"id":"osm-node-3824242584","lat":52.96799,"lon":36.07849,"name":"Братская могила","kind":"grave","osmUrl":"https://www.openstreetmap.org/node/3824242584"},
+    {"id":"osm-node-5604184856","lat":52.91741,"lon":35.99210,"name":"Ветеранам Орловского бронетанкового училища Танк Т-34-85","kind":"vehicle","osmUrl":"https://www.openstreetmap.org/node/5604184856"},
+    {"id":"osm-node-4825976528","lat":53.28111,"lon":36.56860,"name":"Вечный огонь","kind":"flame","osmUrl":"https://www.openstreetmap.org/node/4825976528"},
+    {"id":"osm-node-9230884301","lat":53.16878,"lon":36.24788,"name":"Военный мемориал погибшим в Великой Отечественной войне","kind":"monument","osmUrl":"https://www.openstreetmap.org/node/9230884301"},
+    {"id":"osm-node-3149024355","lat":53.45509,"lon":36.37631,"name":"Воинам 116-й Отдельной морской стрелковой бригады Тихоокеанского флота","kind":"monument","osmUrl":"https://www.openstreetmap.org/node/3149024355"},
+    {"id":"osm-node-2190091277","lat":52.96140,"lon":36.08852,"name":"Воинам 5-ой Орловской дивизии","kind":"monument","osmUrl":"https://www.openstreetmap.org/node/2190091277"},
+    {"id":"osm-node-4825564622","lat":53.46626,"lon":36.00630,"name":"Воинам Великой Отечественной войны (1941-1945)","kind":"monument","osmUrl":"https://www.openstreetmap.org/node/4825564622"}
+]
+
+DEMO_ROUTE_PATH = [
+    {"lat":52.96661,"lon":36.06760},
+    {"lat":52.96704,"lon":36.06727},
+    {"lat":52.96775,"lon":36.06760},
+    {"lat":52.96966,"lon":36.06888},
+    {"lat":52.97257,"lon":36.07025},
+    {"lat":52.97614,"lon":36.07182},
+    {"lat":52.97314,"lon":36.06703},
+    {"lat":52.97004,"lon":36.06804},
+    {"lat":52.96661,"lon":36.06760}
+]
+
+DEMO_ROUTES = [{
+    "id":"park-3km",
+    "title":"Тропа у Оки",
+    "summary":"Семейная прогулка на 3 км с четырьмя остановками и заданиями для ребёнка",
+    "lengthM":3000,
+    "durationMin":75,
+    "path":DEMO_ROUTE_PATH,
+    "demo":True,
+    "points":[
+        {
+            "id":"rubezh","kind":"battle","title":"Рубеж десантников",
+            "lat":52.96966,"lon":36.06888,
+            "story":"В октябре 1941 года 5-й воздушно-десантный корпус задержал врага под Орлом. Многие десантники погибли, и точные места их захоронений до сих пор неизвестны.",
+            "task":{"question":"Сколько бригад было в 5-м воздушно-десантном корпусе?","options":["Две","Три","Пять"],"answerIndex":1,"explanation":"Три: 9-я, 10-я и 201-я воздушно-десантные бригады."},
+            "sources":[{"kind":"literature","title":"Овчинников А. «Десант в Орле» (1998)"}]
+        },
+        {
+            "id":"okop","kind":"trench","title":"Окоп у дороги",
+            "lat":52.97412,"lon":36.06964,
+            "story":"Окоп полного профиля копали так, чтобы боец мог стрелять стоя и укрываться от осколков. Представь, сколько земли нужно было вынуть лопатой за одну ночь.",
+            "task":{"question":"Зачем окоп делали зигзагом, а не прямой линией?","options":["Так быстрее копать","Чтобы осколки не летели вдоль всего окопа","Чтобы было красивее"],"answerIndex":1,"explanation":"Изломы окопа останавливали осколки и взрывную волну."},
+            "sources":[{"kind":"demo","title":"Демо-текст прототипа, требует проверки краеведом"}]
+        },
+        {
+            "id":"shtab","kind":"hq","title":"Полевой штаб",
+            "lat":52.97314,"lon":36.06703,
+            "story":"В штабе получали и отправляли донесения. Важные сообщения шифровали, чтобы противник не узнал планы.",
+            "task":{"question":"Расшифруй донесение: каждая буква заменена следующей по алфавиту. «ПЛБ» — это…","options":["ОКА","ОРЁЛ","МЦЕНСК"],"answerIndex":0,"explanation":"П → О, Л → К, Б → А. Получается «ОКА» — река, на которой стоит Орёл."},
+            "sources":[{"kind":"demo","title":"Демо-текст прототипа, требует проверки краеведом"}]
+        },
+        {
+            "id":"salut","kind":"battle","title":"Первый салют",
+            "lat":52.97199,"lon":36.06972,
+            "story":"5 августа 1943 года Орёл был освобождён. В тот же вечер в Москве прогремел первый в годы войны артиллерийский салют — в честь освобождения Орла и Белгорода.",
+            "task":{"question":"В честь освобождения каких городов прогремел первый салют?","options":["Курска и Брянска","Орла и Белгорода","Тулы и Калуги"],"answerIndex":1,"explanation":"Орла и Белгорода. Поэтому Орёл называют городом первого салюта."},
+            "sources":[{"kind":"archive","title":"«Выстояли и победили! Орловская область в годы Великой Отечественной войны» (ГАОО, 2015)","url":"http://www.gosarchiv-orel.ru/"}]
+        }
+    ]
+}]
+
+DEMO_FUNDRAISERS = [
+    {"id":"F01","teamId":"T01","purpose":"fuel","title":"Бензин на Вахту Памяти","goalRub":50000,"collectedRub":15000,"lat":53.28,"lon":36.57,"demo":True},
+    {"id":"F02","teamId":"T03","purpose":"equip","title":"Экипировать отряд: щупы и металлоискатель","goalRub":40000,"collectedRub":9000,"lat":53.21,"lon":36.45,"demo":True},
+    {"id":"F03","teamId":"T04","purpose":"raise_fighter","title":"Поднять бойца: овраг у д. Крупышино","goalRub":30000,"collectedRub":21000,"lat":52.74,"lon":35.84,"demo":True},
+    {"id":"F04","teamId":"T02","purpose":"fuel","title":"Бензин на разведку у р. Оптуха","goalRub":80000,"collectedRub":32000,"lat":53.15,"lon":36.33,"demo":True},
+    {"id":"F05","teamId":"T05","purpose":"equip","title":"Экипировать отряд: палатки и аптечки","goalRub":60000,"collectedRub":12500,"lat":52.97,"lon":36.07,"demo":True}
+]
+
+DEMO_REQUESTS = [{
+    "id":"R01","teamId":"T01","title":"Вахта Памяти (Орловская обл.)","date":"2026-10-03",
+    "place":"Мценский р-н","roles":[{"role":"digger","count":5}],"joined":2,"fundraiserId":"F01",
+    "lat":53.28,"lon":36.57,"createdAt":"2026-09-20T09:00:00Z","demo":True
+}]
+
+DEMO_CHECKLIST = [
+    {"id":"shovel","label":"Лопата"},
+    {"id":"probe","label":"Щуп"},
+    {"id":"gloves","label":"Перчатки"},
+    {"id":"pamyat","label":"Регистрация на сайте «Память народа»","url":"https://pamyat-naroda.ru/"}
+]
+
+DEMO_TRIPS = [
+    {"id":"W01","teamId":"T01","date":"2026-10-03","title":"Раскопки у д. Семенково","place":"д. Семенково","lat":53.05,"lon":36.22,"spotsTotal":12,"spotsTaken":5,"checklist":DEMO_CHECKLIST,"demo":True},
+    {"id":"W02","teamId":"T03","date":"2026-10-10","title":"Разведка у р. Оптуха","place":"р. Оптуха","lat":53.15,"lon":36.33,"spotsTotal":8,"spotsTaken":1,"checklist":DEMO_CHECKLIST,"demo":True}
+]
+
+DEMO_GROUP_APPLICATIONS = [{
+    "id":"G01","tripId":"W01","organization":"Школа № 1, 8 «Б» класс (демо)",
+    "contactName":"Классный руководитель (демо)","contact":"+7 900 000-00-00",
+    "peopleCount":12,"comment":"10 учеников и 2 взрослых, нужен вводный инструктаж",
+    "status":"pending","createdAt":"2026-09-21T10:00:00Z","demo":True
+}]
+
+DEMO_STORIES = [
+    {
+        "id":"ST01","title":"Памятник морякам-тихоокеанцам","place":"с. Крупышино, Кромской район",
+        "story":"Мало кто знает, что возле села Крупышино стоит памятник подвигу моряков Тихоокеанского флота, сражавшихся за Орловскую землю. Пример истории из кейса хакатона.",
+        "sourceText":"Кейс хакатона «Маршруты победы», раздел «Описание текущей ситуации»",
+        "author":"Краеведческий кружок (демо)","status":"verified","verifiedBy":"Краевед (демо)",
+        "createdAt":"2026-09-12T10:00:00Z","demo":True
+    },
+    {
+        "id":"ST02","title":"Землянка у оврага (демо)","place":"д. Семенково",
+        "story":"Демо-пример: местные жители помнят землянку у оврага за деревней, где зимой 1942 года стояли бойцы. Нужна сверка с архивом.",
+        "sourceText":"Рассказ местного жителя (демо)","author":"Семья Петровых (демо)",
+        "status":"pending","createdAt":"2026-09-20T15:00:00Z","demo":True
+    },
+    {
+        "id":"ST03","title":"Письмо с фронта (демо)","place":"Кромской район",
+        "story":"Демо-пример: в семье хранится письмо прадеда, отправленное летом 1943 года перед наступлением на Орёл.",
+        "sourceText":"","author":"Внук бойца (демо)","status":"clarify","verifiedBy":"Краевед (демо)",
+        "reviewNote":"Пришлите, пожалуйста, фото письма или номер полевой почты — без источника подтвердить нельзя.",
+        "createdAt":"2026-09-18T12:00:00Z","demo":True
+    }
+]
+
+DEMO_LIVE_PHOTOS = [
+    {
+        "id":"soldier","title":"Офицер-победитель","caption":"Портрет советского офицера, 1945 год. Архивный снимок",
+        "speech":"Здравствуй, потомок! Я прошёл эту войну до самой Победы. Мы выстояли, потому что были вместе — весь Советский Союз: и солдат на фронте, и мать у станка, и мальчишка в тылу. Победа досталась нам дорогой ценой. Береги мир, береги память и гордись своей страной. Помни нас!",
+        "photoUrl":"live/soldier.jpg","videoUrl":"live/soldier.mp4","captionsUrl":"live/soldier.vtt","targetUrl":"live/soldier.mind",
+        "photoAspect":716/500,"animation":"lip_sync","consent":"Демо для хакатона. Для публикации нужно согласие родственников",
+        "sources":[{"kind":"archive","title":"Архивный снимок из открытых публикаций (демо, требует атрибуции)"}],"demo":True
+    },
+    {
+        "id":"reichstag","title":"У Рейхстага","caption":"Советские бойцы у Рейхстага, Берлин, 1945 год. Колоризованный архивный снимок",
+        "speech":"Товарищи! Мы дошли до Берлина! Через огонь и потери, от Москвы и Орла — до самого Рейхстага! Враг разбит! Победа за нами! Ура!",
+        "photoUrl":"live/reichstag.jpg","videoUrl":"live/reichstag.mp4","captionsUrl":"live/reichstag.vtt","targetUrl":"live/reichstag.mind",
+        "photoAspect":689/959,"animation":"neural_motion","consent":"Демо для хакатона. Для публикации нужно согласие родственников",
+        "sources":[{"kind":"archive","title":"Архивный снимок из открытых публикаций (демо, требует атрибуции)"}],"demo":True
+    }
+]
+
+DEMO_SITES = [
+    {"id":"S01","lat":52.74,"lon":35.84,"placeName":"Овраг у д. Крупышино","fightersCount":1,
+     "fighters":[{"fullName":"Иванов И.И.","rank":"Красноармеец"}],"unit":"Неизвестно","dateText":"1943",
+     "circumstances":"Требуется подъём. Пример карточки из прототипа кейса.","status":"found_needs_check",
+     "sources":[{"kind":"book_of_memory","title":"Книга Памяти. Орловская область, т. 5","url":"http://library.gu-unpk.ru/9_mai_2010/kniga_pamyati.php"}],
+     "volunteersReady":3,"createdAt":"2026-09-10T12:00:00Z","demo":True},
+    {"id":"S02","lat":53.21,"lon":36.45,"placeName":"Опушка у д. Первый Воин","fightersCount":2,
+     "fighters":[{},{}],"unit":"201-я вдбр, 5-й ВДК","dateText":"октябрь 1941",
+     "circumstances":"Место указано по рассказу местных жителей, сверено с донесением.","status":"archive_confirmed",
+     "sources":[{"kind":"eyewitness","title":"Рассказ местных жителей (демо)"},{"kind":"demo","title":"Демо-текст прототипа, требует проверки краеведом"}],
+     "teamId":"T03","volunteersReady":6,"createdAt":"2026-08-28T12:00:00Z","demo":True},
+    {"id":"S03","lat":52.9,"lon":36.25,"placeName":"Поле у д. Становой Колодезь","fightersCount":4,
+     "fighters":[{},{},{},{}],"unit":"Неизвестно","dateText":"июль 1943",
+     "circumstances":"Останки подняты и перезахоронены.","status":"remains_raised",
+     "sources":[{"kind":"demo","title":"Демо-текст прототипа, требует проверки краеведом"}],
+     "teamId":"T02","volunteersReady":0,"createdAt":"2026-07-15T12:00:00Z","demo":True}
+]
+
+@api.get("/memorials")
+async def memorials():
+    return deepcopy(DEMO_MEMORIALS)
+
+@api.get("/routes")
+async def list_routes():
+    return deepcopy(DEMO_ROUTES)
+
+@api.get("/routes/{id}")
+async def get_route(id):
+    for item in DEMO_ROUTES:
+        if item["id"] == id:
+            return deepcopy(item)
+    raise HTTPException(404,detail={"message":"Маршрут не найден"})
+
+@api.get("/requests")
+async def list_requests():
+    return deepcopy(sorted(DEMO_REQUESTS,key=lambda x:x["createdAt"],reverse=True))
+
+@api.post("/requests")
+async def create_request(b:dict):
+    item = deepcopy(b)
+    item["id"]=gid("REQ")
+    item["joined"]=0
+    item["createdAt"]=now().isoformat()
+    item["demo"]=True
+    DEMO_REQUESTS.append(item)
+    return deepcopy(item)
+
+@api.post("/requests/{id}/join")
+async def join_request(id):
+    for item in DEMO_REQUESTS:
+        if item["id"] == id:
+            item["joined"] += 1
+            return deepcopy(item)
+    raise HTTPException(404,detail={"message":"Заявка не найдена"})
+
+@api.get("/fundraisers")
+async def list_fundraisers():
+    return deepcopy(DEMO_FUNDRAISERS)
+
+@api.post("/donations")
+async def donate(b:dict):
+    fundraiser_id=b.get("fundraiserId")
+    amount=int(b.get("amountRub",0))
+    if amount < 1:
+        raise HTTPException(422,detail={"message":"Сумма должна быть не меньше 1 ₽"})
+    for item in DEMO_FUNDRAISERS:
+        if item["id"] == fundraiser_id:
+            item["collectedRub"] += amount
+            return {"paymentId":gid("PAY"),"status":"test_succeeded","fundraiser":deepcopy(item)}
+    raise HTTPException(404,detail={"message":"Сбор не найден"})
+
+@api.get("/trips")
+async def list_trips():
+    return deepcopy(sorted(DEMO_TRIPS,key=lambda x:x["date"]))
+
+@api.get("/trips/{id}")
+async def get_trip(id):
+    for item in DEMO_TRIPS:
+        if item["id"] == id:
+            return deepcopy(item)
+    raise HTTPException(404,detail={"message":"Выезд не найден"})
+
+@api.post("/trips/{id}/register")
+async def register_trip(id):
+    for item in DEMO_TRIPS:
+        if item["id"] == id:
+            if item["spotsTaken"] >= item["spotsTotal"]:
+                raise HTTPException(409,detail={"message":"Мест нет"})
+            item["spotsTaken"] += 1
+            return deepcopy(item)
+    raise HTTPException(404,detail={"message":"Выезд не найден"})
+
+@api.get("/group-applications")
+async def list_group_applications():
+    return deepcopy(sorted(DEMO_GROUP_APPLICATIONS,key=lambda x:x["createdAt"],reverse=True))
+
+@api.post("/group-applications")
+async def create_group_application(b:dict):
+    item=deepcopy(b)
+    item["id"]=gid("GRP")
+    item["status"]="pending"
+    item["createdAt"]=now().isoformat()
+    item["demo"]=True
+    DEMO_GROUP_APPLICATIONS.append(item)
+    return deepcopy(item)
+
+@api.patch("/group-applications/{id}")
+async def decide_group_application(id,b:dict):
+    status=b.get("status")
+    if status not in {"confirmed","clarify"}:
+        raise HTTPException(422,detail={"message":"Статус должен быть confirmed или clarify"})
+    for item in DEMO_GROUP_APPLICATIONS:
+        if item["id"] == id:
+            item["status"]=status
+            return deepcopy(item)
+    raise HTTPException(404,detail={"message":"Заявка не найдена"})
+
+@api.get("/stories")
+async def list_stories():
+    return deepcopy(sorted(DEMO_STORIES,key=lambda x:x["createdAt"],reverse=True))
+
+@api.get("/stories/{id}")
+async def get_story(id):
+    for item in DEMO_STORIES:
+        if item["id"] == id:
+            return deepcopy(item)
+    raise HTTPException(404,detail={"message":"История не найдена"})
+
+@api.post("/stories")
+async def create_story(b:dict):
+    item=deepcopy(b)
+    if len(item.get("title","")) < 4 or len(item.get("place","")) < 2 or len(item.get("story","")) < 30:
+        raise HTTPException(422,detail={"message":"Заполните название, место и историю (не менее 30 символов)"})
+    item["id"]=gid("STORY")
+    item["status"]="pending"
+    item["createdAt"]=now().isoformat()
+    item["demo"]=True
+    DEMO_STORIES.append(item)
+    return deepcopy(item)
+
+@api.post("/stories/{id}/review")
+async def review_story(id,b:dict):
+    decision=b.get("decision")
+    reviewer=str(b.get("reviewer","")).strip()
+    note=str(b.get("note","")).strip()
+    if decision not in {"verified","clarify"} or not reviewer:
+        raise HTTPException(422,detail={"message":"Неверное решение или проверяющий"})
+    for item in DEMO_STORIES:
+        if item["id"] == id:
+            if item["status"] not in {"pending","clarify"}:
+                raise HTTPException(409,detail={"message":"История уже рассмотрена"})
+            if decision=="verified" and not item["sourceText"].strip():
+                raise HTTPException(422,detail={"message":"Без источника подтвердить нельзя"})
+            item["status"]=decision
+            item["verifiedBy"]=reviewer
+            if note:
+                item["reviewNote"]=note
+            return deepcopy(item)
+    raise HTTPException(404,detail={"message":"История не найдена"})
+
+@api.get("/live-photos")
+async def list_live_photos():
+    return deepcopy(DEMO_LIVE_PHOTOS)
+
+@api.get("/live-photos/{id}")
+async def get_live_photo(id):
+    for item in DEMO_LIVE_PHOTOS:
+        if item["id"] == id:
+            return deepcopy(item)
+    raise HTTPException(404,detail={"message":"Живое фото не найдено"})
+
 
 app=FastAPI(title="Тропа памяти: Последний бой — API",version="0.1.0",openapi_url="/api/v1/openapi.json")
 allowed_origins = {x.strip() for x in settings.cors_origins.split(",") if x.strip()}
