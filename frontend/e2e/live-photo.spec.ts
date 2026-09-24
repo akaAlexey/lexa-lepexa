@@ -8,6 +8,7 @@ test.describe('«Живое фото»: экраны', () => {
     { url: '/live', main: 'live-list-open' },
     { url: '/live/soldier', main: 'live-open-camera' },
     { url: '/live/reichstag', main: 'live-open-camera' },
+    { url: '/live/new', main: 'live-new-submit' },
   ]) {
     test(`${url}: помещается по ширине, WCAG AA, одна главная кнопка`, async ({ page }) => {
       await page.goto(url)
