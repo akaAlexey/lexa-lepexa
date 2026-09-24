@@ -1,42 +1,29 @@
-import { useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
 import { useRole } from '../../app/RoleContext.tsx'
-import { useServices } from '../../app/services.tsx'
 import type { GroupApplication, Trip } from '../../contract/schemas.ts'
 import { formatDayRu } from '../../domain/format.ts'
 import { peopleText } from '../../domain/groupApplications.ts'
+import { can } from '../../functions/core/permissions.ts'
+import {
+  groupState,
+  useGroupApplications,
+  useGroupDecision,
+  useMyGroups,
+  visibleApplications,
+} from '../../functions/groupApplications/index.ts'
 import { Button } from '../../ui/Button.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { StatePill } from '../../ui/StatePill.tsx'
-import { groupState, groupsKey, useGroupApplications, useMyGroups } from './groups.ts'
 import s from './weekends.module.css'
 
 function Decision({ application }: { application: GroupApplication }) {
-  const { api } = useServices()
-  const queryClient = useQueryClient()
-  const [busy, setBusy] = useState(false)
-  const [failed, setFailed] = useState(false)
-  const decide = async (status: 'confirmed' | 'clarify') => {
-    setBusy(true)
-    setFailed(false)
-    try {
-      const updated = await api.decideGroupApplication({ id: application.id, body: { status } })
-      queryClient.setQueryData<GroupApplication[]>(groupsKey, (old) =>
-        old?.map((a) => (a.id === updated.id ? updated : a)),
-      )
-    } catch {
-      setFailed(true)
-    } finally {
-      setBusy(false)
-    }
-  }
+  const { decide, busy, failed } = useGroupDecision(application.id)
   return (
     <>
       <div className={s.actions}>
         <Button
-          onClick={() => void decide('confirmed')}
+          onClick={() => decide('confirmed')}
           disabled={busy}
           icon="check"
           testID={`group-confirm-${application.id}`}
@@ -44,7 +31,7 @@ function Decision({ application }: { application: GroupApplication }) {
           Принять
         </Button>
         <Button
-          onClick={() => void decide('clarify')}
+          onClick={() => decide('clarify')}
           disabled={busy}
           testID={`group-clarify-${application.id}`}
         >
@@ -61,11 +48,11 @@ function Decision({ application }: { application: GroupApplication }) {
  */
 export function GroupList({ trips }: { trips: readonly Trip[] }) {
   const { role } = useRole()
-  const isCommander = role?.id === 'commander'
+  const isCommander = can(role?.id, 'group.decide')
   const applications = useGroupApplications()
   const mine = useMyGroups()
   const tripById = new Map(trips.map((t) => [t.id, t]))
-  const shown = (applications.data ?? []).filter((a) => isCommander || mine.ids.includes(a.id))
+  const shown = visibleApplications(applications.data ?? [], role?.id, mine)
   if (shown.length === 0) return null
   return (
     <section aria-labelledby="groups-title">
