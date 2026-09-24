@@ -29,7 +29,8 @@ const EXCEPTIONS: Record<string, readonly Rule[]> = {
   'features/live-photo/routes.tsx': ['paths'],
 }
 
-type Rule = 'page-services' | 'function-purity' | 'core-independent' | 'pure-layers' | 'paths'
+type Rule =
+  'page-services' | 'function-purity' | 'core-independent' | 'pure-layers' | 'paths' | 'role-checks'
 
 const RULE_TEXT: Record<Rule, string> = {
   'page-services':
@@ -38,6 +39,8 @@ const RULE_TEXT: Record<Rule, string> = {
   'core-independent': 'functions/core зависит от функции',
   'pure-layers': 'domain/, contract/ или api/ импортирует React или роутер',
   paths: 'адрес экрана записан вне functions/core/paths.ts',
+  'role-checks':
+    'права роли проверяются сравнением с id роли, а не через functions/core/permissions',
 }
 
 /** Корень композиции: здесь сервисы создаются и передаются в приложение. */
@@ -45,6 +48,10 @@ const COMPOSITION_ROOT = new Set(['main.tsx', 'app/App.tsx', 'app/services.tsx']
 /** Единственное место, где функции получают сервисы. */
 const DEPS_HOOK = 'functions/core/useDeps.ts'
 const PATHS_MODULE = 'functions/core/paths.ts'
+/** Права ролей (R3): сравнивать роль с конкретным id можно только здесь и в правилах domain/. */
+const PERMISSIONS_MODULE = 'functions/core/permissions.ts'
+const ROLE_ID = `['"](family|volunteer|commander|verifier)['"]`
+const ROLE_CHECK = new RegExp(`[!=]==\\s*${ROLE_ID}|${ROLE_ID}\\s*[!=]==`)
 
 /** Адрес экрана: '/trail', `/last-battle/${id}` в коде или path: 'search/requests/new' в роутере. */
 const SCREENS =
@@ -132,6 +139,9 @@ function violations(file: SourceFile): Rule[] {
 
   if (rel !== PATHS_MODULE && !inDir(rel, 'contract') && !inDir(rel, 'api')) {
     if (SCREEN_PATH.test(codeWithoutComments(file.text))) found.add('paths')
+  }
+  if (rel !== PERMISSIONS_MODULE && !inDir(rel, 'domain')) {
+    if (ROLE_CHECK.test(codeWithoutComments(file.text))) found.add('role-checks')
   }
   return [...found].sort()
 }
@@ -235,6 +245,18 @@ describe('правила ловят нарушения (самопроверка
       violations(file('features/x/X.tsx', [], "// пример: '/search'\nconst s = 'search'")),
     ).toEqual([])
     expect(violations(file('functions/core/paths.ts', [], "const t = '/trail'"))).toEqual([])
+  })
+
+  it('проверка роли сравнением вместо can()', () => {
+    expect(violations(file('features/x/X.tsx', [], "role?.id === 'commander'"))).toContain(
+      'role-checks',
+    )
+    expect(violations(file('functions/x/x.ts', [], "'verifier' !== roleId"))).toContain(
+      'role-checks',
+    )
+    expect(violations(file('features/x/X.tsx', [], "can(role?.id, 'place.create')"))).toEqual([])
+    expect(violations(file('features/x/X.tsx', [], 'role?.id === r.id'))).toEqual([])
+    expect(violations(file(PERMISSIONS_MODULE, [], "(r) => r === 'commander'"))).toEqual([])
   })
 
   it('цикл между функциями', () => {
