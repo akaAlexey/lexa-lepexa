@@ -155,6 +155,18 @@ export const endpoints = {
     body: s.ArchiveReview,
     response: s.ArchiveStory,
   }),
+  listLivePhotos: endpoint({
+    method: 'GET',
+    path: '/live-photos',
+    summary: '«Живые фото» — снимки с QR-кодом и ролики-реконструкции',
+    response: z.array(s.LivePhoto),
+  }),
+  getLivePhoto: endpoint({
+    method: 'GET',
+    path: '/live-photos/{id}',
+    summary: '«Живое фото» по QR-коду',
+    response: s.LivePhoto,
+  }),
   listSites: endpoint({
     method: 'GET',
     path: '/sites',

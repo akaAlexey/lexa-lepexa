@@ -35,6 +35,7 @@ export function renderApp(
     },
     storage,
     share: { share: async () => 'copied' },
+    ar: { trackImage: () => Promise.reject(new Error('Камеры нет в тестовой среде')) },
     ...overrides,
   }
   const router = createMemoryRouter(appRoutes, { initialEntries: [url] })

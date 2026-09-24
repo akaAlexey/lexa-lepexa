@@ -314,6 +314,38 @@ export const ArchiveReview = entity(
   }),
 )
 
+/* ---------- «Живое фото» ---------- */
+
+export const LivePhoto = entity(
+  'LivePhoto',
+  '«Живое фото»: снимок с QR-кодом и заранее созданный ролик-реконструкция ИИ. Показывается только после согласия зрителя',
+  z.object({
+    id,
+    title: z.string().min(1),
+    caption: z.string().describe('Кто на снимке и откуда снимок'),
+    speech: z
+      .string()
+      .min(1)
+      .describe('Текст от первого лица — виден до просмотра, смысл не меняется'),
+    photoUrl: z.string().min(1).describe('Снимок с QR-кодом для печати; он же — метка для камеры'),
+    videoUrl: z.string().min(1).describe('Ролик-реконструкция того же кадра, со звуком'),
+    captionsUrl: z.string().min(1).describe('Субтитры речи (WebVTT) — для глухих и слабослышащих'),
+    targetUrl: z
+      .string()
+      .min(1)
+      .describe('Скомпилированная метка MindAR (.mind) для распознавания снимка'),
+    photoAspect: z.number().positive().describe('Отношение высоты снимка к ширине'),
+    animation: z
+      .enum(['lip_sync', 'neural_motion', 'draft'])
+      .describe(
+        'lip_sync — нейросеть оживила лицо и синхронизировала губы; neural_motion — нейросеть оживила кадр, губы не синхронизированы; draft — черновик без нейросети',
+      ),
+    consent: z.string().describe('Чьё согласие получено на использование снимка'),
+    sources: withSources,
+    demo,
+  }),
+)
+
 /* ---------- Последний бой ---------- */
 
 export const SiteStatus = entity(
@@ -430,6 +462,7 @@ export type GroupApplication = z.infer<typeof GroupApplication>
 export type NewGroupApplication = z.infer<typeof NewGroupApplication>
 export type ArchiveStory = z.infer<typeof ArchiveStory>
 export type NewArchiveStory = z.infer<typeof NewArchiveStory>
+export type LivePhoto = z.infer<typeof LivePhoto>
 export type SiteStatus = z.infer<typeof SiteStatus>
 export type LastBattleSite = z.infer<typeof LastBattleSite>
 export type NewLastBattleSite = z.infer<typeof NewLastBattleSite>

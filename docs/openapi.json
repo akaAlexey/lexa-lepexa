@@ -604,6 +604,61 @@
         }
       }
     },
+    "/live-photos": {
+      "get": {
+        "operationId": "listLivePhotos",
+        "summary": "«Живые фото» — снимки с QR-кодом и ролики-реконструкции",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LivePhoto"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        }
+      }
+    },
+    "/live-photos/{id}": {
+      "get": {
+        "operationId": "getLivePhoto",
+        "summary": "«Живое фото» по QR-коду",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LivePhoto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/sites": {
       "get": {
         "operationId": "listSites",
@@ -1709,6 +1764,91 @@
         "required": ["decision", "reviewer", "note"],
         "additionalProperties": false,
         "description": "Решение проверяющего. Подтвердить — только с источником; «уточнить» — только с комментарием"
+      },
+      "LivePhoto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "caption": {
+            "type": "string",
+            "description": "Кто на снимке и откуда снимок"
+          },
+          "speech": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Текст от первого лица — виден до просмотра, смысл не меняется"
+          },
+          "photoUrl": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Снимок с QR-кодом для печати; он же — метка для камеры"
+          },
+          "videoUrl": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Ролик-реконструкция того же кадра, со звуком"
+          },
+          "captionsUrl": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Субтитры речи (WebVTT) — для глухих и слабослышащих"
+          },
+          "targetUrl": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Скомпилированная метка MindAR (.mind) для распознавания снимка"
+          },
+          "photoAspect": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "description": "Отношение высоты снимка к ширине"
+          },
+          "animation": {
+            "type": "string",
+            "enum": ["lip_sync", "neural_motion", "draft"],
+            "description": "lip_sync — нейросеть оживила лицо и синхронизировала губы; neural_motion — нейросеть оживила кадр, губы не синхронизированы; draft — черновик без нейросети"
+          },
+          "consent": {
+            "type": "string",
+            "description": "Чьё согласие получено на использование снимка"
+          },
+          "sources": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Source"
+            }
+          },
+          "demo": {
+            "type": "boolean",
+            "description": "true — демо-данные, вымышлены или не проверены"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "caption",
+          "speech",
+          "photoUrl",
+          "videoUrl",
+          "captionsUrl",
+          "targetUrl",
+          "photoAspect",
+          "animation",
+          "consent",
+          "sources",
+          "demo"
+        ],
+        "additionalProperties": false,
+        "description": "«Живое фото»: снимок с QR-кодом и заранее созданный ролик-реконструкция ИИ. Показывается только после согласия зрителя"
       },
       "SiteStatus": {
         "type": "string",

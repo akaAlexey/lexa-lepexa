@@ -86,6 +86,11 @@ export function ArchiveScreen() {
                   Хроника боёв 1941–1943 — события по годам на карте
                 </Link>
               </p>
+              <p>
+                <Link to="/live" className={s.chronicleLink} data-testid="archive-live">
+                  Живое фото — наведите камеру на снимок, и боец заговорит
+                </Link>
+              </p>
               <section aria-labelledby="archive-published">
                 <h2 id="archive-published">Проверенные истории</h2>
                 <StoryList label="Проверенные истории" stories={published} />

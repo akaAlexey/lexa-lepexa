@@ -7,6 +7,7 @@ import type {
   Fundraiser,
   GroupApplication,
   LastBattleSite,
+  LivePhoto,
   LatLon,
   Route,
   Source,
@@ -310,6 +311,50 @@ export const stories: ArchiveStory[] = [
     reviewNote:
       'Пришлите, пожалуйста, фото письма или номер полевой почты — без источника подтвердить нельзя.',
     createdAt: '2026-09-18T12:00:00Z',
+    demo: true,
+  },
+]
+
+/**
+ * «Живое фото»: ролики — реконструкция ИИ (облачные нейросети, см. frontend/docs/LIVE_PHOTO.md).
+ * Снимки — из открытых архивных публикаций; для размещения у памятника нужно согласие родственников.
+ */
+const openArchivePhoto: Source = {
+  kind: 'archive',
+  title: 'Архивный снимок из открытых публикаций (демо, требует атрибуции)',
+}
+
+export const livePhotos: LivePhoto[] = [
+  {
+    id: 'soldier',
+    title: 'Офицер-победитель',
+    caption: 'Портрет советского офицера, 1945 год. Архивный снимок',
+    speech:
+      'Здравствуй, потомок! Я прошёл эту войну до самой Победы. Мы выстояли, потому что были вместе, весь Советский Союз: и солдат на фронте, и мать у станка, и мальчишка в тылу. Победа досталась нам дорогой ценой. Береги мир, береги память и гордись своей страной. Помни нас!',
+    photoUrl: 'live/soldier.jpg',
+    videoUrl: 'live/soldier.mp4',
+    captionsUrl: 'live/soldier.vtt',
+    targetUrl: 'live/soldier.mind',
+    photoAspect: 716 / 500,
+    animation: 'draft',
+    consent: 'Демо для хакатона. Для публикации нужно согласие родственников',
+    sources: [openArchivePhoto],
+    demo: true,
+  },
+  {
+    id: 'reichstag',
+    title: 'У Рейхстага',
+    caption: 'Советские бойцы у Рейхстага, Берлин, 1945 год. Колоризованный архивный снимок',
+    speech:
+      'Товарищи! Мы дошли до Берлина! Четыре долгих года мы шли к этому дню, через огонь и потери, от Москвы и Орла до самого Рейхстага. Враг разбит, победа за нами! Слава советскому народу! Слава нашей Родине! Ура!',
+    photoUrl: 'live/reichstag.jpg',
+    videoUrl: 'live/reichstag.mp4',
+    captionsUrl: 'live/reichstag.vtt',
+    targetUrl: 'live/reichstag.mind',
+    photoAspect: 689 / 959,
+    animation: 'neural_motion',
+    consent: 'Демо для хакатона. Для публикации нужно согласие родственников',
+    sources: [openArchivePhoto],
     demo: true,
   },
 ]

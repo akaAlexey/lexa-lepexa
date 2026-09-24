@@ -40,6 +40,7 @@ function createDb() {
     trips: seed.trips,
     groupApplications: seed.groupApplications,
     stories: seed.stories,
+    livePhotos: seed.livePhotos,
     sites: seed.sites,
     subscriptions: [] as StoredSubscription[],
   })
@@ -211,6 +212,8 @@ export function createMockApi(options: MockOptions = {}): ApiClient {
         if (input.note.trim()) story.reviewNote = input.note.trim()
         return story
       }),
+    listLivePhotos: () => respond(() => db.livePhotos),
+    getLivePhoto: ({ id }) => respond(() => find(db.livePhotos, id, 'Живое фото')),
     listSites: () => respond(() => db.sites),
     getSite: ({ id }) => respond(() => find(db.sites, id, 'Место')),
     createSite: ({ body }) =>

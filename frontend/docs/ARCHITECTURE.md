@@ -8,7 +8,7 @@
 features/*  ──►  app/ (сервисы, роли, раскладка)  ──►  ui/, map/, theme/
     │                                                    │
     └──────────►  api/ (ApiClient)  ──►  contract/  ◄────┘
-                  platform/ (Geo, Notify, Storage, Share)
+                  platform/ (Geo, Notify, Storage, Share, Ar)
                   domain/ (чистая логика)  ──►  contract/ (только типы)
 ```
 
@@ -30,7 +30,7 @@ frontend/
     theme/      tokens.ts (цвета, шрифты, размеры) · global.css
     ui/         BigButton · Card · StatusBadge · StatePill · DemoBadge · Icon · Logo · Screen · Field · siteStatus
     app/        App · routes · Layout (шапка, вкладки/меню) · RoleContext · roles · services · Toaster · QueryState · ShareButton
-    features/   roles · trail · search-hq · weekends · last-battle · archive · chronicle — у каждого свой routes.tsx
+    features/   roles · trail · search-hq · weekends · last-battle · archive · chronicle · live-photo — у каждого свой routes.tsx
     config/     env.ts (проверка переменных окружения) · region.ts (регион, тексты, источники)
     test/       setup · renderApp · MapViewStub
   fixtures/jury/   данные в формате жюри (сейчас — демо, сгенерированы по схеме)

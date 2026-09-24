@@ -31,6 +31,7 @@ describe('контракт и фикстуры', () => {
     z.array(s.Fundraiser).parse(seed.fundraisers)
     z.array(s.VolunteerRequest).parse(seed.requests)
     z.array(s.GroupApplication).parse(seed.groupApplications)
+    z.array(s.LivePhoto).parse(seed.livePhotos)
     const stories = z.array(s.ArchiveStory).parse(seed.stories)
     // Подтверждённая история — всегда с источником
     for (const story of stories.filter((x) => x.status === 'verified'))
