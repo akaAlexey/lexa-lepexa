@@ -17,7 +17,8 @@ function entity<T extends z.ZodType>(id: string, description: string, schema: T)
 
 const id = z.string().min(1)
 const isoDate = z.iso.date().describe('Дата YYYY-MM-DD')
-const isoDateTime = z.iso.datetime().describe('Дата и время ISO 8601, UTC')
+// Сервер отдаёт «…Z»; смещение «+00:00» тоже принимаем — так форматируют даты многие бэкенды.
+const isoDateTime = z.iso.datetime({ offset: true }).describe('Дата и время ISO 8601, UTC')
 const rub = z.number().int().nonnegative().describe('Сумма в рублях')
 const lat = z.number().min(-90).max(90)
 const lon = z.number().min(-180).max(180)

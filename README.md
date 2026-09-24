@@ -42,20 +42,52 @@
 
 ## Как устроено
 
-| Часть    | Стек                                                                         | Папка                                    |
-| -------- | ---------------------------------------------------------------------------- | ---------------------------------------- |
-| Фронтенд | React 19, TypeScript strict, Vite, MapLibre GL + OpenFreeMap, TanStack Query | [`frontend/`](frontend/README.md)        |
-| Бэкенд   | FastAPI, SQLAlchemy, Alembic, PostgreSQL                                     | [`backend/`](backend/README.md)          |
-| Контракт | zod-схемы → OpenAPI, адаптеры mock и live                                    | [`docs/openapi.json`](docs/openapi.json) |
+| Часть        | Стек                                                                         | Папка                                                                                       |
+| ------------ | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Фронтенд     | React 19, TypeScript strict, Vite, MapLibre GL + OpenFreeMap, TanStack Query | [`frontend/`](frontend/README.md)                                                           |
+| Бэкенд       | FastAPI, SQLAlchemy (async), Alembic, PostgreSQL                             | [`backend/`](backend/README.md)                                                             |
+| Контракт API | zod — единственный источник правды → OpenAPI                                 | [`frontend/src/contract`](frontend/src/contract) → [`docs/openapi.json`](docs/openapi.json) |
 
-Качество фронтенда проверяет одна команда `npm run verify`: проверка типов, линтер, модульные и компонентные тесты, сквозные тесты на телефоне (360 px) и ноутбуке (1366 px) с проверкой доступности WCAG 2.1 AA.
+Как фронт и бэк связаны и почему именно так — [`docs/INTEGRATION.md`](docs/INTEGRATION.md).
 
 Интерфейс рассчитан на детей и пожилых: на каждом экране одна главная кнопка, зоны нажатия 48 px, статус всегда подписан, а не только окрашен.
 
+### Запуск всего сайта
+
+Нужен Docker.
+
 ```bash
-cd frontend && npm ci && npm run dev        # http://localhost:5173, демо-данные
-cd backend && docker compose up --build -d  # API на :8000, демо-данные заполняются при старте
+cp .env.example .env
+docker compose up -d --build
 ```
+
+Сайт — http://localhost:8080, API — http://localhost:8080/api/v1, документация API — http://localhost:8080/api/v1/docs. База создаётся миграциями и заполняется демо-данными при первом запуске.
+
+### Разработка по частям
+
+```bash
+# Бэкенд (нужен Postgres — например, docker compose up -d db в backend/)
+cd backend && pip install -r requirements-dev.txt && python start.py
+
+# Фронтенд против локального бэкенда — запросы на /api уходят через прокси Vite
+cd frontend && npm ci
+VITE_API_MODE=live VITE_API_URL=/api/v1 npm run dev
+
+# Фронтенд без бэкенда — на фикстурах
+cd frontend && npm run dev
+```
+
+### Проверки
+
+- `backend`: `ruff check`, `pytest`.
+- `frontend`: `npm run verify` — типы, линтер, модульные и компонентные тесты, сквозные тесты на телефоне (360 px) и ноутбуке (1366 px) с проверкой доступности WCAG 2.1 AA.
+- Связка: `npm run contract:check -- http://127.0.0.1:8000/api/v1` во `frontend/` вызывает все эндпоинты живого сервера и сверяет ответы с контрактом.
+
+Всё это CI запускает на каждый PR: [`.github/workflows/fullstack.yml`](.github/workflows/fullstack.yml).
+
+### Демо на GitHub Pages
+
+Сайт собирается против живого бэкенда, если в настройках репозитория задана переменная `API_URL` (Settings → Secrets and variables → Actions → Variables). Без неё сборка работает на демо-данных в браузере — демо не зависит от того, запущен ли сервер.
 
 ## Этика
 
@@ -66,7 +98,7 @@ cd backend && docker compose up --build -d  # API на :8000, демо-данн�
 
 ## Ограничения и дорожная карта
 
-- Бэкенд закрывает 11 из 30 операций контракта (справочники, «Последний бой», подписки, уведомления). Демо работает на демо-данных в браузере.
+- Бэкенд на Deploy-F нужно обновить до версии из `main` (делает владелец хостинга, см. [`backend/DEPLOY-F.md`](backend/DEPLOY-F.md)). До этого Pages собирается на демо-данных.
 - Ролик «живого фото» по своему снимку пока не генерируется: снимок сохраняется, показывается пример. Генерация — серверная очередь (говорящее лицо + синтез речи).
 - Нет автопостроения маршрутов, аудиогида и AR-точек на тропе, рейтинга гидов, push при закрытой вкладке, офлайн-режима.
 - Данные жюри (`mock_graves.csv`, `mock_battles.json`, `mock_teams.json`) не получены. Загрузчик готов: `npm run fixtures`.

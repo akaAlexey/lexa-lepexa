@@ -35,11 +35,12 @@ jobs:
       - name: Build
         run: npm run build -- --base=/lexa-lepexa/
         env:
-          # Демо для жюри не зависит от сервера: адрес бесплатного туннеля меняется, а на live
-          # пока нет 16 из 27 операций контракта. Live включать, когда бэкенд закроет контракт:
-          # VITE_API_MODE: live
-          # VITE_API_URL: https://<постоянный-домен>/api/v1
-          VITE_API_MODE: mock
+          # Живой бэкенд — только когда задана переменная репозитория API_URL
+          # (Settings → Secrets and variables → Actions → Variables). Без неё — демо-данные в браузере:
+          # бесплатный туннель меняет адрес и падает, а жюри не должно увидеть пустой сайт.
+          # Бэкенд должен разрешать CORS для https://team-shpilit.github.io (переменная CORS_ORIGINS).
+          VITE_API_MODE: ${{ vars.API_URL && 'live' || 'mock' }}
+          VITE_API_URL: ${{ vars.API_URL }}
           VITE_TILES: openfreemap
 
       - name: SPA fallback for deep links

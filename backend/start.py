@@ -1,53 +1,43 @@
-from pathlib import Path
+"""Запуск на хостинге: миграции → демо-данные (если их нет) → Uvicorn.
+
+Команда: python start.py. Нужна переменная DATABASE_URL; PORT и HOST — по желанию.
+SEED_DEMO=0 отключает заливку демо-данных.
+"""
+
 import os
 import subprocess
 import sys
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 
 
+def run(*args: str) -> None:
+    subprocess.run([sys.executable, *args], check=True)
+
+
 def main() -> None:
-    database_url = os.getenv("DATABASE_URL")
-    if not database_url:
+    if not os.getenv("DATABASE_URL"):
         raise RuntimeError("DATABASE_URL is required")
 
-    # Deploy-F may start the process from a generated working directory.
-    # Always execute migrations and the app from the project root instead.
+    # Хостинг может запускать процесс из другой папки — работаем всегда из корня бэка.
     os.chdir(ROOT)
 
-    subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "alembic",
-            "-c",
-            str(ROOT / "alembic.ini"),
-            "upgrade",
-            "head",
-        ],
-        check=True,
-    )
+    run("-m", "alembic", "-c", str(ROOT / "alembic.ini"), "upgrade", "head")
+    if os.getenv("SEED_DEMO", "1").lower() not in ("0", "false", "no"):
+        run("-m", "app.seed")
 
-    # Без демо-данных стенд пуст: карта «Последнего боя» без меток, счётчик бойцов — 0.
-    # Сид повторяемый — добавляет только недостающее. Отключить: SEED_DEMO=0.
-    if os.getenv("SEED_DEMO", "1") != "0":
-        subprocess.run([sys.executable, "-m", "app.seed"], check=True)
-
-    host = os.getenv("HOST", "0.0.0.0")
-    port = os.getenv("PORT", "8000")
-
-    subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "uvicorn",
-            "app.main:app",
-            "--host",
-            host,
-            "--port",
-            port,
-        ],
-        check=True,
+    run(
+        "-m",
+        "uvicorn",
+        "app.main:app",
+        "--host",
+        os.getenv("HOST", "0.0.0.0"),
+        "--port",
+        os.getenv("PORT", "8000"),
+        "--proxy-headers",
+        "--forwarded-allow-ips",
+        "*",
     )
 
 

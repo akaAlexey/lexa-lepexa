@@ -1,36 +1,230 @@
-"""Демо-данные — те же, что в демо фронтенда (frontend/src/api/fixtures/seed.ts).
+"""Заливает демо-данные фронта (app/seed_data.json) в базу.
 
-Повторный запуск безопасен: добавляются только записи, которых ещё нет, изменения пользователей не затираются.
+Безопасно запускать при каждом старте: добавляет только записи, которых ещё нет (по id),
+и никогда не перезаписывает изменённые пользователями данные.
+Файл seed_data.json генерирует фронт: `npm run seed:backend` в frontend/.
+
+    python -m app.seed
 """
+
 import asyncio
-from datetime import date, datetime, timezone
-from app.main import Session,Grave,Battle,Team,Site
+import json
+from datetime import date, datetime
+from pathlib import Path
 
-BOOK_OF_MEMORY_5={"kind":"book_of_memory","title":"Книга Памяти. Орловская область, т. 5","url":"http://library.gu-unpk.ru/9_mai_2010/kniga_pamyati.php"}
-DEMO_TEXT={"kind":"demo","title":"Демо-текст прототипа, требует проверки краеведом"}
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-def rows():
-    return [
-        Team(id="T01",name="Высота",region="Орловская обл.",budget_goal_rub=50000,budget_collected_rub=15000,found_this_month=7,demo=True),
-        Team(id="T02",name="Поиск-Орёл",region="Орловская обл.",budget_goal_rub=80000,budget_collected_rub=32000,found_this_month=4,demo=True),
-        Team(id="T03",name="Десант",region="Мценский р-н",budget_goal_rub=40000,budget_collected_rub=9000,found_this_month=3,demo=True),
-        Team(id="T04",name="Кромы",region="Кромской р-н",budget_goal_rub=30000,budget_collected_rub=21000,found_this_month=2,demo=True),
-        Team(id="T05",name="Память Оки",region="Орловская обл.",budget_goal_rub=60000,budget_collected_rub=12500,found_this_month=5,demo=True),
-        Grave(id="G001",lat=53.02005,lon=35.74399,full_name="Попов Б.Г.",unit="283-я стрелковая дивизия",demo=True),
-        Grave(id="G002",lat=52.79687,lon=36.07694,full_name="Киселёв М.П.",unit="10-я вдбр, 5-й ВДК",demo=True),
-        Battle(id="B01",date=date(1941,10,3),text="Демо-текст. Бой на подступах к Орлу.",archive_url="https://pamyat-naroda.ru/",place_name="Орёл",lat=52.9651,lon=36.0785,demo=True),
-        Site(id="S01",lat=52.74,lon=35.84,place_name="Овраг у д. Крупышино",fighters_count=1,fighters=[{"fullName":"Иванов И.И.","rank":"Красноармеец"}],unit="Неизвестно",date_text="1943",circumstances="Требуется подъём. Пример карточки из прототипа кейса.",status="found_needs_check",sources=[BOOK_OF_MEMORY_5],team_id=None,volunteers_ready=3,created_at=datetime(2026,9,10,12,tzinfo=timezone.utc),demo=True),
-        Site(id="S02",lat=53.21,lon=36.45,place_name="Опушка у д. Первый Воин",fighters_count=2,fighters=[{},{}],unit="201-я вдбр, 5-й ВДК",date_text="октябрь 1941",circumstances="Место указано по рассказу местных жителей, сверено с донесением.",status="archive_confirmed",sources=[{"kind":"eyewitness","title":"Рассказ местных жителей (демо)"},DEMO_TEXT],team_id="T03",volunteers_ready=6,created_at=datetime(2026,8,28,12,tzinfo=timezone.utc),demo=True),
-        Site(id="S03",lat=52.9,lon=36.25,place_name="Поле у д. Становой Колодезь",fighters_count=4,fighters=[{},{},{},{}],unit="Неизвестно",date_text="июль 1943",circumstances="Останки подняты и перезахоронены.",status="remains_raised",sources=[DEMO_TEXT],team_id="T02",volunteers_ready=0,created_at=datetime(2026,7,15,12,tzinfo=timezone.utc),demo=True),
+from . import models as m
+from .db import Session, engine
+from .geo import NOTIFY_RADIUS_KM
+
+DATA = Path(__file__).with_name("seed_data.json")
+
+
+def _dt(value: str) -> datetime:
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def _d(value: str) -> date:
+    return date.fromisoformat(value)
+
+
+def rows(data: dict) -> list:
+    """Все строки для вставки в порядке зависимостей (отряды раньше заявок и т. д.)."""
+    out: list = []
+    out += [
+        m.Team(
+            id=t["id"],
+            name=t["name"],
+            region=t["region"],
+            budget_goal_rub=t["budgetGoalRub"],
+            budget_collected_rub=t["budgetCollectedRub"],
+            found_this_month=t["foundThisMonth"],
+            demo=t["demo"],
+        )
+        for t in data["teams"]
     ]
+    out += [
+        m.Grave(id=g["id"], lat=g["lat"], lon=g["lon"], full_name=g["fullName"], unit=g["unit"], demo=g["demo"])
+        for g in data["graves"]
+    ]
+    for b in data["battles"]:
+        place = b.get("place") or {}
+        out.append(
+            m.Battle(
+                id=b["id"],
+                date=_d(b["date"]),
+                text=b["text"],
+                archive_url=b["archiveUrl"],
+                place_name=place.get("name"),
+                lat=place.get("lat"),
+                lon=place.get("lon"),
+                demo=b["demo"],
+            )
+        )
+    for r in data["routes"]:
+        out.append(
+            m.TrailRoute(
+                id=r["id"],
+                title=r["title"],
+                summary=r["summary"],
+                length_m=r["lengthM"],
+                duration_min=r["durationMin"],
+                path=r["path"],
+                demo=r["demo"],
+            )
+        )
+        out += [
+            m.TrailPoint(
+                id=p["id"],
+                route_id=r["id"],
+                position=i,
+                kind=p["kind"],
+                title=p["title"],
+                lat=p["lat"],
+                lon=p["lon"],
+                story=p["story"],
+                task=p["task"],
+                sources=p["sources"],
+            )
+            for i, p in enumerate(r["points"])
+        ]
+    out += [
+        m.Fundraiser(
+            id=f["id"],
+            team_id=f["teamId"],
+            purpose=f["purpose"],
+            title=f["title"],
+            goal_rub=f["goalRub"],
+            collected_rub=f["collectedRub"],
+            lat=f.get("lat"),
+            lon=f.get("lon"),
+            demo=f["demo"],
+        )
+        for f in data["fundraisers"]
+    ]
+    out += [
+        m.VolunteerRequest(
+            id=r["id"],
+            team_id=r["teamId"],
+            title=r["title"],
+            date=_d(r["date"]),
+            place=r["place"],
+            roles=r["roles"],
+            joined=r["joined"],
+            fundraiser_id=r.get("fundraiserId"),
+            lat=r.get("lat"),
+            lon=r.get("lon"),
+            created_at=_dt(r["createdAt"]),
+            demo=r["demo"],
+        )
+        for r in data["requests"]
+    ]
+    out += [
+        m.Trip(
+            id=t["id"],
+            team_id=t["teamId"],
+            date=_d(t["date"]),
+            title=t["title"],
+            place=t["place"],
+            lat=t["lat"],
+            lon=t["lon"],
+            spots_total=t["spotsTotal"],
+            spots_taken=t["spotsTaken"],
+            checklist=t["checklist"],
+            demo=t["demo"],
+        )
+        for t in data["trips"]
+    ]
+    out += [
+        m.GroupApplication(
+            id=g["id"],
+            trip_id=g["tripId"],
+            organization=g["organization"],
+            contact_name=g["contactName"],
+            contact=g["contact"],
+            people_count=g["peopleCount"],
+            comment=g["comment"],
+            status=g["status"],
+            created_at=_dt(g["createdAt"]),
+            demo=g["demo"],
+        )
+        for g in data["groupApplications"]
+    ]
+    out += [
+        m.ArchiveStory(
+            id=s["id"],
+            title=s["title"],
+            place=s["place"],
+            story=s["story"],
+            source_text=s["sourceText"],
+            author=s["author"],
+            status=s["status"],
+            verified_by=s.get("verifiedBy"),
+            review_note=s.get("reviewNote"),
+            created_at=_dt(s["createdAt"]),
+            demo=s["demo"],
+        )
+        for s in data["stories"]
+    ]
+    out += [
+        m.Site(
+            id=x["id"],
+            lat=x["lat"],
+            lon=x["lon"],
+            place_name=x["placeName"],
+            fighters_count=x["fightersCount"],
+            fighters=x["fighters"],
+            unit=x["unit"],
+            date_text=x["dateText"],
+            circumstances=x["circumstances"],
+            status=x["status"],
+            sources=x["sources"],
+            team_id=x.get("teamId"),
+            volunteers_ready=x["volunteersReady"],
+            created_at=_dt(x["createdAt"]),
+            demo=x["demo"],
+        )
+        for x in data["sites"]
+    ]
+    # Демо-подписчики вокруг Орла — как seed.demoSubscribers во фронте: им уходят уведомления о новых местах.
+    out += [
+        m.Subscription(
+            id=f"SUB-DEMO-{i + 1}",
+            lat=p["lat"],
+            lon=p["lon"],
+            radius_km=NOTIFY_RADIUS_KM,
+            topics=["search"],
+            team_id=None,
+            user_key=f"demo-subscriber-{i + 1}",
+        )
+        for i, p in enumerate(data["demoSubscribers"])
+    ]
+    return out
 
-async def main():
-    async with Session() as s:
-        for row in rows():
-            if await s.get(type(row),row.id) is None:
-                s.add(row)
-                await s.flush()  # команды — раньше мест, которые на них ссылаются
-        await s.commit()
 
-if __name__=="__main__":
+async def seed(session: AsyncSession, data: dict | None = None) -> int:
+    """Вставляет недостающие записи. Возвращает, сколько добавлено."""
+    data = data if data is not None else json.loads(DATA.read_text(encoding="utf-8"))
+    added = 0
+    for row in rows(data):
+        model = type(row)
+        exists = await session.scalar(select(model.id).where(model.id == row.id))
+        if exists is None:
+            session.add(row)
+            added += 1
+            await session.flush()
+    await session.commit()
+    return added
+
+
+async def main() -> None:
+    async with Session() as session:
+        added = await seed(session)
+    await engine.dispose()
+    print(f"seed: добавлено записей — {added}")
+
+
+if __name__ == "__main__":
     asyncio.run(main())

@@ -11,6 +11,8 @@ import { describe, expect, it } from 'vitest'
  */
 
 const SRC = normalize(join(process.cwd(), 'src'))
+/** Пути в правилах и исключениях — через «/», на Windows node:path отдаёт «\». */
+const toPosix = (p: string) => p.split(sep).join('/')
 
 /**
  * Ещё не переведённые файлы: файл → правила, которые он пока нарушает.
@@ -78,9 +80,6 @@ const PATHS_MODULE = 'functions/core/paths.ts'
 const SCREENS =
   'trail|search|weekends|last-battle|archive|chronicle|live|demo|map|routes|places|help|trips|stories|profile'
 const SCREEN_PATH = new RegExp(`['"\`]/(${SCREENS})(/|['"\`])|path: ['"\`](${SCREENS})(/|['"\`])`)
-
-/** На Windows path.relative даёт «\» — правила и исключения записаны через «/». */
-const toPosix = (path: string) => path.split(sep).join('/')
 
 function listSources(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
