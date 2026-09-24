@@ -19,11 +19,6 @@ const toPosix = (p: string) => p.split(sep).join('/')
  * Тест падает и на новое нарушение, и на исключение, которое уже не нужно. К концу шага A список пуст.
  */
 const EXCEPTIONS: Record<string, readonly Rule[]> = {
-  'features/archive/ArchiveScreen.tsx': ['paths'],
-  'features/archive/NewStoryScreen.tsx': ['page-services'],
-  'features/archive/StoryScreen.tsx': ['page-services', 'paths'],
-  'features/archive/routes.tsx': ['paths'],
-  'features/archive/stories.ts': ['page-services', 'paths'],
   'features/chronicle/ChronicleScreen.tsx': ['page-services', 'paths'],
   'features/chronicle/routes.tsx': ['paths'],
   'features/demo-console/DemoConsoleScreen.tsx': ['page-services'],

@@ -91,13 +91,6 @@
   margin-top: var(--space-4);
 }
 
-.chronicleLink {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--touch-min);
-  font-weight: 700;
-}
-
 /* Плитки «Хроника» и «Живое фото»: заметные входы в сильные функции раздела */
 .tiles {
   display: grid;
