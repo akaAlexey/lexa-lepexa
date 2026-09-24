@@ -189,3 +189,51 @@
   align-items: center;
   min-height: var(--touch-min);
 }
+
+/* «Оживить своё фото»: выбор файла, вариант речи */
+.upload {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.uploadLabel {
+  font-weight: 700;
+}
+
+.upload input[type='file'] {
+  min-height: 48px;
+  font: inherit;
+}
+
+.uploadError {
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+.choice {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.choice legend {
+  margin-bottom: var(--space-1);
+  font-weight: 700;
+}
+
+.choice label {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  min-height: 48px;
+  cursor: pointer;
+}
+
+.choice input {
+  width: 1.4rem;
+  height: 1.4rem;
+  margin-top: 0.15rem;
+  flex: none;
+}

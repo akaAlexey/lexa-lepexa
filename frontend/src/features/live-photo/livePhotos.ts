@@ -14,6 +14,9 @@ export const livePhotoUrl = (id: string) => paths.livePhoto(id)
 export const ETHICS_NOTE =
   'Технология применяется только для мемориальных целей, с уважением к памяти. Запрещено коммерческое использование или изменение смысла высказывания.'
 
+/** Слова от первого лица из текста кейса (задача 7). */
+export const CASE_PHRASE = 'Я сделал это, чтобы ты жил и видел голубое небо. Помни меня.'
+
 export function useLivePhotos() {
   const { api } = useServices()
   return useQuery({ queryKey: livePhotosKey, queryFn: api.listLivePhotos })

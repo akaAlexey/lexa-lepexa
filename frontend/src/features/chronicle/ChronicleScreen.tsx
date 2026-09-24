@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
+import { paths } from '../../functions/core/paths.ts'
 import { QueryState } from '../../app/QueryState.tsx'
 import { useApi } from '../../app/services.tsx'
 import { region } from '../../config/region.ts'
@@ -63,6 +64,13 @@ function MemorialCard({ memorial }: { memorial: Memorial }) {
           OpenStreetMap
         </a>
       </p>
+      {memorial.kind === 'grave' && (
+        <p>
+          <Link to={paths.newLivePhoto()} data-testid="memorial-live-photo">
+            Создать «живое фото» бойца, похороненного здесь
+          </Link>
+        </p>
+      )}
     </article>
   )
 }

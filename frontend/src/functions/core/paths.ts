@@ -21,6 +21,7 @@ export const patterns = {
   story: '/archive/:storyId',
   chronicle: '/chronicle',
   livePhotos: '/live',
+  newLivePhoto: '/live/new',
   livePhoto: '/live/:photoId',
   demo: '/demo',
 } as const
@@ -47,6 +48,7 @@ export const paths = {
   story: (storyId: string) => `/archive/${seg(storyId)}`,
   chronicle: () => patterns.chronicle,
   livePhotos: () => patterns.livePhotos,
+  newLivePhoto: () => patterns.newLivePhoto,
   livePhoto: (photoId: string) => `/live/${seg(photoId)}`,
   demo: () => patterns.demo,
 } as const satisfies Record<ScreenId, (...ids: string[]) => string>

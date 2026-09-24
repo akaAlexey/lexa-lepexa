@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { paths } from '../../functions/core/paths.ts'
 import { QueryState } from '../../app/QueryState.tsx'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
@@ -24,6 +25,18 @@ export function LivePhotoListScreen() {
                 Оживить снимок «{list[0].title}»
               </BigButton>
             )}
+            <Card as="section" aria-labelledby="live-own" testID="live-own">
+              <h2 id="live-own" className={s.itemTitle}>
+                Фото из вашего семейного архива
+              </h2>
+              <p>
+                Загрузите снимок бойца — нейросеть оживит лицо, и он скажет слова от первого лица.
+                Только с согласия родственников.
+              </p>
+              <Link to={paths.newLivePhoto()} data-testid="live-own-link">
+                Оживить своё фото
+              </Link>
+            </Card>
             <ul className={s.grid} aria-label="Снимки">
               {list.map((p) => (
                 <Card as="li" key={p.id} testID={`live-item-${p.id}`}>
