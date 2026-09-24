@@ -28,6 +28,11 @@ def main() -> None:
         check=True,
     )
 
+    # Без демо-данных стенд пуст: карта «Последнего боя» без меток, счётчик бойцов — 0.
+    # Сид повторяемый — добавляет только недостающее. Отключить: SEED_DEMO=0.
+    if os.getenv("SEED_DEMO", "1") != "0":
+        subprocess.run([sys.executable, "-m", "app.seed"], check=True)
+
     host = os.getenv("HOST", "0.0.0.0")
     port = os.getenv("PORT", "8000")
 

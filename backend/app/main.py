@@ -1,7 +1,7 @@
 from datetime import date,datetime,timezone
 from uuid import uuid4
 import asyncio,json,math
-from fastapi import FastAPI,APIRouter,Depends,Header,HTTPException,Request
+from fastapi import FastAPI,APIRouter,Depends,Header,HTTPException,Query,Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel,ConfigDict,Field,AliasChoices
@@ -12,7 +12,7 @@ from sqlalchemy.orm import DeclarativeBase,Mapped,mapped_column
 
 class Settings(BaseSettings):
     database_url:str="postgresql+asyncpg://postgres:postgres@localhost:5432/memory_trail"
-    cors_origins:str="http://localhost:3000,http://localhost:5173,https://akalexey.github.io"
+    cors_origins:str="http://localhost:3000,http://localhost:5173,https://akalexey.github.io,https://team-shpilit.github.io"
     model_config=SettingsConfigDict(env_file=".env",extra="ignore")
 settings=Settings()
 engine=create_async_engine(settings.database_url,pool_pre_ping=True)
@@ -158,17 +158,19 @@ async def unsubscribe(id,s=Depends(db)):
     if not x: raise HTTPException(404,detail={"message":"Подписка не найдена"})
     await s.delete(x);await s.commit();return {"ok":True}
 @api.get("/notifications/stream")
-async def stream(request:Request,x_demo_user:str=Header("demo")):
+async def stream(request:Request,user:str|None=Query(None),x_demo_user:str=Header("demo")):
+    # Браузерный EventSource не умеет заголовки: демо-пользователь приходит параметром ?user=
+    user_key=user or x_demo_user
     async def gen():
         seen=set()
         while not await request.is_disconnected():
             async with Session() as s:
-                rows=(await s.execute(select(Notification).where(Notification.user_key==x_demo_user).order_by(Notification.created_at))).scalars().all()
+                rows=(await s.execute(select(Notification).where(Notification.user_key==user_key).order_by(Notification.created_at))).scalars().all()
                 for n in rows:
                     if n.id in seen: continue
                     seen.add(n.id)
                     p={"id":n.id,"kind":n.kind,"siteId":n.site_id,"distanceKm":n.distance_km,"title":n.title,"body":n.body,"createdAt":n.created_at.isoformat()}
-                    yield "data: "+json.dumps(p,ensure_ascii=False)+"\\n\\n"
+                    yield "data: "+json.dumps(p,ensure_ascii=False)+"\n\n"
             await asyncio.sleep(2)
     return StreamingResponse(gen(),media_type="text/event-stream")
 
