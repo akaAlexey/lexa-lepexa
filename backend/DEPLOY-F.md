@@ -1,12 +1,8 @@
-# Deploy-F deployment
+# Deploy-F deployment (No PostGIS)
 
-## Project type
+Эта ветка рассчитана на обычный PostgreSQL без расширения PostGIS.
 
-Deploy this directory as a **Python web application**.
-
-Do not use the local Docker Compose database for the hosted deployment. Deploy-F should provide a separate PostgreSQL database.
-
-## Hosted files
+## Files
 
 - `app/`
 - `migrations/`
@@ -15,58 +11,24 @@ Do not use the local Docker Compose database for the hosted deployment. Deploy-F
 - `requirements.txt`
 - `start.py`
 
-`Dockerfile` and `docker-compose.yml` are retained for local development.
-
 ## Start command
-
-Use:
 
 ```text
 python start.py
 ```
 
-The startup script requires `DATABASE_URL`, runs `alembic upgrade head`, then starts FastAPI with Uvicorn. It reads `PORT` when the platform provides it and otherwise uses 8000.
+`start.py` запускает `alembic upgrade head`, затем Uvicorn.
 
-## Environment variables
-
-Required:
+## Environment
 
 ```text
-DATABASE_URL=postgresql+asyncpg://USER:PASSWORD@HOST:5432/DATABASE
-```
-
-Optional:
-
-```text
+DATABASE_URL=postgresql+asyncpg://USER:PASSWORD@HOST:PORT/DATABASE
 PORT=8000
 HOST=0.0.0.0
-CORS_ORIGINS=https://<frontend-domain>
 ```
 
-Do not commit the real database password to Git.
+## Geography
 
-## Database
+PostGIS не требуется. Координаты — `lat` / `lon`; расстояние для уведомлений считается через Haversine в Python.
 
-The hosted database must support PostgreSQL + PostGIS.
-
-After the PostgreSQL service is created and `DATABASE_URL` is set, the first application start automatically runs `alembic upgrade head`.
-
-## Health check
-
-```text
-GET /health
-```
-
-Expected response:
-
-```json
-{"ok": true}
-```
-
-## API docs
-
-OpenAPI: `/api/v1/openapi.json`
-
-Swagger UI: `/docs`
-
-The frontend API base path remains `/api/v1`.
+Не добавляйте реальные пароли в Git.
