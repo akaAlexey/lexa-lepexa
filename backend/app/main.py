@@ -110,7 +110,10 @@ async def stats(s=Depends(db)):
 
 @api.get("/sites")
 async def sites(s=Depends(db)):
-    return [site_json(x) for x in (await s.execute(select(Site).order_by(Site.created_at.desc()))).scalars()]
+    all_sites=(await s.execute(select(Site).order_by(Site.created_at.desc()))).scalars()
+    # Do not expose technical test records to the public frontend.
+    sites=[x for x in all_sites if not x.place_name.startswith("ТЕСТ")]
+    return [site_json(x) for x in sites]
 @api.get("/sites/{id}")
 async def site(id,s=Depends(db)):
     x=await s.get(Site,id)
@@ -173,7 +176,9 @@ async def stream(request:Request,x_demo_user:str=Header("demo")):
     return StreamingResponse(gen(),media_type="text/event-stream")
 
 app=FastAPI(title="Тропа памяти: Последний бой — API",version="0.1.0",openapi_url="/api/v1/openapi.json")
-app.add_middleware(CORSMiddleware,allow_origins=[x for x in settings.cors_origins.split(",") if x],allow_methods=["GET","POST","PATCH","DELETE","OPTIONS"],allow_headers=["*"])
+allowed_origins = {x.strip() for x in settings.cors_origins.split(",") if x.strip()}
+allowed_origins.add("https://team-shpilit.github.io")
+app.add_middleware(CORSMiddleware,allow_origins=sorted(allowed_origins),allow_methods=["GET","POST","PATCH","DELETE","OPTIONS"],allow_headers=["*"])
 @app.get("/health")
 async def health(): return {"ok":True}
 app.include_router(api,prefix="/api/v1")
