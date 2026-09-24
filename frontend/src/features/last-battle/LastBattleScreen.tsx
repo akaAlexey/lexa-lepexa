@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
 import { useRole } from '../../app/RoleContext.tsx'
-import { SUBSCRIPTION_KEY, subscribeNearby, useApi, useServices } from '../../app/services.tsx'
+import { useApi } from '../../app/services.tsx'
+import { useNearbySubscription } from '../../functions/nearbyAlerts/index.ts'
 import { region } from '../../config/region.ts'
 import type { Grave, LastBattleSite, SiteStatus } from '../../contract/schemas.ts'
 import { describeFighters, NOTIFY_RADIUS_KM, SITE_STATUS_ORDER } from '../../domain/lastBattle.ts'
@@ -126,25 +127,7 @@ function SiteList({ sites }: { sites: LastBattleSite[] }) {
 
 /** Главное действие не командира: подписка на находки в радиусе 20 км одним нажатием. */
 function SubscribeAction() {
-  const services = useServices()
-  const [subscribed, setSubscribed] = useState(
-    () => services.platform.storage.get(SUBSCRIPTION_KEY) !== undefined,
-  )
-  const [busy, setBusy] = useState(false)
-  const [failed, setFailed] = useState(false)
-
-  const subscribe = async () => {
-    setBusy(true)
-    setFailed(false)
-    try {
-      await subscribeNearby(services)
-      setSubscribed(true)
-    } catch {
-      setFailed(true)
-    } finally {
-      setBusy(false)
-    }
-  }
+  const { subscribed, busy, failed, subscribe } = useNearbySubscription()
 
   if (subscribed) {
     return (
