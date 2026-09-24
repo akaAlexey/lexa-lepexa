@@ -1,11 +1,12 @@
 import type { RouteObject } from 'react-router'
+import { patterns } from '../../functions/core/paths.ts'
 import { LastBattleScreen } from './LastBattleScreen.tsx'
 import { NewSiteScreen } from './NewSiteScreen.tsx'
 import { SiteScreen } from './SiteScreen.tsx'
 
 /** Маршруты модуля. Новые экраны модуля добавляются только сюда. */
 export const routes: RouteObject[] = [
-  { path: 'last-battle', element: <LastBattleScreen /> },
-  { path: 'last-battle/new', element: <NewSiteScreen /> },
-  { path: 'last-battle/:siteId', element: <SiteScreen /> },
+  { path: patterns.lastBattle, element: <LastBattleScreen /> },
+  { path: patterns.newSite, element: <NewSiteScreen /> },
+  { path: patterns.site, element: <SiteScreen /> },
 ]
