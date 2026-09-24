@@ -17,8 +17,6 @@ def upgrade():
     op.add_column("notifications", sa.Column("data", sa.JSON(), nullable=True))
     op.add_column("notifications", sa.Column("is_read", sa.Boolean(), nullable=False, server_default=sa.false()))
     op.add_column("notifications", sa.Column("read_at", sa.DateTime(timezone=True), nullable=True))
-    op.create_foreign_key("fk_notifications_user_id_users", "notifications", "users", ["user_id"], ["id"]) if False else None
-
     op.create_table(
         "users",
         sa.Column("id", sa.String(50), primary_key=True),
@@ -292,6 +290,14 @@ def upgrade():
 
 
 def downgrade():
+    op.drop_constraint("fk_notifications_user_id_users", "notifications", type_="foreignkey")
+    op.drop_column("notifications", "read_at")
+    op.drop_column("notifications", "is_read")
+    op.drop_column("notifications", "data")
+    op.drop_column("notifications", "message")
+    op.drop_column("notifications", "type")
+    op.drop_column("notifications", "user_id")
+
     for table in (
         "audit_logs",
         "media",
@@ -320,11 +326,3 @@ def downgrade():
     ):
         op.drop_table(table)
 
-    op.drop_index("ix_donations_campaign_id", table_name="donations") if False else None
-    op.drop_constraint("fk_notifications_user_id_users", "notifications", type_="foreignkey")
-    op.drop_column("notifications", "read_at")
-    op.drop_column("notifications", "is_read")
-    op.drop_column("notifications", "data")
-    op.drop_column("notifications", "message")
-    op.drop_column("notifications", "type")
-    op.drop_column("notifications", "user_id")
