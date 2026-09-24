@@ -143,6 +143,9 @@ class VolunteerRequest(Base):
     roles: Mapped[list] = mapped_column(JSON)
     joined: Mapped[int] = mapped_column(Integer, default=0)
     fundraiser_id: Mapped[str | None] = mapped_column(String(50))
+    # Где нужны люди — метка на карте потребностей (0004)
+    lat: Mapped[float | None] = mapped_column(Float)
+    lon: Mapped[float | None] = mapped_column(Float)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
     demo: Mapped[bool] = mapped_column(Boolean)
 
@@ -165,6 +168,9 @@ class Fundraiser(Base):
     title: Mapped[str] = mapped_column(String(255))
     goal_rub: Mapped[int] = mapped_column(Integer)
     collected_rub: Mapped[int] = mapped_column(Integer, default=0)
+    # Куда пойдут деньги — метка на карте потребностей (0004)
+    lat: Mapped[float | None] = mapped_column(Float)
+    lon: Mapped[float | None] = mapped_column(Float)
     demo: Mapped[bool] = mapped_column(Boolean)
 
 

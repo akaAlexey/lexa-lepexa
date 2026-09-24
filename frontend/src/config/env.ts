@@ -8,7 +8,11 @@ const EnvSchema = z
   .object({
     VITE_API_MODE: z.enum(['mock', 'live']).default('mock'),
     // Абсолютный адрес (https://…/api/v1) или путь на том же домене (/api/v1 — за общим прокси).
-    VITE_API_URL: z.union([z.url(), z.string().regex(/^\/[^/]/)]).optional(),
+    // Пустая строка = не задан (так приходит пустая переменная из CI).
+    VITE_API_URL: z.preprocess(
+      (v) => (v === '' ? undefined : v),
+      z.union([z.url(), z.string().regex(/^\/[^/]/)]).optional(),
+    ),
     VITE_TILES: z.enum(['openfreemap', 'none']).default('openfreemap'),
     VITE_MOCK_LATENCY_MS: z.coerce.number().int().nonnegative().default(300),
   })

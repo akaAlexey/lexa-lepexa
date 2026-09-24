@@ -704,10 +704,6 @@
           "sources": [
             {
               "kind": "literature",
-              "title": "Историческая справка из кейса хакатона «Маршруты победы»"
-            },
-            {
-              "kind": "literature",
               "title": "Овчинников А. «Десант в Орле» (1998)"
             }
           ]
@@ -804,6 +800,8 @@
       ],
       "joined": 2,
       "fundraiserId": "F01",
+      "lat": 53.28,
+      "lon": 36.57,
       "createdAt": "2026-09-20T09:00:00Z",
       "demo": true
     }
@@ -816,6 +814,8 @@
       "title": "Бензин на Вахту Памяти",
       "goalRub": 50000,
       "collectedRub": 15000,
+      "lat": 53.28,
+      "lon": 36.57,
       "demo": true
     },
     {
@@ -825,6 +825,41 @@
       "title": "Экипировать отряд: щупы и металлоискатель",
       "goalRub": 40000,
       "collectedRub": 9000,
+      "lat": 53.21,
+      "lon": 36.45,
+      "demo": true
+    },
+    {
+      "id": "F03",
+      "teamId": "T04",
+      "purpose": "raise_fighter",
+      "title": "Поднять бойца: овраг у д. Крупышино",
+      "goalRub": 30000,
+      "collectedRub": 21000,
+      "lat": 52.74,
+      "lon": 35.84,
+      "demo": true
+    },
+    {
+      "id": "F04",
+      "teamId": "T02",
+      "purpose": "fuel",
+      "title": "Бензин на разведку у р. Оптуха",
+      "goalRub": 80000,
+      "collectedRub": 32000,
+      "lat": 53.15,
+      "lon": 36.33,
+      "demo": true
+    },
+    {
+      "id": "F05",
+      "teamId": "T05",
+      "purpose": "equip",
+      "title": "Экипировать отряд: палатки и аптечки",
+      "goalRub": 60000,
+      "collectedRub": 12500,
+      "lat": 52.97,
+      "lon": 36.07,
       "demo": true
     }
   ],
@@ -1057,6 +1092,722 @@
     {
       "lat": 52.75,
       "lon": 35.83
+    }
+  ],
+  "memorials": [
+    {
+      "id": "osm-node-5832583820",
+      "lat": 53.02707,
+      "lon": 36.95299,
+      "name": "Блиндаж Горбатова",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/5832583820"
+    },
+    {
+      "id": "osm-node-1659573526",
+      "lat": 53.27615,
+      "lon": 35.67959,
+      "name": "Братская могила",
+      "kind": "grave",
+      "osmUrl": "https://www.openstreetmap.org/node/1659573526"
+    },
+    {
+      "id": "osm-node-3642622391",
+      "lat": 53.32567,
+      "lon": 35.46375,
+      "name": "Братская могила",
+      "kind": "grave",
+      "osmUrl": "https://www.openstreetmap.org/node/3642622391"
+    },
+    {
+      "id": "osm-node-3824242584",
+      "lat": 52.96799,
+      "lon": 36.07849,
+      "name": "Братская могила",
+      "kind": "grave",
+      "osmUrl": "https://www.openstreetmap.org/node/3824242584"
+    },
+    {
+      "id": "osm-node-7948369785",
+      "lat": 52.90304,
+      "lon": 36.02473,
+      "name": "Братская могила",
+      "kind": "grave",
+      "osmUrl": "https://www.openstreetmap.org/node/7948369785"
+    },
+    {
+      "id": "osm-node-10727634927",
+      "lat": 53.24745,
+      "lon": 36.52393,
+      "name": "Братская могила",
+      "kind": "grave",
+      "osmUrl": "https://www.openstreetmap.org/node/10727634927"
+    },
+    {
+      "id": "osm-node-10734295183",
+      "lat": 53.18115,
+      "lon": 36.40863,
+      "name": "Братская могила",
+      "kind": "grave",
+      "osmUrl": "https://www.openstreetmap.org/node/10734295183"
+    },
+    {
+      "id": "osm-node-11215982338",
+      "lat": 52.51927,
+      "lon": 35.25149,
+      "name": "Братская могила",
+      "kind": "grave",
+      "osmUrl": "https://www.openstreetmap.org/node/11215982338"
+    },
+    {
+      "id": "osm-node-11215898157",
+      "lat": 52.52849,
+      "lon": 35.29374,
+      "name": "Братская могила времен ВОВ",
+      "kind": "grave",
+      "osmUrl": "https://www.openstreetmap.org/node/11215898157"
+    },
+    {
+      "id": "osm-node-11215982339",
+      "lat": 52.50542,
+      "lon": 35.2821,
+      "name": "Братская могила героев ВОВ",
+      "kind": "grave",
+      "osmUrl": "https://www.openstreetmap.org/node/11215982339"
+    },
+    {
+      "id": "osm-node-7348714647",
+      "lat": 52.98868,
+      "lon": 35.29696,
+      "name": "Братская могила советских воинов",
+      "kind": "grave",
+      "osmUrl": "https://www.openstreetmap.org/node/7348714647"
+    },
+    {
+      "id": "osm-node-13970690458",
+      "lat": 52.26132,
+      "lon": 37.48876,
+      "name": "Братское захоронение",
+      "kind": "grave",
+      "osmUrl": "https://www.openstreetmap.org/node/13970690458"
+    },
+    {
+      "id": "osm-node-14092751039",
+      "lat": 52.33753,
+      "lon": 37.35885,
+      "name": "Братское захоронение",
+      "kind": "grave",
+      "osmUrl": "https://www.openstreetmap.org/node/14092751039"
+    },
+    {
+      "id": "osm-node-5604184856",
+      "lat": 52.91741,
+      "lon": 35.9921,
+      "name": "Ветеранам Орловского бронетанкового училища Танк Т-34-85",
+      "kind": "vehicle",
+      "osmUrl": "https://www.openstreetmap.org/node/5604184856"
+    },
+    {
+      "id": "osm-node-4825976528",
+      "lat": 53.28111,
+      "lon": 36.5686,
+      "name": "Вечный огонь",
+      "kind": "flame",
+      "osmUrl": "https://www.openstreetmap.org/node/4825976528"
+    },
+    {
+      "id": "osm-node-5142747161",
+      "lat": 53.27606,
+      "lon": 36.40317,
+      "name": "Вечный огонь",
+      "kind": "flame",
+      "osmUrl": "https://www.openstreetmap.org/node/5142747161"
+    },
+    {
+      "id": "osm-node-5840868672",
+      "lat": 52.972,
+      "lon": 37.03885,
+      "name": "Вечный огонь",
+      "kind": "flame",
+      "osmUrl": "https://www.openstreetmap.org/node/5840868672"
+    },
+    {
+      "id": "osm-node-10578756295",
+      "lat": 52.96756,
+      "lon": 36.07683,
+      "name": "Вечный огонь",
+      "kind": "flame",
+      "osmUrl": "https://www.openstreetmap.org/node/10578756295"
+    },
+    {
+      "id": "osm-node-9129502136",
+      "lat": 52.4198,
+      "lon": 37.60957,
+      "name": "Вечный огонь на площади Победы",
+      "kind": "flame",
+      "osmUrl": "https://www.openstreetmap.org/node/9129502136"
+    },
+    {
+      "id": "osm-node-9230884301",
+      "lat": 53.16878,
+      "lon": 36.24788,
+      "name": "Военный мемориал погибшим в Великой Отечественной войне",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/9230884301"
+    },
+    {
+      "id": "osm-node-3149024355",
+      "lat": 53.45509,
+      "lon": 36.37631,
+      "name": "Воинам 116-й Отдельной морской стрелковой бригады Тихоокеанского флота",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/3149024355"
+    },
+    {
+      "id": "osm-node-2190091277",
+      "lat": 52.9614,
+      "lon": 36.08852,
+      "name": "Воинам 5-ой Орловской дивизии",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/2190091277"
+    },
+    {
+      "id": "osm-node-1392384626",
+      "lat": 52.39672,
+      "lon": 36.2665,
+      "name": "Воинам 81-й стрелковой дивизии",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/1392384626"
+    },
+    {
+      "id": "osm-node-1350625443",
+      "lat": 52.49799,
+      "lon": 35.75989,
+      "name": "Воинам Великой Отечественной войны",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/1350625443"
+    },
+    {
+      "id": "osm-node-1395314305",
+      "lat": 53.10855,
+      "lon": 36.29435,
+      "name": "Воинам Великой Отечественной войны",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/1395314305"
+    },
+    {
+      "id": "osm-node-4825564622",
+      "lat": 53.46626,
+      "lon": 36.0063,
+      "name": "Воинам Великой Отечественной войны (1941-1945)",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/4825564622"
+    },
+    {
+      "id": "osm-node-1397059965",
+      "lat": 52.52463,
+      "lon": 36.28763,
+      "name": "Воинам ВОВ",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/1397059965"
+    },
+    {
+      "id": "osm-node-1412609042",
+      "lat": 52.50304,
+      "lon": 36.23369,
+      "name": "Воинам ВОВ",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/1412609042"
+    },
+    {
+      "id": "osm-node-5832593745",
+      "lat": 53.06043,
+      "lon": 36.88934,
+      "name": "Воинам Кр. Армии",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/5832593745"
+    },
+    {
+      "id": "osm-node-1395318837",
+      "lat": 52.55076,
+      "lon": 35.75403,
+      "name": "Воинам, павшим в Великую Отечественную войну",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/1395318837"
+    },
+    {
+      "id": "osm-node-1395322385",
+      "lat": 52.30527,
+      "lon": 35.82821,
+      "name": "Воинам, павшим в годы Великой Отечественной войны",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/1395322385"
+    },
+    {
+      "id": "osm-node-11695009063",
+      "lat": 52.74877,
+      "lon": 35.38002,
+      "name": "Воинам, погибшим в боях за Нашу Родину",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/11695009063"
+    },
+    {
+      "id": "osm-node-11933730712",
+      "lat": 52.74484,
+      "lon": 35.39415,
+      "name": "Воинам, погибшим за Нашу Родину",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/11933730712"
+    },
+    {
+      "id": "osm-node-10669419031",
+      "lat": 53.4232,
+      "lon": 36.03847,
+      "name": "Воинский мемориал",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/10669419031"
+    },
+    {
+      "id": "osm-node-11438597215",
+      "lat": 52.98047,
+      "lon": 36.96582,
+      "name": "Воинское захоронение",
+      "kind": "grave",
+      "osmUrl": "https://www.openstreetmap.org/node/11438597215"
+    },
+    {
+      "id": "osm-node-10567007600",
+      "lat": 52.97251,
+      "lon": 36.04748,
+      "name": "Г.К. Жуков",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/10567007600"
+    },
+    {
+      "id": "osm-node-1165131693",
+      "lat": 52.97334,
+      "lon": 36.05924,
+      "name": "Генералу А.В.Горбатову",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/1165131693"
+    },
+    {
+      "id": "osm-node-1151987748",
+      "lat": 52.97519,
+      "lon": 36.06422,
+      "name": "Генералу Л.Н.Гуртьеву",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/1151987748"
+    },
+    {
+      "id": "osm-node-10568370371",
+      "lat": 52.97792,
+      "lon": 36.10951,
+      "name": "Героям-железнодорожникам",
+      "kind": "vehicle",
+      "osmUrl": "https://www.openstreetmap.org/node/10568370371"
+    },
+    {
+      "id": "osm-node-4217217284",
+      "lat": 52.96687,
+      "lon": 37.04899,
+      "name": "Горбатов А.В.",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/4217217284"
+    },
+    {
+      "id": "osm-node-10687927103",
+      "lat": 53.02398,
+      "lon": 36.17191,
+      "name": "Жертвам фашизма",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/10687927103"
+    },
+    {
+      "id": "osm-node-1357129496",
+      "lat": 52.95169,
+      "lon": 36.06119,
+      "name": "Комсомольцам орловщины павшим в ВОВ",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/1357129496"
+    },
+    {
+      "id": "osm-node-11274124156",
+      "lat": 52.89299,
+      "lon": 36.88698,
+      "name": "Маринченко Н.Д.",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/11274124156"
+    },
+    {
+      "id": "osm-node-4729484931",
+      "lat": 52.05925,
+      "lon": 37.52948,
+      "name": "Мемориал Великой Отечественной Войны",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/4729484931"
+    },
+    {
+      "id": "osm-way-504027005",
+      "lat": 52.40085,
+      "lon": 36.5012,
+      "name": "Мемориал Великой Отечественной Войны",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/way/504027005"
+    },
+    {
+      "id": "osm-node-1338795077",
+      "lat": 52.835,
+      "lon": 37.58058,
+      "name": "Мемориал воинам 4-го Гвардейского минометного полка отдавшим свои жизни за освобождение Краснозоренского района",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/1338795077"
+    },
+    {
+      "id": "osm-node-1140090870",
+      "lat": 53.43819,
+      "lon": 36.00209,
+      "name": "Мемориал памяти воинов - болховчан",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/1140090870"
+    },
+    {
+      "id": "osm-node-10567005807",
+      "lat": 52.96751,
+      "lon": 36.04506,
+      "name": "Мемориал Победы",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/10567005807"
+    },
+    {
+      "id": "osm-way-542745443",
+      "lat": 53.16069,
+      "lon": 36.37913,
+      "name": "Мемориал Славы воинов-танкистов",
+      "kind": "vehicle",
+      "osmUrl": "https://www.openstreetmap.org/way/542745443"
+    },
+    {
+      "id": "osm-node-2178423912",
+      "lat": 52.2264,
+      "lon": 37.03802,
+      "name": "Монумент защитникам Родины и Вечный огонь",
+      "kind": "flame",
+      "osmUrl": "https://www.openstreetmap.org/node/2178423912"
+    },
+    {
+      "id": "osm-node-5840119779",
+      "lat": 53.01939,
+      "lon": 36.94609,
+      "name": "Неизвестным",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/5840119779"
+    },
+    {
+      "id": "osm-node-1165131576",
+      "lat": 52.97201,
+      "lon": 36.06199,
+      "name": "Орёл-Город Воинской славы",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/1165131576"
+    },
+    {
+      "id": "osm-node-1550221448",
+      "lat": 52.96834,
+      "lon": 36.06992,
+      "name": "Освободителям Орла в 1943 г.",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/1550221448"
+    },
+    {
+      "id": "osm-node-4589166712",
+      "lat": 53.44473,
+      "lon": 36.00598,
+      "name": "Павшим при освобождении в ВОВ",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/4589166712"
+    },
+    {
+      "id": "osm-node-4826000121",
+      "lat": 53.28161,
+      "lon": 36.56729,
+      "name": "Павшим солдатам",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/4826000121"
+    },
+    {
+      "id": "osm-node-838087263",
+      "lat": 52.4409,
+      "lon": 36.35782,
+      "name": "Памяти погибшим в ВОВ",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/838087263"
+    },
+    {
+      "id": "osm-node-838087446",
+      "lat": 52.4112,
+      "lon": 36.33531,
+      "name": "Памяти погибшим в ВОВ",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/838087446"
+    },
+    {
+      "id": "osm-way-69680324",
+      "lat": 52.43545,
+      "lon": 36.33648,
+      "name": "Памяти погибшим в ВОВ",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/way/69680324"
+    },
+    {
+      "id": "osm-node-5599143797",
+      "lat": 52.96493,
+      "lon": 36.13529,
+      "name": "Памятник воинам 380-ой стрелковой дивизии",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/5599143797"
+    },
+    {
+      "id": "osm-node-2997617956",
+      "lat": 52.2971,
+      "lon": 37.67612,
+      "name": "Памятник воинам Великой Отечественной войны",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/2997617956"
+    },
+    {
+      "id": "osm-node-5608127727",
+      "lat": 52.96457,
+      "lon": 36.06425,
+      "name": "Памятник воинам-артиллеристам",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/5608127727"
+    },
+    {
+      "id": "osm-node-5832595973",
+      "lat": 53.01018,
+      "lon": 36.90082,
+      "name": "Памятник неизвестному солдату",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/5832595973"
+    },
+    {
+      "id": "osm-node-1573416381",
+      "lat": 53.12556,
+      "lon": 35.40048,
+      "name": "Памятник павшим бойцам Великой Отечественной войны",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/1573416381"
+    },
+    {
+      "id": "osm-node-9230672459",
+      "lat": 53.10888,
+      "lon": 36.23865,
+      "name": "Памятник погибшим в Великой Отечественной войне",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/9230672459"
+    },
+    {
+      "id": "osm-node-2208286042",
+      "lat": 52.25357,
+      "lon": 36.7902,
+      "name": "Памятник погибшим воинам",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/2208286042"
+    },
+    {
+      "id": "osm-node-7011881582",
+      "lat": 52.30242,
+      "lon": 35.92467,
+      "name": "Памятник погибшим воинам",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/7011881582"
+    },
+    {
+      "id": "osm-node-1314826494",
+      "lat": 52.42041,
+      "lon": 37.61046,
+      "name": "Памятник Советским воинам на братской могиле",
+      "kind": "grave",
+      "osmUrl": "https://www.openstreetmap.org/node/1314826494"
+    },
+    {
+      "id": "osm-way-627920015",
+      "lat": 52.4204,
+      "lon": 37.61036,
+      "name": "Памятник Советским воинам на братской могиле",
+      "kind": "grave",
+      "osmUrl": "https://www.openstreetmap.org/way/627920015"
+    },
+    {
+      "id": "osm-node-10793528831",
+      "lat": 53.29089,
+      "lon": 36.59216,
+      "name": "Памятник солдату",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/10793528831"
+    },
+    {
+      "id": "osm-node-4268440196",
+      "lat": 53.293,
+      "lon": 36.56696,
+      "name": "Поезд Победы",
+      "kind": "vehicle",
+      "osmUrl": "https://www.openstreetmap.org/node/4268440196"
+    },
+    {
+      "id": "osm-node-3777709311",
+      "lat": 53.29693,
+      "lon": 36.60833,
+      "name": "Реактивный миномет \"Катюша\"",
+      "kind": "vehicle",
+      "osmUrl": "https://www.openstreetmap.org/node/3777709311"
+    },
+    {
+      "id": "osm-node-11348266065",
+      "lat": 52.97551,
+      "lon": 37.04469,
+      "name": "Сергею Гавриловичу Тюленину",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/11348266065"
+    },
+    {
+      "id": "osm-node-9129502135",
+      "lat": 52.42011,
+      "lon": 37.60879,
+      "name": "Сквер памятников героям ВОВ на Площади Победы",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/9129502135"
+    },
+    {
+      "id": "osm-node-11215941728",
+      "lat": 52.52278,
+      "lon": 35.28706,
+      "name": "Советским воинам, павшим за Родину в 1941-1945 г.г.",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/11215941728"
+    },
+    {
+      "id": "osm-node-11348266057",
+      "lat": 52.96914,
+      "lon": 37.04198,
+      "name": "Солдат, вечный огонь",
+      "kind": "flame",
+      "osmUrl": "https://www.openstreetmap.org/node/11348266057"
+    },
+    {
+      "id": "osm-node-1086153849",
+      "lat": 52.78323,
+      "lon": 37.67856,
+      "name": "Солдатам, погибшим за Родину",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/1086153849"
+    },
+    {
+      "id": "osm-node-5927905026",
+      "lat": 52.4195,
+      "lon": 37.60883,
+      "name": "Стелла «Населенный пункт воинской доблести»",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/5927905026"
+    },
+    {
+      "id": "osm-node-1573416361",
+      "lat": 53.12729,
+      "lon": 35.38808,
+      "name": "Танк",
+      "kind": "vehicle",
+      "osmUrl": "https://www.openstreetmap.org/node/1573416361"
+    },
+    {
+      "id": "osm-node-4825976526",
+      "lat": 53.27781,
+      "lon": 36.57856,
+      "name": "Танк",
+      "kind": "vehicle",
+      "osmUrl": "https://www.openstreetmap.org/node/4825976526"
+    },
+    {
+      "id": "osm-node-5832592338",
+      "lat": 53.06683,
+      "lon": 36.90427,
+      "name": "Танк",
+      "kind": "vehicle",
+      "osmUrl": "https://www.openstreetmap.org/node/5832592338"
+    },
+    {
+      "id": "osm-node-446105477",
+      "lat": 53.16085,
+      "lon": 36.37937,
+      "name": "Танк Т-34-85",
+      "kind": "vehicle",
+      "osmUrl": "https://www.openstreetmap.org/node/446105477"
+    },
+    {
+      "id": "osm-node-618194928",
+      "lat": 52.9676,
+      "lon": 36.07701,
+      "name": "Танк Т-34-85",
+      "kind": "vehicle",
+      "osmUrl": "https://www.openstreetmap.org/node/618194928"
+    },
+    {
+      "id": "osm-node-1140090869",
+      "lat": 53.43779,
+      "lon": 36.00199,
+      "name": "Танк Т-34-85",
+      "kind": "vehicle",
+      "osmUrl": "https://www.openstreetmap.org/node/1140090869"
+    },
+    {
+      "id": "osm-node-11274124135",
+      "lat": 52.88769,
+      "lon": 36.87736,
+      "name": "Трубин И.С.",
+      "kind": "monument",
+      "osmUrl": "https://www.openstreetmap.org/node/11274124135"
+    }
+  ],
+  "livePhotos": [
+    {
+      "id": "soldier",
+      "title": "Офицер-победитель",
+      "caption": "Портрет советского офицера, 1945 год. Архивный снимок",
+      "speech": "Здравствуй, потомок! Я прошёл эту войну до самой Победы. Мы выстояли, потому что были вместе — весь Советский Союз: и солдат на фронте, и мать у станка, и мальчишка в тылу. Победа досталась нам дорогой ценой. Береги мир, береги память и гордись своей страной. Помни нас!",
+      "photoUrl": "live/soldier.jpg",
+      "videoUrl": "live/soldier.mp4",
+      "captionsUrl": "live/soldier.vtt",
+      "targetUrl": "live/soldier.mind",
+      "photoAspect": 1.432,
+      "animation": "lip_sync",
+      "consent": "Демо для хакатона. Для публикации нужно согласие родственников",
+      "sources": [
+        {
+          "kind": "archive",
+          "title": "Архивный снимок из открытых публикаций (демо, требует атрибуции)"
+        }
+      ],
+      "demo": true
+    },
+    {
+      "id": "reichstag",
+      "title": "У Рейхстага",
+      "caption": "Советские бойцы у Рейхстага, Берлин, 1945 год. Колоризованный архивный снимок",
+      "speech": "Товарищи! Мы дошли до Берлина! Через огонь и потери, от Москвы и Орла — до самого Рейхстага! Враг разбит! Победа за нами! Ура!",
+      "photoUrl": "live/reichstag.jpg",
+      "videoUrl": "live/reichstag.mp4",
+      "captionsUrl": "live/reichstag.vtt",
+      "targetUrl": "live/reichstag.mind",
+      "photoAspect": 0.7184567257559958,
+      "animation": "neural_motion",
+      "consent": "Демо для хакатона. Для публикации нужно согласие родственников",
+      "sources": [
+        {
+          "kind": "archive",
+          "title": "Архивный снимок из открытых публикаций (демо, требует атрибуции)"
+        }
+      ],
+      "demo": true
     }
   ]
 }

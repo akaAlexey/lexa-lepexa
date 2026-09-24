@@ -7,6 +7,7 @@
 import { writeFileSync } from 'node:fs'
 import { z } from 'zod'
 import jury from '../src/api/fixtures/jury.generated.json' with { type: 'json' }
+import osm from '../src/api/fixtures/memorials.osm.json' with { type: 'json' }
 import * as seed from '../src/api/fixtures/seed.ts'
 import * as s from '../src/contract/schemas.ts'
 
@@ -24,6 +25,9 @@ const data = {
   stories: z.array(s.ArchiveStory).parse(seed.stories),
   sites: z.array(s.LastBattleSite).parse(seed.sites),
   demoSubscribers: z.array(s.LatLon).parse(seed.demoSubscribers),
+  // Только чтение: бэкенд отдаёт их как есть, в базу не пишет
+  memorials: z.array(s.Memorial).parse(osm.memorials),
+  livePhotos: z.array(s.LivePhoto).parse(seed.livePhotos),
 }
 
 writeFileSync(out, JSON.stringify(data, null, 2) + '\n')

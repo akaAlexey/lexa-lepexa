@@ -79,6 +79,8 @@ def volunteer_request(x: m.VolunteerRequest) -> dict:
             "roles": x.roles,
             "joined": x.joined,
             "fundraiserId": x.fundraiser_id,
+            "lat": x.lat,
+            "lon": x.lon,
             "createdAt": iso_z(x.created_at),
             "demo": x.demo,
         }
@@ -86,15 +88,19 @@ def volunteer_request(x: m.VolunteerRequest) -> dict:
 
 
 def fundraiser(x: m.Fundraiser) -> dict:
-    return {
-        "id": x.id,
-        "teamId": x.team_id,
-        "purpose": x.purpose,
-        "title": x.title,
-        "goalRub": x.goal_rub,
-        "collectedRub": x.collected_rub,
-        "demo": x.demo,
-    }
+    return _drop_none(
+        {
+            "id": x.id,
+            "teamId": x.team_id,
+            "purpose": x.purpose,
+            "title": x.title,
+            "goalRub": x.goal_rub,
+            "collectedRub": x.collected_rub,
+            "lat": x.lat,
+            "lon": x.lon,
+            "demo": x.demo,
+        }
+    )
 
 
 def trip(x: m.Trip) -> dict:

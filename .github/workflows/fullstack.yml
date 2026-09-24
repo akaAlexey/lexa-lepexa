@@ -27,8 +27,8 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements-dev.txt
       - run: pip install -r requirements-dev.txt
-      - run: ruff check app tests migrations/env.py migrations/versions/0003_contract_tables.py start.py
-      - run: ruff format --check app tests migrations/env.py migrations/versions/0003_contract_tables.py start.py
+      - run: ruff check app tests migrations/env.py migrations/versions/0003_contract_tables.py migrations/versions/0004_needs_coordinates.py start.py
+      - run: ruff format --check app tests migrations/env.py migrations/versions/0003_contract_tables.py migrations/versions/0004_needs_coordinates.py start.py
       - run: pytest -q
 
   frontend:

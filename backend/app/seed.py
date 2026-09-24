@@ -98,6 +98,8 @@ def rows(data: dict) -> list:
             title=f["title"],
             goal_rub=f["goalRub"],
             collected_rub=f["collectedRub"],
+            lat=f.get("lat"),
+            lon=f.get("lon"),
             demo=f["demo"],
         )
         for f in data["fundraisers"]
@@ -112,6 +114,8 @@ def rows(data: dict) -> list:
             roles=r["roles"],
             joined=r["joined"],
             fundraiser_id=r.get("fundraiserId"),
+            lat=r.get("lat"),
+            lon=r.get("lon"),
             created_at=_dt(r["createdAt"]),
             demo=r["demo"],
         )

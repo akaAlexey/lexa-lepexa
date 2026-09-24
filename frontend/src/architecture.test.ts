@@ -36,7 +36,12 @@ const EXCEPTIONS: Record<string, readonly Rule[]> = {
   'features/last-battle/LastBattleScreen.tsx': ['page-services', 'paths'],
   'features/last-battle/NewSiteScreen.tsx': ['page-services', 'paths'],
   'features/last-battle/SiteScreen.tsx': ['page-services', 'paths'],
+  'features/last-battle/SiteStatusAction.tsx': ['page-services'],
   'features/last-battle/routes.tsx': ['paths'],
+  'features/live-photo/ArView.tsx': ['page-services'],
+  'features/live-photo/LivePhotoScreen.tsx': ['page-services'],
+  'features/live-photo/livePhotos.ts': ['page-services'],
+  'features/live-photo/routes.tsx': ['paths'],
   'features/search-hq/DonateDialog.tsx': ['page-services'],
   'features/search-hq/NewRequestScreen.tsx': ['page-services', 'paths'],
   'features/search-hq/SearchScreen.tsx': ['page-services', 'paths'],
@@ -73,7 +78,7 @@ const PATHS_MODULE = 'functions/core/paths.ts'
 
 /** Адрес экрана: '/trail', `/last-battle/${id}` в коде или path: 'search/requests/new' в роутере. */
 const SCREENS =
-  'trail|search|weekends|last-battle|archive|chronicle|demo|map|routes|places|help|trips|stories|profile'
+  'trail|search|weekends|last-battle|archive|chronicle|live|demo|map|routes|places|help|trips|stories|profile'
 const SCREEN_PATH = new RegExp(`['"\`]/(${SCREENS})(/|['"\`])|path: ['"\`](${SCREENS})(/|['"\`])`)
 
 function listSources(dir: string): string[] {

@@ -30,6 +30,28 @@ export interface ShareService {
   share(item: { title: string; text?: string; url: string }): Promise<ShareResult>
 }
 
+export interface ImageTrackingSession {
+  stop(): void
+}
+
+export interface ImageTrackingOptions {
+  /** Куда вывести изображение с камеры. */
+  container: HTMLElement
+  /** Скомпилированная метка снимка (.mind). */
+  targetUrl: string
+  /** Ролик, который ложится поверх снимка. */
+  video: HTMLVideoElement
+  /** Высота снимка к ширине — чтобы ролик совпал с рамкой снимка. */
+  aspect: number
+  onFound(): void
+  onLost(): void
+}
+
+export interface ArService {
+  /** Узнать снимок в камере и положить поверх него ролик. Ошибка — если камеры нет или доступ запрещён. */
+  trackImage(options: ImageTrackingOptions): Promise<ImageTrackingSession>
+}
+
 export interface StorageService {
   get<T>(key: string): T | undefined
   set<T>(key: string, value: T): void
@@ -43,4 +65,5 @@ export interface Platform {
   notify: NotifyService
   storage: StorageService
   share: ShareService
+  ar: ArService
 }

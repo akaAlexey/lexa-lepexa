@@ -100,6 +100,9 @@ async function nextEvent(user: string, timeoutMs: number, trigger: () => Promise
 // ---------- Данные жюри и списки ----------
 await call('listGraves')
 await call('listBattles')
+await call('listMemorials')
+const livePhoto = await first('listLivePhotos')
+if (livePhoto) await call('getLivePhoto', { id: livePhoto.id })
 const teams = (await call('listTeams')) as unknown as { id: string }[] | undefined
 await call('getSearchStats')
 const route = await first('listRoutes')

@@ -10,7 +10,7 @@
 screens/* (сейчас features/*) ──►  functions/<функция>/index.ts  ──►  functions/core
       │                                   │                                │
       ├──► ui/, map/, theme/              ├──► domain/ (чистая логика)     ├──► api/ (ApiClient) ──► contract/
-      └──► app/ (оболочка, меню)          └──► contract/ (типы)            └──► platform/ (Geo, Notify, Storage, Share)
+      └──► app/ (оболочка, меню)          └──► contract/ (типы)            └──► platform/ (Geo, Notify, Storage, Share, Ar)
 ```
 
 - **Экран** собирает раскладку из `ui/`, `map/` и хуков функций. Сам не ходит в API, платформу и кэш.
@@ -45,7 +45,7 @@ frontend/
     ui/         BigButton · Card · StatusBadge · StatePill · DemoBadge · Icon · Logo · Screen · Field · siteStatus
     app/        App · routes · Layout (шапка, вкладки/меню) · RoleContext · roles · services · Toaster · QueryState · ShareButton
     functions/  core/ (deps · deviceMemory · form · queryKeys · paths · permissions) · <функция>/ (сценарии, хуки, тесты, index.ts)
-    features/   roles · trail · search-hq · weekends · last-battle · archive · chronicle — экраны; на шаге B → screens/<раздел>
+    features/   roles · trail · search-hq · weekends · last-battle · archive · chronicle · live-photo — экраны; на шаге B → screens/<раздел>
     config/     env.ts (проверка переменных окружения) · region.ts (регион, тексты, источники)
     test/       setup · renderApp · MapViewStub
   fixtures/jury/   данные в формате жюри (сейчас — демо, сгенерированы по схеме)

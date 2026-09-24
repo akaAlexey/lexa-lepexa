@@ -46,6 +46,8 @@ async def test_every_list_is_seeded_and_has_no_nulls(api):
         "/group-applications",
         "/stories",
         "/sites",
+        "/memorials",
+        "/live-photos",
     ):
         res = await api.get(path)
         assert res.status_code == 200, path
@@ -191,3 +193,21 @@ async def test_cors_allows_configured_origin(api):
         headers={"Origin": "http://localhost:5173", "Access-Control-Request-Method": "GET"},
     )
     assert res.headers.get("access-control-allow-origin") == "http://localhost:5173"
+
+
+async def test_needs_map_coordinates(api):
+    """Карта потребностей: у демо-заявки и сборов есть координаты, «Поднять бойца» — у Крупышино."""
+    request = next(r for r in (await api.get("/requests")).json() if r["id"] == "R01")
+    assert (request["lat"], request["lon"]) == (53.28, 36.57)
+    raise_fighter = next(f for f in (await api.get("/fundraisers")).json() if f["id"] == "F03")
+    assert raise_fighter["purpose"] == "raise_fighter"
+    assert (raise_fighter["lat"], raise_fighter["lon"]) == (52.74, 35.84)
+
+
+async def test_memorials_and_live_photos(api):
+    memorials = (await api.get("/memorials")).json()
+    assert any("Тихоокеанского флота" in m["name"] for m in memorials)
+    assert all(m["osmUrl"].startswith("https://www.openstreetmap.org/") for m in memorials)
+    photo = (await api.get("/live-photos")).json()[0]
+    assert (await api.get(f"/live-photos/{photo['id']}")).json() == photo
+    assert (await api.get("/live-photos/nope")).status_code == 404

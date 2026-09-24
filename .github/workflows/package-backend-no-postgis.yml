@@ -1,0 +1,26 @@
+name: Package backend-no-postgis
+
+on:
+  push:
+    branches: [backend-no-postgis]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Deploy-F archive
+        run: |
+          cd backend
+          zip -r ../backend-no-postgis.zip . \
+            -x 'Dockerfile' 'docker-compose.yml' '**/__pycache__/*' '**/*.pyc'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backend-no-postgis
+          path: backend-no-postgis.zip

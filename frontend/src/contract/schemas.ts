@@ -61,6 +61,18 @@ export const Grave = entity(
   z.object({ id, lat, lon, fullName: z.string().min(1), unit: z.string().min(1), demo }),
 )
 
+export const MemorialKind = entity(
+  'MemorialKind',
+  'Тип памятника: братская могила, вечный огонь, техника, памятник или стела',
+  z.enum(['grave', 'flame', 'vehicle', 'monument']),
+)
+
+export const Memorial = entity(
+  'Memorial',
+  'Памятник Великой Отечественной войны. Источник — OpenStreetMap (historic=memorial|monument)',
+  z.object({ id, lat, lon, name: z.string().min(1), kind: MemorialKind, osmUrl: z.url() }),
+)
+
 export const Battle = entity(
   'Battle',
   'Бой (mock_battles.json: дата боя, текст подвига, ссылка на архив)',
@@ -158,6 +170,8 @@ export const VolunteerRequest = entity(
     roles: z.array(z.object({ role: VolunteerRole, count: z.number().int().positive() })).min(1),
     joined: z.number().int().nonnegative(),
     fundraiserId: id.optional(),
+    lat: lat.optional().describe('Где нужны люди — для карты потребностей'),
+    lon: lon.optional(),
     createdAt: isoDateTime,
     demo,
   }),
@@ -185,6 +199,8 @@ export const Fundraiser = entity(
     title: z.string().min(1),
     goalRub: rub,
     collectedRub: rub,
+    lat: lat.optional().describe('Куда пойдут деньги — для карты потребностей'),
+    lon: lon.optional(),
     demo,
   }),
 )
@@ -315,6 +331,38 @@ export const ArchiveReview = entity(
   }),
 )
 
+/* ---------- «Живое фото» ---------- */
+
+export const LivePhoto = entity(
+  'LivePhoto',
+  '«Живое фото»: снимок с QR-кодом и заранее созданный ролик-реконструкция ИИ. Показывается только после согласия зрителя',
+  z.object({
+    id,
+    title: z.string().min(1),
+    caption: z.string().describe('Кто на снимке и откуда снимок'),
+    speech: z
+      .string()
+      .min(1)
+      .describe('Текст от первого лица — виден до просмотра, смысл не меняется'),
+    photoUrl: z.string().min(1).describe('Снимок с QR-кодом для печати; он же — метка для камеры'),
+    videoUrl: z.string().min(1).describe('Ролик-реконструкция того же кадра, со звуком'),
+    captionsUrl: z.string().min(1).describe('Субтитры речи (WebVTT) — для глухих и слабослышащих'),
+    targetUrl: z
+      .string()
+      .min(1)
+      .describe('Скомпилированная метка MindAR (.mind) для распознавания снимка'),
+    photoAspect: z.number().positive().describe('Отношение высоты снимка к ширине'),
+    animation: z
+      .enum(['lip_sync', 'neural_motion', 'draft'])
+      .describe(
+        'lip_sync — нейросеть оживила лицо и синхронизировала губы; neural_motion — нейросеть оживила кадр, губы не синхронизированы; draft — черновик без нейросети',
+      ),
+    consent: z.string().describe('Чьё согласие получено на использование снимка'),
+    sources: withSources,
+    demo,
+  }),
+)
+
 /* ---------- Последний бой ---------- */
 
 export const SiteStatus = entity(
@@ -416,6 +464,9 @@ export const Ack = entity('Ack', 'Подтверждение действия', 
 export type LatLon = z.infer<typeof LatLon>
 export type Source = z.infer<typeof Source>
 export type Grave = z.infer<typeof Grave>
+export type Memorial = z.infer<typeof Memorial>
+export type FundraiserPurpose = z.infer<typeof FundraiserPurpose>
+export type MemorialKind = z.infer<typeof MemorialKind>
 export type Battle = z.infer<typeof Battle>
 export type Team = z.infer<typeof Team>
 export type PointKind = z.infer<typeof PointKind>
@@ -431,6 +482,7 @@ export type GroupApplication = z.infer<typeof GroupApplication>
 export type NewGroupApplication = z.infer<typeof NewGroupApplication>
 export type ArchiveStory = z.infer<typeof ArchiveStory>
 export type NewArchiveStory = z.infer<typeof NewArchiveStory>
+export type LivePhoto = z.infer<typeof LivePhoto>
 export type SiteStatus = z.infer<typeof SiteStatus>
 export type LastBattleSite = z.infer<typeof LastBattleSite>
 export type NewLastBattleSite = z.infer<typeof NewLastBattleSite>
