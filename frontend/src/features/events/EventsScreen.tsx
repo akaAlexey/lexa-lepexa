@@ -16,6 +16,8 @@ import s from './events.module.css'
 import { FeedCard } from './FeedCard.tsx'
 import { WeekNewsCard } from './WeekNewsCard.tsx'
 
+const NO_ITEMS: FeedItem[] = []
+
 /** Ближайшая по дате заявка, в которую ещё не записались. */
 function nearestOpen(items: readonly FeedItem[], joined: readonly string[], today: string) {
   return items
@@ -44,7 +46,7 @@ export function EventsScreen() {
     if (published) publishedRef.current?.scrollIntoView?.({ block: 'center' })
   }, [published])
 
-  const items = feed.status === 'ready' ? feed.items : []
+  const items = feed.status === 'ready' ? feed.items : NO_ITEMS
   const shown = useMemo(() => filterFeed(items, filter, query), [items, filter, query])
   const target = nearestOpen(items, joined, todayIso(new Date()))
 
@@ -77,7 +79,9 @@ export function EventsScreen() {
           </Notice>
         </div>
       )}
-      {failed && <Notice tone="error">Не удалось записаться. Проверьте связь и попробуйте ещё раз.</Notice>}
+      {failed && (
+        <Notice tone="error">Не удалось записаться. Проверьте связь и попробуйте ещё раз.</Notice>
+      )}
 
       <div className={s.tools} role="search">
         <label className={s.search}>

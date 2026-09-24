@@ -46,7 +46,12 @@ describe('лента «Мероприятия»', () => {
   })
 
   it('волонтёры считаются по всем ролям, возраст — «16+»', () => {
-    const r = { roles: [{ role: 'any', count: 3 }, { role: 'cook', count: 1 }] } as VolunteerRequest
+    const r = {
+      roles: [
+        { role: 'any', count: 3 },
+        { role: 'cook', count: 1 },
+      ],
+    } as VolunteerRequest
     expect(volunteersNeeded(r)).toBe(4)
     expect(ageLabel(16)).toBe('16+')
     expect(ageLabel(undefined)).toBeUndefined()

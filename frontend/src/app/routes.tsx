@@ -5,6 +5,7 @@ import { routes as demoConsole } from '../features/demo-console/routes.tsx'
 import { routes as events } from '../features/events/routes.tsx'
 import { routes as lastBattle } from '../features/last-battle/routes.tsx'
 import { routes as livePhoto } from '../features/live-photo/routes.tsx'
+import { routes as mapHub } from '../features/map-hub/routes.tsx'
 import { routes as other } from '../features/other/routes.tsx'
 import { RolePickerScreen } from '../features/roles/RolePickerScreen.tsx'
 import { routes as searchHq } from '../features/search-hq/routes.tsx'
@@ -22,6 +23,7 @@ export const appRoutes: RouteObject[] = [
     element: <Layout />,
     children: [
       { index: true, element: <RolePickerScreen /> },
+      ...mapHub,
       ...events,
       ...trail,
       ...searchHq,

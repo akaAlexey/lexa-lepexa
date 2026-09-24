@@ -35,6 +35,17 @@
   }
 }
 
+/* Карта-хаб: на всё место родителя, без рамки (ADR 0011) */
+.frameFill {
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-map-land);
+}
+
+.frameFill .map {
+  height: 100%;
+}
+
 /* Фактура старой бумаги поверх подложки, не мешает нажатиям. */
 .frame::after {
   content: '';
@@ -70,6 +81,14 @@
 .markerZone {
   composes: marker;
   position: relative;
+}
+
+/* Выбранная метка — оранжевое кольцо (не только цвет: ещё и aria-pressed у кнопки) */
+.marker[data-selected],
+.markerZone[data-selected] {
+  outline: 3px solid var(--color-map-selected);
+  outline-offset: 2px;
+  z-index: 2;
 }
 
 .markerZone::before {

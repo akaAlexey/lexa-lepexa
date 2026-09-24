@@ -11,7 +11,11 @@ import ui from '../../ui/ui.module.css'
 import { freeSpots } from '../weekends/trips.ts'
 import s from './events.module.css'
 
-const posted = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', timeZone: 'Europe/Moscow' })
+const posted = new Intl.DateTimeFormat('ru-RU', {
+  day: 'numeric',
+  month: 'long',
+  timeZone: 'Europe/Moscow',
+})
 const num = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 })
 
 interface Props {

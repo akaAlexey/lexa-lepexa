@@ -7,7 +7,14 @@ import type { Fundraiser, Team, Trip, VolunteerRequest } from '../contract/schem
 export type EventKind = 'request' | 'trip' | 'fund'
 
 export type FeedItem =
-  | { kind: 'request'; id: string; postedAt: string; request: VolunteerRequest; team?: Team; fundraiser?: Fundraiser }
+  | {
+      kind: 'request'
+      id: string
+      postedAt: string
+      request: VolunteerRequest
+      team?: Team
+      fundraiser?: Fundraiser
+    }
   | { kind: 'trip'; id: string; postedAt: string; trip: Trip; team?: Team }
   | { kind: 'fund'; id: string; postedAt: string; fundraiser: Fundraiser; team?: Team }
 
@@ -82,10 +89,15 @@ function haystack(item: FeedItem): string {
 const norm = (s: string) => s.toLocaleLowerCase('ru-RU').replaceAll('ё', 'е').trim()
 
 /** Фильтр по типу и поиск по названию, месту и отряду (без учёта регистра и «ё»). */
-export function filterFeed(items: readonly FeedItem[], filter: EventFilter, query: string): FeedItem[] {
+export function filterFeed(
+  items: readonly FeedItem[],
+  filter: EventFilter,
+  query: string,
+): FeedItem[] {
   const q = norm(query)
   return items.filter(
-    (item) => (filter === 'all' || item.kind === filter) && (!q || norm(haystack(item)).includes(q)),
+    (item) =>
+      (filter === 'all' || item.kind === filter) && (!q || norm(haystack(item)).includes(q)),
   )
 }
 
