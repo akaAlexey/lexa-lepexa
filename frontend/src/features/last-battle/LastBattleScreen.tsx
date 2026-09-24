@@ -1,14 +1,16 @@
-import { useQuery } from '@tanstack/react-query'
 import { useCallback, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
 import { useRole } from '../../app/RoleContext.tsx'
-import { useApi } from '../../app/services.tsx'
+import { paths } from '../../functions/core/paths.ts'
+import { can } from '../../functions/core/permissions.ts'
+import { placeIdOfMarker, placesLayer } from '../../functions/mapLayers/index.ts'
 import { useNearbySubscription } from '../../functions/nearbyAlerts/index.ts'
+import { useGraves, usePlaces } from '../../functions/places/index.ts'
 import { region } from '../../config/region.ts'
 import type { Grave, LastBattleSite, SiteStatus } from '../../contract/schemas.ts'
 import { describeFighters, NOTIFY_RADIUS_KM, SITE_STATUS_ORDER } from '../../domain/lastBattle.ts'
-import { MapView, type MapMarker } from '../../map/MapView.tsx'
+import { MapView } from '../../map/MapView.tsx'
 import { tokens } from '../../theme/tokens.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
@@ -20,39 +22,13 @@ import { StatusBadge } from '../../ui/StatusBadge.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import s from './lastBattle.module.css'
 
-const SITE_MARKER_PREFIX = 'site-'
-
 function BattleMap({ sites, graves }: { sites: LastBattleSite[]; graves: Grave[] }) {
   const navigate = useNavigate()
-  const markers = useMemo<MapMarker[]>(
-    () => [
-      ...graves.map((g) => ({
-        id: `grave-${g.id}`,
-        lat: g.lat,
-        lon: g.lon,
-        icon: 'grave' as const,
-        label: `Захоронение: ${g.fullName}, ${g.unit}`,
-        color: tokens.color.map.grave,
-        size: 'small' as const,
-        interactive: false,
-      })),
-      ...sites.map((site) => ({
-        id: `${SITE_MARKER_PREFIX}${site.id}`,
-        lat: site.lat,
-        lon: site.lon,
-        icon: SITE_STATUS_META[site.status].icon,
-        label: `${site.placeName}: ${SITE_STATUS_META[site.status].label}`,
-        color: tokens.color.status[site.status],
-        shape: 'zone' as const,
-      })),
-    ],
-    [sites, graves],
-  )
+  const markers = useMemo(() => placesLayer(sites, graves), [sites, graves])
   const onMarkerSelect = useCallback(
     (id: string) => {
-      if (id.startsWith(SITE_MARKER_PREFIX)) {
-        void navigate(`/last-battle/${id.slice(SITE_MARKER_PREFIX.length)}`)
-      }
+      const placeId = placeIdOfMarker(id)
+      if (placeId !== undefined) void navigate(paths.site(placeId))
     },
     [navigate],
   )
@@ -110,7 +86,7 @@ function SiteList({ sites }: { sites: LastBattleSite[] }) {
         {sites.map((site) => (
           <li key={site.id}>
             <Card as="div" testID={`site-${site.id}`}>
-              <Link to={`/last-battle/${site.id}`} className={s.siteLink}>
+              <Link to={paths.site(site.id)} className={s.siteLink}>
                 <h3>{site.placeName}</h3>
                 <StatusBadge status={site.status} />
                 <p>
@@ -156,18 +132,17 @@ function SubscribeAction() {
 }
 
 export function LastBattleScreen() {
-  const api = useApi()
   const { role } = useRole()
-  const sites = useQuery({ queryKey: ['sites'], queryFn: api.listSites })
-  const graves = useQuery({ queryKey: ['graves'], queryFn: api.listGraves })
+  const sites = usePlaces()
+  const graves = useGraves()
   return (
     <Screen
       title="Последний бой"
       lead="Места гибели бойцов, которые ещё предстоит проверить и увековечить"
       testID="screen-last-battle"
     >
-      {role?.id === 'commander' ? (
-        <BigButton to="/last-battle/new" icon="pin" testID="last-battle-add">
+      {can(role?.id, 'place.create') ? (
+        <BigButton to={paths.newSite()} icon="pin" testID="last-battle-add">
           Отметить место гибели
         </BigButton>
       ) : (
