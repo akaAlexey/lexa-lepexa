@@ -12,7 +12,7 @@ import { Notice } from '../../ui/Notice.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import s from './other.module.css'
 
-type SectionId = 'account' | 'family' | 'ar' | 'photo' | 'role'
+type SectionId = 'account' | 'archive' | 'ar' | 'photo' | 'role'
 
 interface Section {
   id: SectionId
@@ -33,7 +33,7 @@ function sectionsFor(signedIn: boolean): Section[] {
       locked: false,
     },
     {
-      id: 'family',
+      id: 'archive',
       title: 'Семейный архив',
       hint: 'Бойцы вашей семьи и их документы',
       icon: 'archive',
@@ -48,10 +48,10 @@ function sectionsFor(signedIn: boolean): Section[] {
     },
     {
       id: 'photo',
-      title: 'Оживить фото',
-      hint: 'Фото бойца произносит слова памяти',
+      title: 'Живое фото',
+      hint: 'Наведите камеру на снимок — и боец заговорит',
       icon: 'image',
-      locked: !signedIn,
+      locked: false,
     },
     {
       id: 'role',
@@ -64,10 +64,10 @@ function sectionsFor(signedIn: boolean): Section[] {
 }
 
 const isSection = (v: string | null): v is SectionId =>
-  v === 'account' || v === 'family' || v === 'ar' || v === 'photo' || v === 'role'
+  v === 'account' || v === 'archive' || v === 'ar' || v === 'photo' || v === 'role'
 
 /**
- * «Другое» (ADR 0011): одна большая панель со списком разделов. В шапке — имя открытого раздела
+ * «Другое» (ADR 0012): одна большая панель со списком разделов. В шапке — имя открытого раздела
  * и стрелка: вверх — список свёрнут, вниз — раскрыт. У каждого раздела свой адрес (?section=).
  */
 export function OtherScreen() {
@@ -160,7 +160,7 @@ function Panel({ id }: { id: SectionId }) {
   switch (id) {
     case 'account':
       return <AccountPanel />
-    case 'family':
+    case 'archive':
       return (
         <>
           <p>
@@ -181,10 +181,15 @@ function Panel({ id }: { id: SectionId }) {
       )
     case 'photo':
       return (
-        <Notice>
-          «Оживить фото» — только с согласия родственников, с плашкой «создано ИИ». Это не голос
-          бойца, а реконструкция: так сказано рядом с каждым роликом.
-        </Notice>
+        <>
+          <Notice>
+            Только с согласия родственников и с плашкой «создано ИИ»: это не голос бойца, а
+            реконструкция — так сказано рядом с каждым роликом.
+          </Notice>
+          <BigButton to={paths.livePhotos()} icon="image" testID="other-live">
+            Открыть «Живое фото»
+          </BigButton>
+        </>
       )
     case 'role':
       return <RolePanel />

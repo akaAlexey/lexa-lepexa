@@ -1,8 +1,9 @@
-import { Link, useLocation, useParams } from 'react-router'
+import { useLocation, useParams } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
 import { ShareButton } from '../../app/ShareButton.tsx'
 import { useRole } from '../../app/RoleContext.tsx'
 import type { ArchiveStory } from '../../contract/schemas.ts'
+import { storyYears } from '../../domain/archive.ts'
 import { isNotFound } from '../../functions/core/errors.ts'
 import { paths } from '../../functions/core/paths.ts'
 import { can } from '../../functions/core/permissions.ts'
@@ -10,10 +11,12 @@ import {
   REVIEW_CHECKS,
   isAwaitingReview,
   storyState,
+  useMyStories,
   useReview,
   useStory,
   wasSent,
 } from '../../functions/stories/index.ts'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Button } from '../../ui/Button.tsx'
 import { Card } from '../../ui/Card.tsx'
@@ -23,6 +26,7 @@ import { Notice } from '../../ui/Notice.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { StatePill } from '../../ui/StatePill.tsx'
 import s from './archive.module.css'
+import { StoryImages } from './StoryImages.tsx'
 
 /** Чек-лист и решение проверяющего — как экран «Проверка источника» на макете. */
 function ReviewPanel({ story }: { story: ArchiveStory }) {
@@ -87,6 +91,10 @@ function StoryCard({ story, sent }: { story: ArchiveStory; sent: boolean }) {
   const canVerify = can(role?.id, 'story.verify')
   const state = storyState(story)
   const reviewable = canVerify && isAwaitingReview(story)
+  const mine = useMyStories()
+  // Фото добавляет автор; к истории «Нужно уточнение» — и семья (краевед просит фото письма)
+  const canAddImages = mine.includes(story.id) || story.status === 'clarify'
+  const years = storyYears(story)
   return (
     <>
       {sent && (
@@ -103,6 +111,7 @@ function StoryCard({ story, sent }: { story: ArchiveStory; sent: boolean }) {
           Рассказ
         </h2>
         <p className={s.meta}>
+          {years && <span className={s.yearInline}>{years} · </span>}
           {story.place} · {story.author}
         </p>
         <p className={s.body} data-testid="story-body-text">
@@ -120,6 +129,7 @@ function StoryCard({ story, sent }: { story: ArchiveStory; sent: boolean }) {
           {story.reviewNote}
         </Notice>
       )}
+      <StoryImages storyId={story.id} canAdd={canAddImages} />
       {story.status === 'verified' && story.verifiedBy && !story.reviewNote && (
         <p className={s.meta} data-testid="story-verified-by">
           Проверил: {story.verifiedBy}
@@ -139,9 +149,6 @@ function StoryCard({ story, sent }: { story: ArchiveStory; sent: boolean }) {
           Рассказать свою историю
         </BigButton>
       )}
-      <p>
-        <Link to={paths.archive()}>Все истории</Link>
-      </p>
     </>
   )
 }
@@ -154,12 +161,15 @@ export function StoryScreen() {
   return (
     <Screen
       title={notFound ? 'История не найдена' : (story.data?.title ?? 'История')}
+      back={
+        <BackLink to={paths.archive()} testID="back-to-stories">
+          К историям
+        </BackLink>
+      }
       testID="screen-story"
     >
       {notFound ? (
-        <p data-testid="story-not-found">
-          Такой истории нет. <Link to={paths.archive()}>Все истории</Link>
-        </p>
+        <p data-testid="story-not-found">Такой истории нет. Вернитесь к списку историй.</p>
       ) : (
         <QueryState query={story} what="историю">
           {(data) => <StoryCard story={data} sent={wasSent(location.state)} />}

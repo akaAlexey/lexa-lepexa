@@ -4,11 +4,11 @@ import { ageLabel, EVENT_KIND_LABEL, volunteersNeeded, type FeedItem } from '../
 import { formatDayRu } from '../../domain/format.ts'
 import { progressPercent } from '../../domain/fundraising.ts'
 import { paths } from '../../functions/core/paths.ts'
+import { freeSpots } from '../../functions/trips/index.ts'
 import { Button } from '../../ui/Button.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Icon } from '../../ui/Icon.tsx'
 import ui from '../../ui/ui.module.css'
-import { freeSpots } from '../weekends/trips.ts'
 import s from './events.module.css'
 
 const posted = new Intl.DateTimeFormat('ru-RU', {

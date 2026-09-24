@@ -16,7 +16,7 @@ const feed = () =>
 describe('лента «Мероприятия»', () => {
   it('заявки, выезды и сборы одной лентой, новые сверху', () => {
     const items = feed()
-    expect(items.map((i) => i.id)).toEqual(['W02', 'F02', 'W01', 'R01'])
+    expect(items.map((i) => i.id)).toEqual(['W02', 'F02', 'F03', 'F04', 'W01', 'R01', 'F05'])
     const dates = items.map((i) => i.postedAt)
     expect([...dates].sort().reverse()).toEqual(dates)
   })
@@ -33,7 +33,7 @@ describe('лента «Мероприятия»', () => {
     const items = feed()
     expect(filterFeed(items, 'trip', '').map((i) => i.id)).toEqual(['W02', 'W01'])
     expect(filterFeed(items, 'request', '').map((i) => i.id)).toEqual(['R01'])
-    expect(filterFeed(items, 'fund', '').map((i) => i.id)).toEqual(['F02'])
+    expect(filterFeed(items, 'fund', '').map((i) => i.id)).toEqual(['F02', 'F03', 'F04', 'F05'])
     expect(filterFeed(items, 'all', 'СЕМЕНКОВО').map((i) => i.id)).toEqual(['W01'])
     expect(filterFeed(items, 'all', 'высота').map((i) => i.id)).toEqual(['W01', 'R01'])
     expect(filterFeed(items, 'trip', 'нет такого')).toEqual([])

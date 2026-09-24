@@ -19,7 +19,6 @@ import { Notice } from '../../ui/Notice.tsx'
 import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import s from './weekends.module.css'
-import { paths } from '../../functions/core/paths.ts'
 
 export function TripScreen() {
   const { tripId = '' } = useParams()

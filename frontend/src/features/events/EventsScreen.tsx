@@ -1,45 +1,43 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router'
 import { useRole } from '../../app/RoleContext.tsx'
-import type { Fundraiser, VolunteerRequest } from '../../contract/schemas.ts'
-import { todayIso } from '../../domain/dates.ts'
+import type { Fundraiser } from '../../contract/schemas.ts'
 import { EVENT_FILTERS, filterFeed, type EventFilter, type FeedItem } from '../../domain/events.ts'
 import { paths } from '../../functions/core/paths.ts'
-import { useEventsFeed, useJoinRequest } from '../../functions/events/useEvents.ts'
+import { can } from '../../functions/core/permissions.ts'
+import { useEventsFeed } from '../../functions/events/useEvents.ts'
+import { isPublishedState, useJoinRequest } from '../../functions/helpRequests/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Icon } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { DonateDialog } from '../search-hq/DonateDialog.tsx'
-import { isPublishedState } from '../search-hq/queries.ts'
 import s from './events.module.css'
 import { FeedCard } from './FeedCard.tsx'
 import { WeekNewsCard } from './WeekNewsCard.tsx'
 
 const NO_ITEMS: FeedItem[] = []
 
-/** Ближайшая по дате заявка, в которую ещё не записались. */
-function nearestOpen(items: readonly FeedItem[], joined: readonly string[], today: string) {
-  return items
-    .flatMap((i) => (i.kind === 'request' ? [i.request] : []))
-    .filter((r: VolunteerRequest) => !joined.includes(r.id) && r.date >= today)
-    .sort((a, b) => a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt))[0]
-}
-
 /**
- * «Мероприятия» (ADR 0011): «Новости недели» первой строкой, затем одна лента заявок,
+ * «Мероприятия» (ADR 0012): «Новости недели» первой строкой, затем одна лента заявок,
  * выездов и сборов по дате публикации. Поиск и простой фильтр вместо счётчика.
  */
 export function EventsScreen() {
   const { role } = useRole()
   const location = useLocation()
   const feed = useEventsFeed()
-  const { joined, joining, failed, join } = useJoinRequest()
+  const {
+    joined,
+    joining,
+    failed,
+    next: target,
+    join,
+  } = useJoinRequest(feed.status === 'ready' ? feed.requests : undefined)
   const [filter, setFilter] = useState<EventFilter>('all')
   const [query, setQuery] = useState('')
   const [donateTo, setDonateTo] = useState<Fundraiser>()
   const closeDonate = useCallback(() => setDonateTo(undefined), [])
-  const isCommander = role?.id === 'commander'
+  const isCommander = can(role?.id, 'request.create')
   const published = isPublishedState(location.state)
   const publishedRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -48,7 +46,6 @@ export function EventsScreen() {
 
   const items = feed.status === 'ready' ? feed.items : NO_ITEMS
   const shown = useMemo(() => filterFeed(items, filter, query), [items, filter, query])
-  const target = nearestOpen(items, joined, todayIso(new Date()))
 
   const main = isCommander ? (
     <BigButton to={paths.newRequest()} icon="flag" testID="search-create-request">

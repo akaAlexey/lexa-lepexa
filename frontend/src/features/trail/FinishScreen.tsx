@@ -13,6 +13,7 @@ import { BigButton } from '../../ui/BigButton.tsx'
 import { Button } from '../../ui/Button.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { Icon } from '../../ui/Icon.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { SourceList } from '../../ui/SourceList.tsx'
 import s from './trail.module.css'
@@ -32,7 +33,16 @@ function Finish({ route }: { route: Route }) {
   }
 
   return (
-    <Screen title="Тропа пройдена!" lead={`Вы прошли «${route.title}»`} testID="screen-finish">
+    <Screen
+      title="Тропа пройдена!"
+      lead={`Вы прошли «${route.title}»`}
+      back={
+        <BackLink to={paths.map()} testID="back-link">
+          К карте
+        </BackLink>
+      }
+      testID="screen-finish"
+    >
       <Card as="section" aria-labelledby="stamps-title">
         <h2 id="stamps-title" className={s.cardTitle}>
           Штампы маршрута

@@ -26,7 +26,7 @@ test('прямые ссылки открывают экраны, разделы 
   await expect(page.getByTestId('status-found_needs_check')).toBeVisible()
   await snap(page, testInfo, '03-last-battle')
 
-  // Четыре раздела ADR 0011: подписи видны всегда, «Последний бой» — внутри «Карты»
+  // Четыре раздела ADR 0012: подписи видны всегда, «Последний бой» — внутри «Карты»
   await expect(page.getByTestId('tab-map')).toHaveAttribute('aria-current', 'page')
   await page.getByTestId('tab-events').click()
   await expect(page.getByTestId('week-news')).toContainText('Новости недели')

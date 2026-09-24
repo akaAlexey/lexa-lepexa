@@ -123,7 +123,7 @@ export function reviewBlocker(
 }
 
 /**
- * Годы войны, о которых история, — для списка «Книги памяти» (ADR 0011).
+ * Годы войны, о которых история, — для списка «Книги памяти» (ADR 0012).
  * Из названия и рассказа берутся годы 1939–1945: один год — «1942», несколько — «1941–1943».
  */
 export function storyYears(story: { title: string; story: string }): string | undefined {

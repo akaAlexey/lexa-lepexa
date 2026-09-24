@@ -13,7 +13,9 @@ import { SITE_STATUS_ORDER } from '../../domain/lastBattle.ts'
 import { PLACE_KIND_LABEL, searchPlaces, type Place } from '../../domain/mapHub.ts'
 import { questStatus } from '../../domain/trail.ts'
 import { paths } from '../../functions/core/paths.ts'
+import { can } from '../../functions/core/permissions.ts'
 import { useMapHub } from '../../functions/mapHub/useMapHub.ts'
+import { POINT_ICON, useQuestProgress } from '../../functions/quest/index.ts'
 import { MapView, type MapMarker } from '../../map/MapView.tsx'
 import { tokens } from '../../theme/tokens.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
@@ -22,8 +24,6 @@ import { Icon, type IconName } from '../../ui/Icon.tsx'
 import { SITE_STATUS_META } from '../../ui/siteStatus.ts'
 import { StatusBadge } from '../../ui/StatusBadge.tsx'
 import ui from '../../ui/ui.module.css'
-import { POINT_ICON } from '../trail/pointKinds.ts'
-import { useQuestProgress } from '../trail/useTrail.ts'
 import s from './mapHub.module.css'
 import { useWide } from './useWide.ts'
 
@@ -91,7 +91,7 @@ function markerFor(p: Place, routes: readonly Route[] | undefined): MapMarker {
 }
 
 /**
- * «Карта» (ADR 0011): карта на весь экран, сверху поиск «Места боя, музеи, исторические маршруты…»,
+ * «Карта» (ADR 0012): карта на весь экран, сверху поиск «Места боя, музеи, исторические маршруты…»,
  * снизу шторка (на ноутбуке — панель слева): «Места» и «История края».
  * Выбранное место и вкладка — в адресе: ссылкой можно поделиться, «Назад» работает.
  */
@@ -351,7 +351,7 @@ function Overview({
   onPick: (key: string) => void
 }) {
   const { role } = useRole()
-  const isCommander = role?.id === 'commander'
+  const isCommander = can(role?.id, 'place.create')
   const counts = SITE_STATUS_ORDER.map((st) => ({
     status: st,
     n: sites.filter((x) => x.status === st).length,

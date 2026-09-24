@@ -30,7 +30,6 @@ import { FundraiserCard } from './FundraiserCard.tsx'
 import { NeedsMap } from './NeedsMap.tsx'
 import { RequestCard } from './RequestCard.tsx'
 import s from './search.module.css'
-import { paths } from '../../functions/core/paths.ts'
 
 const VIEWS = [
   { value: 'list', label: 'Списком', testID: 'needs-view-list' },

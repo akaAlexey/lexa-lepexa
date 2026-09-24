@@ -25,7 +25,6 @@ import { SourceList } from '../../ui/SourceList.tsx'
 import { StatusBadge } from '../../ui/StatusBadge.tsx'
 import { SiteStatusAction, StatusChanged } from './SiteStatusAction.tsx'
 import s from './lastBattle.module.css'
-import { paths } from '../../functions/core/paths.ts'
 
 function HelpAction({ site }: { site: LastBattleSite }) {
   const { done, busy, failed, help } = useHelpRaise(site.id)

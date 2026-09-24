@@ -3,7 +3,7 @@ import { formatHistoricDate } from './chronicle.ts'
 import { describeFighters } from './lastBattle.ts'
 
 /**
- * Карта-хаб (ADR 0011): всё, что можно найти на карте, одним списком —
+ * Карта-хаб (ADR 0012): всё, что можно найти на карте, одним списком —
  * точки семейных маршрутов, места поиска, захоронения и бои из хроники.
  */
 export type PlaceKind = 'point' | 'site' | 'grave' | 'battle'

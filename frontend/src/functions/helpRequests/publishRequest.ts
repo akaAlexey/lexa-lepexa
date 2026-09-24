@@ -1,9 +1,4 @@
-import type {
-  NewVolunteerRequest,
-  Team,
-  VolunteerRequest,
-  VolunteerRole,
-} from '../../contract/schemas.ts'
+import type { NewVolunteerRequest, Team, VolunteerRequest } from '../../contract/schemas.ts'
 import { todayIso, tomorrowIso } from '../../domain/dates.ts'
 import { validateNewRequest } from '../../domain/requests.ts'
 import type { Deps } from '../core/deps.ts'
@@ -12,11 +7,16 @@ import type { FormSpec } from '../core/form.ts'
 /** Готовые варианты «Сколько людей нужно» — одно нажатие вместо ввода. */
 export const REQUEST_COUNTS = [5, 10, 20] as const
 
+/** Минимальный возраст волонтёров (ADR 0012): в ленте «16+». Младше — только с родителями. */
+export const REQUEST_AGES = [14, 16, 18] as const
+export const DEFAULT_MIN_AGE = 16
+
 /** Значения формы заявки как на экране: число — строкой из поля ввода. */
 export interface RequestValues {
   date: string
   count: string
-  role: VolunteerRole
+  /** Нужны всегда волонтёры (не «землекопы»): отряд указывает только возраст. */
+  minAge: number
   place: string
   title: string
 }
@@ -40,7 +40,7 @@ export const requestForm: FormSpec<RequestValues, NewVolunteerRequest, RequestFo
   initial: ({ team, last, tomorrow }) => ({
     date: tomorrow,
     count: '5',
-    role: 'digger',
+    minAge: last?.minAge ?? DEFAULT_MIN_AGE,
     place: last?.place ?? '',
     title: last?.title ?? `Набор волонтёров — отряд «${team.name}»`,
   }),
@@ -49,7 +49,8 @@ export const requestForm: FormSpec<RequestValues, NewVolunteerRequest, RequestFo
     title: v.title.trim(),
     date: v.date,
     place: v.place.trim(),
-    roles: [{ role: v.role, count: v.count.trim() === '' ? 0 : Number(v.count) }],
+    roles: [{ role: 'any', count: v.count.trim() === '' ? 0 : Number(v.count) }],
+    minAge: v.minAge,
   }),
   validate: (request, _values, { today }) => validateNewRequest(request, today),
 }

@@ -1,20 +1,20 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useCallback, useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useMemo, useState } from 'react'
+import type { VolunteerRequest } from '../../contract/schemas.ts'
 import { buildFeed, type FeedItem } from '../../domain/events.ts'
-import { memory } from '../core/deviceMemory.ts'
 import { qk } from '../core/queryKeys.ts'
 import { useDeps } from '../core/useDeps.ts'
-import { useDeviceMemory } from '../core/useDeviceMemory.ts'
 import { weekNews } from './weekNews.ts'
 
 export type FeedState =
   | { status: 'pending' }
   | { status: 'error'; retry: () => void }
-  | { status: 'ready'; items: FeedItem[] }
+  | { status: 'ready'; items: FeedItem[]; requests: VolunteerRequest[] }
 
 /**
- * Лента «Мероприятия»: заявки, выезды, сборы и отряды одним списком.
+ * Лента «Мероприятия»: заявки, выезды, сборы и отряды одним списком (ADR 0012).
  * Заявки и выезды обязательны; без сборов и отрядов лента всё равно показывается.
+ * Запись в заявку — функция helpRequests (`useJoinRequest`).
  */
 export function useEventsFeed(): FeedState {
   const { api } = useDeps()
@@ -45,38 +45,12 @@ export function useEventsFeed(): FeedState {
   }
   // Сборы и отряды дополняют карточки: ждём их, но не дольше их собственной ошибки
   const extrasPending = fundraisers.isPending || teams.isPending
-  if (!items || extrasPending) return { status: 'pending' }
-  return { status: 'ready', items }
+  if (!items || !requests.data || extrasPending) return { status: 'pending' }
+  return { status: 'ready', items, requests: requests.data }
 }
 
 export function useWeekNews() {
   const { now } = useDeps()
   const [news] = useState(() => weekNews(now()))
   return news
-}
-
-/** «Записаться» в заявку отряда: отметка на устройстве и счётчик на сервере. */
-export function useJoinRequest() {
-  const { api } = useDeps()
-  const queryClient = useQueryClient()
-  const [joined, setJoined] = useDeviceMemory(memory.joinedRequests)
-  const [joining, setJoining] = useState<string>()
-  const [failed, setFailed] = useState(false)
-  const join = useCallback(
-    async (id: string) => {
-      setJoining(id)
-      setFailed(false)
-      try {
-        await api.joinRequest({ id })
-        setJoined((prev) => [...prev.filter((j) => j !== id), id])
-        void queryClient.invalidateQueries({ queryKey: qk.requests })
-      } catch {
-        setFailed(true)
-      } finally {
-        setJoining(undefined)
-      }
-    },
-    [api, queryClient, setJoined],
-  )
-  return { joined, joining, failed, join }
 }

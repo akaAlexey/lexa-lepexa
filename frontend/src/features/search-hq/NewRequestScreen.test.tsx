@@ -22,7 +22,7 @@ describe('новая заявка командира (user story 2)', () => {
     expect(screen.getByTestId('count-10')).toHaveAttribute('aria-pressed', 'true')
     await userEvent.click(screen.getByTestId('request-publish'))
 
-    // После публикации — в ленту «Мероприятия», новая заявка первой среди заявок (ADR 0011)
+    // После публикации — в ленту «Мероприятия», новая заявка первой среди заявок (ADR 0012)
     expect(router.state.location.pathname).toBe('/events')
     expect(await screen.findByTestId('request-published')).toHaveTextContent('Заявка опубликована')
     const [first] = await screen.findAllByTestId(/^request-card-/)

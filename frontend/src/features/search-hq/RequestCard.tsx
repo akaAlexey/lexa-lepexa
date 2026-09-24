@@ -1,6 +1,6 @@
 import type { Fundraiser, Team, VolunteerRequest } from '../../contract/schemas.ts'
 import { formatDayRu } from '../../domain/format.ts'
-import { describeRoles } from '../../domain/requests.ts'
+import { ageLabel, volunteersNeeded } from '../../domain/events.ts'
 import { fundProgress } from '../../functions/fundraising/index.ts'
 import { Button } from '../../ui/Button.tsx'
 import { Card } from '../../ui/Card.tsx'
@@ -44,7 +44,11 @@ export function RequestCard({
         {team ? `Отряд «${team.name}»` : 'Поисковый отряд'} · {r.place}
       </p>
       <p>
-        <span className={s.needs}>Требуется: {describeRoles(r.roles)}.</span> {formatDayRu(r.date)}
+        <span className={s.needs}>
+          Требуются волонтёры: {volunteersNeeded(r)}
+          {r.minAge !== undefined && ` · ${ageLabel(r.minAge)}`}.
+        </span>{' '}
+        {formatDayRu(r.date)}
       </p>
       <p className={s.meta}>Уже в команде: {r.joined}</p>
       {f && (

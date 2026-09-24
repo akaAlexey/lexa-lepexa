@@ -2,7 +2,7 @@ import { paths } from '../functions/core/paths.ts'
 import type { RoleId } from '../functions/core/permissions.ts'
 import type { IconName } from '../ui/Icon.tsx'
 
-/** Четыре раздела дизайна «Стол и газета» (ADR 0011). Подписи в меню видны всегда. */
+/** Четыре раздела дизайна «Стол и газета» (ADR 0012). Подписи в меню видны всегда. */
 export type TabId = 'map' | 'events' | 'stories' | 'other'
 
 export const TAB_ORDER: readonly TabId[] = ['map', 'events', 'stories', 'other']
@@ -21,8 +21,18 @@ export const TABS: Record<TabId, { path: string; label: string; icon: IconName; 
       icon: 'calendar',
       section: /^\/(events|search|weekends)(\/|$)/,
     },
-    stories: { path: paths.archive(), label: 'Истории', icon: 'book', section: /^\/archive(\/|$)/ },
-    other: { path: paths.other(), label: 'Другое', icon: 'menu', section: /^\/(other|demo|live)?(\/|$)/ },
+    stories: {
+      path: paths.archive(),
+      label: 'Истории',
+      icon: 'book',
+      section: /^\/(archive|live)(\/|$)/,
+    },
+    other: {
+      path: paths.other(),
+      label: 'Другое',
+      icon: 'menu',
+      section: /^\/(other|demo)?(\/|$)/,
+    },
   }
 
 /** Раздел меню, к которому относится адрес: вложенные экраны подсвечивают свой раздел. */

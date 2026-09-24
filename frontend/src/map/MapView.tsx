@@ -42,7 +42,7 @@ export interface MapViewProps {
   selectedId?: string
   /**
    * inline — карта в потоке экрана (на ноутбуке — справа от панели);
-   * fill — на всё место родителя (карта-хаб «Карта», ADR 0011).
+   * fill — на всё место родителя (карта-хаб «Карта», ADR 0012).
    */
   variant?: 'inline' | 'fill'
   /** Отступы кадра при подгонке, px: шторка и поиск не закрывают метки. */
@@ -149,7 +149,7 @@ export function MapView({
       return
     }
     map.addSource(ROUTE_SOURCE, { type: 'geojson', data })
-    // Маршрут — георгиевская лента (ADR 0011): чёрный край, оранжевая лента, чёрная осевая.
+    // Маршрут — георгиевская лента (ADR 0012): чёрный край, оранжевая лента, чёрная осевая.
     map.addLayer({
       id: 'route-halo',
       type: 'line',

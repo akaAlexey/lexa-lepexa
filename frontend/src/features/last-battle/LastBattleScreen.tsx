@@ -23,7 +23,6 @@ import { StatusBadge } from '../../ui/StatusBadge.tsx'
 import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import s from './lastBattle.module.css'
-import { paths } from '../../functions/core/paths.ts'
 
 const NO_GRAVES: Grave[] = []
 

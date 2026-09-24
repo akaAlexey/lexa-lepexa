@@ -1,7 +1,7 @@
 import type { Fundraiser, Team, Trip, VolunteerRequest } from '../contract/schemas.ts'
 
 /**
- * Лента «Мероприятия» (ADR 0011): заявки отрядов, выезды и сборы одной лентой,
+ * Лента «Мероприятия» (ADR 0012): заявки отрядов, выезды и сборы одной лентой,
  * новые сверху по дате публикации. Сбор, привязанный к заявке, показывается в её карточке.
  */
 export type EventKind = 'request' | 'trip' | 'fund'
@@ -101,7 +101,7 @@ export function filterFeed(
   )
 }
 
-/** «Нужны волонтёры: 10» — всегда волонтёры, без «землекопов» (ADR 0011). */
+/** «Нужны волонтёры: 10» — всегда волонтёры, без «землекопов» (ADR 0012). */
 export function volunteersNeeded(request: VolunteerRequest): number {
   return request.roles.reduce((sum, r) => sum + r.count, 0)
 }

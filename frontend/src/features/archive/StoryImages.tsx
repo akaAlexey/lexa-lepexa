@@ -6,7 +6,7 @@ import { Notice } from '../../ui/Notice.tsx'
 import s from './archive.module.css'
 
 /**
- * Фото к истории (ADR 0011): письма, снимки, документы. Добавляет автор на своём устройстве;
+ * Фото к истории (ADR 0012): письма, снимки, документы. Добавляет автор на своём устройстве;
  * по нажатию фото открывается крупно. На сервер фото уйдут, когда бэкенд начнёт принимать файлы.
  */
 export function StoryImages({ storyId, canAdd }: { storyId: string; canAdd: boolean }) {

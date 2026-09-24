@@ -12,7 +12,6 @@ import { Screen } from '../../ui/Screen.tsx'
 import type { GroupSentState } from './GroupApplicationScreen.tsx'
 import { GroupList } from './GroupList.tsx'
 import s from './weekends.module.css'
-import { paths } from '../../functions/core/paths.ts'
 
 const groupSent = (state: unknown) =>
   typeof (state as Partial<GroupSentState> | null)?.groupSent === 'string'

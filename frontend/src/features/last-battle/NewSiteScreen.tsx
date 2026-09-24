@@ -15,7 +15,6 @@ import { Notice } from '../../ui/Notice.tsx'
 import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import s from './lastBattle.module.css'
-import { paths } from '../../functions/core/paths.ts'
 
 const PROBLEM_TEXT: Record<NewPlaceProblem, string> = {
   locate: 'Не удалось определить координаты. Введите их вручную.',

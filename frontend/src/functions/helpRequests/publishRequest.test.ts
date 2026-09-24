@@ -32,11 +32,11 @@ describe('даты заявки по Москве', () => {
 })
 
 describe('форма заявки командира', () => {
-  it('заполнена заранее: завтра, 5 землекопов, место и название из прошлой заявки', () => {
+  it('заполнена заранее: завтра, 5 волонтёров 16+, место и название из прошлой заявки', () => {
     expect(requestForm.initial(ctx)).toEqual({
       date: '2026-10-03',
       count: '5',
-      role: 'digger',
+      minAge: 16,
       place: 'д. Семенково',
       title: 'Вахта Памяти',
     })
@@ -58,7 +58,8 @@ describe('форма заявки командира', () => {
         title: 'Вахта Памяти',
         date: '2026-10-03',
         place: 'д. Семенково',
-        roles: [{ role: 'digger', count: 10 }],
+        roles: [{ role: 'any', count: 10 }],
+        minAge: 16,
       },
     })
   })
@@ -93,7 +94,11 @@ describe('публикация заявки', () => {
     const check = checkForm(requestForm, { ...requestForm.initial(ctx), count: '10' }, ctx)
     if (!check.ok) throw new Error('форма должна быть верной')
     const created = await publishRequest(deps, check.request)
-    expect(created).toMatchObject({ teamId: 'T01', roles: [{ role: 'digger', count: 10 }] })
+    expect(created).toMatchObject({
+      teamId: 'T01',
+      roles: [{ role: 'any', count: 10 }],
+      minAge: 16,
+    })
     const [first] = await deps.api.listRequests()
     expect(first?.id).toBe(created.id)
   })
