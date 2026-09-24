@@ -12,7 +12,7 @@ from sqlalchemy.orm import DeclarativeBase,Mapped,mapped_column
 
 class Settings(BaseSettings):
     database_url:str="postgresql+asyncpg://postgres:postgres@localhost:5432/memory_trail"
-    cors_origins:str="http://localhost:3000,http://localhost:5173"
+    cors_origins:str="http://localhost:3000,http://localhost:5173,https://akalexey.github.io"
     model_config=SettingsConfigDict(env_file=".env",extra="ignore")
 settings=Settings()
 engine=create_async_engine(settings.database_url,pool_pre_ping=True)
@@ -106,7 +106,7 @@ async def teams(s=Depends(db)):
     return [{"id":x.id,"name":x.name,"region":x.region,"budgetGoalRub":x.budget_goal_rub,"budgetCollectedRub":x.budget_collected_rub,"foundThisMonth":x.found_this_month,"demo":x.demo} for x in (await s.execute(select(Team))).scalars()]
 @api.get("/stats/search")
 async def stats(s=Depends(db)):
-    return {"foundThisMonth":int((await s.execute(select(func.coalesce(func.sum(Team.found_this_month),0)))).scalar_one())}
+    return {"month": now().strftime("%Y-%m"), "foundThisMonth": int((await s.execute(select(func.coalesce(func.sum(Team.found_this_month),0)))).scalar_one())}
 
 @api.get("/sites")
 async def sites(s=Depends(db)):
@@ -146,7 +146,7 @@ async def status(id,b:StatusChange,s=Depends(db)):
 async def volunteer(id,s=Depends(db)):
     x=await s.get(Site,id)
     if not x: raise HTTPException(404,detail={"message":"Место не найдено"})
-    x.volunteers_ready+=1;await s.commit();return {"ok":True}
+    x.volunteers_ready+=1;await s.commit();await s.refresh(x);return site_json(x)
 
 @api.post("/subscriptions")
 async def subscribe(b:SubIn,x_demo_user:str=Header("demo"),x_demo_team_id:str|None=Header(None),s=Depends(db)):
