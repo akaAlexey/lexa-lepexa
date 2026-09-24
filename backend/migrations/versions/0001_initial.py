@@ -9,6 +9,5 @@ def upgrade():
     op.create_table("last_battle_sites",sa.Column("id",S(50),primary_key=True),sa.Column("lat",sa.Float),sa.Column("lon",sa.Float),sa.Column("place_name",S(255)),sa.Column("fighters_count",sa.Integer),sa.Column("fighters",sa.JSON),sa.Column("unit",S(255)),sa.Column("date_text",S(255)),sa.Column("circumstances",sa.Text),sa.Column("status",S(50)),sa.Column("sources",sa.JSON),sa.Column("team_id",S(50),sa.ForeignKey("teams.id")),sa.Column("volunteers_ready",sa.Integer),sa.Column("created_at",D),sa.Column("demo",sa.Boolean),)
     op.create_table("subscriptions",sa.Column("id",S(50),primary_key=True),sa.Column("lat",sa.Float),sa.Column("lon",sa.Float),sa.Column("radius_km",sa.Float),sa.Column("topics",sa.JSON),sa.Column("team_id",S(50)),sa.Column("user_key",S(255)),)
     op.create_table("notifications",sa.Column("id",S(50),primary_key=True),sa.Column("kind",S(50)),sa.Column("site_id",S(50),sa.ForeignKey("last_battle_sites.id")),sa.Column("user_key",S(255)),sa.Column("distance_km",sa.Float),sa.Column("title",S(255)),sa.Column("body",sa.Text),sa.Column("created_at",D))
-    for t in ["graves","battles","last_battle_sites","subscriptions"]: op.create_index("ix_"+t+"_location",t,["location"],postgresql_using="gist")
 def downgrade():
     for t in ["notifications","subscriptions","last_battle_sites","battles","graves","teams"]: op.drop_table(t)
