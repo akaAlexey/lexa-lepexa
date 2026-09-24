@@ -19,7 +19,7 @@ describe('«Живое фото» по QR-коду', () => {
     )
     expect(screen.getByTestId('live-speech')).toHaveTextContent('Здравствуй, потомок!')
     expect(screen.getByTestId('live-ethics')).toHaveTextContent('только для мемориальных целей')
-    expect(screen.getByTestId('live-animation')).toHaveTextContent('Черновик')
+    expect(screen.getByTestId('live-animation')).toHaveTextContent('губы совпадают с речью')
     expect(screen.getByTestId('live-open-camera')).toBeDisabled()
     expect(screen.getByTestId('live-watch-video')).toBeDisabled()
   })

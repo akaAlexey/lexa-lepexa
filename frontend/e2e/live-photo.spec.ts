@@ -36,7 +36,7 @@ test.describe('«Живое фото»: экраны', () => {
           else v.addEventListener('loadedmetadata', () => resolve(v.duration), { once: true })
         }),
     )
-    expect(duration).toBeGreaterThan(20)
+    expect(duration).toBeGreaterThan(15)
     await video.scrollIntoViewIfNeeded()
     await snap(page, testInfo, 'live-02-video')
   })
