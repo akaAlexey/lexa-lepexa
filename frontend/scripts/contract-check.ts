@@ -6,14 +6,21 @@
  *   npm run contract:check -- http://127.0.0.1:8000/api/v1
  *
  * Меняет данные на сервере (создаёт заявки, места, истории) — запускайте на тестовой базе.
+ * Для боевой базы — только чтение (вызываются одни GET, поток уведомлений лишь открывается):
+ *
+ *   npm run contract:check -- https://api.marshrutypobedy.ru/api/v1 --read-only
+ *
  * Код выхода 1, если хоть одна проверка не прошла.
  */
 import { endpoints, notificationStream, type EndpointName } from '../src/contract/endpoints.ts'
 
-const BASE = (process.argv[2] ?? process.env.API_URL ?? 'http://127.0.0.1:8000/api/v1').replace(
-  /\/$/,
-  '',
-)
+const cliArgs = process.argv.slice(2)
+const READ_ONLY = cliArgs.includes('--read-only')
+const BASE = (
+  cliArgs.find((a) => !a.startsWith('--')) ??
+  process.env.API_URL ??
+  'http://127.0.0.1:8000/api/v1'
+).replace(/\/$/, '')
 const run = Date.now().toString(36)
 
 type Row = { ok: boolean; line: string }
@@ -28,6 +35,9 @@ async function call(
 ) {
   const e = endpoints[name]
   const path = e.path.replace('{id}', encodeURIComponent(args.id ?? ''))
+  if (READ_ONLY && e.method !== 'GET') {
+    return undefined
+  }
   const res = await fetch(BASE + path, {
     method: e.method,
     headers: { 'Content-Type': 'application/json', 'X-Demo-User': user },
@@ -168,58 +178,85 @@ if (story) {
 
 // ---------- Последний бой и уведомления ----------
 const point = { lat: 52.9651, lon: 36.0785 }
-const subscriber = `cc-sub-${run}`
-await call('subscribe', { body: { ...point, radiusKm: 20, topics: ['search'] } }, subscriber)
-const newSite = {
-  ...point,
-  placeName: `Проверка контракта ${run}`,
-  fightersCount: 1,
-  fighters: [{}],
-  unit: 'Неизвестно',
-  dateText: 'октябрь 1941',
-  circumstances: '',
-  sources: [{ kind: 'archive' as const, title: 'Отчёт отряда' }],
-  teamId,
-}
-let createdSiteId: string | undefined
-const event = await nextEvent(subscriber, 15_000, async () => {
-  const created = (await call('createSite', { body: newSite }, `cc-cmd-${run}`)) as
-    { site: { id: string } } | undefined
-  createdSiteId = created?.site.id
-})
-if ('data' in event && event.data) {
-  const parsed = notificationStream.event.safeParse(JSON.parse(event.data))
-  if (parsed.success && parsed.data.siteId === createdSiteId)
-    pass(`SSE   ${notificationStream.path}`)
-  else
-    failRow(
-      `SSE   ${notificationStream.path} → событие не по контракту: ${event.data.slice(0, 160)}`,
-    )
+if (READ_ONLY) {
+  // Только открываем поток: 200 и text/event-stream, ничего не создаём.
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), 10_000)
+  try {
+    const res = await fetch(`${BASE}${notificationStream.path}?user=cc-readonly`, {
+      signal: ctrl.signal,
+      headers: { Accept: 'text/event-stream' },
+    })
+    const type = res.headers.get('content-type') ?? ''
+    if (res.ok && type.includes('text/event-stream'))
+      pass(`SSE   ${notificationStream.path} (открыт)`)
+    else failRow(`SSE   ${notificationStream.path} → HTTP ${res.status} ${type}`)
+  } catch (e) {
+    failRow(`SSE   ${notificationStream.path} → ${String(e)}`)
+  } finally {
+    clearTimeout(timer)
+    ctrl.abort()
+  }
+  const site = await first('listSites')
+  if (site) await call('getSite', { id: site.id })
+  const readStory = await first('listStories')
+  if (readStory) await call('getStory', { id: readStory.id })
 } else {
-  failRow(`SSE   ${notificationStream.path} → ${event.error}`)
-}
-await call('listSites')
-if (createdSiteId) {
-  await call('getSite', { id: createdSiteId })
-  await call('changeSiteStatus', {
-    id: createdSiteId,
-    body: {
-      status: 'archive_confirmed',
-      source: { kind: 'obd_memorial', title: 'ОБД «Мемориал»' },
-    },
+  const subscriber = `cc-sub-${run}`
+  await call('subscribe', { body: { ...point, radiusKm: 20, topics: ['search'] } }, subscriber)
+  const newSite = {
+    ...point,
+    placeName: `Проверка контракта ${run}`,
+    fightersCount: 1,
+    fighters: [{}],
+    unit: 'Неизвестно',
+    dateText: 'октябрь 1941',
+    circumstances: '',
+    sources: [{ kind: 'archive' as const, title: 'Отчёт отряда' }],
+    teamId,
+  }
+  let createdSiteId: string | undefined
+  const event = await nextEvent(subscriber, 15_000, async () => {
+    const created = (await call('createSite', { body: newSite }, `cc-cmd-${run}`)) as
+      { site: { id: string } } | undefined
+    createdSiteId = created?.site.id
   })
-  await call('volunteerForSite', { id: createdSiteId })
+  if ('data' in event && event.data) {
+    const parsed = notificationStream.event.safeParse(JSON.parse(event.data))
+    if (parsed.success && parsed.data.siteId === createdSiteId)
+      pass(`SSE   ${notificationStream.path}`)
+    else
+      failRow(
+        `SSE   ${notificationStream.path} → событие не по контракту: ${event.data.slice(0, 160)}`,
+      )
+  } else {
+    failRow(`SSE   ${notificationStream.path} → ${event.error}`)
+  }
+  await call('listSites')
+  if (createdSiteId) {
+    await call('getSite', { id: createdSiteId })
+    await call('changeSiteStatus', {
+      id: createdSiteId,
+      body: {
+        status: 'archive_confirmed',
+        source: { kind: 'obd_memorial', title: 'ОБД «Мемориал»' },
+      },
+    })
+    await call('volunteerForSite', { id: createdSiteId })
+  }
 }
 
 // ---------- Итог ----------
 const tested = new Set(rows.map((r) => r.line.split(/\s+/).slice(1, 3).join(' ')))
 const missing = (Object.keys(endpoints) as EndpointName[])
+  .filter((n) => !(READ_ONLY && endpoints[n].method !== 'GET'))
   .map((n) => `${endpoints[n].method} ${endpoints[n].path}`)
   .filter((k) => !tested.has(k))
 for (const k of missing) failRow(`${k} → не проверен (нет данных для вызова)`)
 
-console.log(`Сверка ${BASE} с контрактом фронта\n`)
+console.log(`Сверка ${BASE} с контрактом фронта${READ_ONLY ? ' (только чтение)' : ''}\n`)
 console.log(rows.map((r) => r.line).join('\n'))
 const failed = rows.filter((r) => !r.ok).length
 console.log(`\n${rows.length - failed} из ${rows.length} проверок прошли`)
+if (READ_ONLY) console.log('Изменяющие вызовы (POST/PATCH) пропущены: --read-only')
 process.exit(failed ? 1 : 0)

@@ -2,6 +2,7 @@
 
 Команда: python start.py. Нужна переменная DATABASE_URL; PORT и HOST — по желанию.
 SEED_DEMO=0 отключает заливку демо-данных.
+CLEANUP_TEST_RECORDS=1 — разовая очистка записей сверки контракта (app/test_records.sql); потом снять.
 """
 
 import os
@@ -24,6 +25,8 @@ def main() -> None:
     os.chdir(ROOT)
 
     run("-m", "alembic", "-c", str(ROOT / "alembic.ini"), "upgrade", "head")
+    if os.getenv("CLEANUP_TEST_RECORDS", "0").lower() in ("1", "true", "yes"):
+        run("-m", "app.cleanup", "--apply")
     if os.getenv("SEED_DEMO", "1").lower() not in ("0", "false", "no"):
         run("-m", "app.seed")
 
