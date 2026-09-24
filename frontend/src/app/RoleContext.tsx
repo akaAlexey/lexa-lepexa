@@ -1,8 +1,6 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useContext, useMemo, type ReactNode } from 'react'
+import { useRoleMemory } from '../functions/roles/index.ts'
 import { roleById, type Role, type RoleId } from './roles.ts'
-import { useServices } from './services.tsx'
-
-const ROLE_KEY = 'role'
 
 interface RoleState {
   role: Role | undefined
@@ -15,20 +13,11 @@ const RoleContext = createContext<RoleState | null>(null)
 
 /** Роль без регистрации: выбирается одним нажатием и запоминается на устройстве. */
 export function RoleProvider({ children }: { children: ReactNode }) {
-  const { storage } = useServices().platform
-  const [role, setRoleState] = useState(() => roleById(storage.get<string>(ROLE_KEY)))
-  const setRole = useCallback(
-    (id: RoleId) => {
-      storage.set(ROLE_KEY, id)
-      setRoleState(roleById(id))
-    },
-    [storage],
+  const { roleId, choose, forget } = useRoleMemory()
+  const value = useMemo(
+    () => ({ role: roleById(roleId), setRole: choose, clearRole: forget }),
+    [roleId, choose, forget],
   )
-  const clearRole = useCallback(() => {
-    storage.remove(ROLE_KEY)
-    setRoleState(undefined)
-  }, [storage])
-  const value = useMemo(() => ({ role, setRole, clearRole }), [role, setRole, clearRole])
   return <RoleContext.Provider value={value}>{children}</RoleContext.Provider>
 }
 

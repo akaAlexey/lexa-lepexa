@@ -18,10 +18,8 @@ const SRC = normalize(join(process.cwd(), 'src'))
  */
 const EXCEPTIONS: Record<string, readonly Rule[]> = {
   'app/QueryState.tsx': ['page-services'],
-  'app/RoleContext.tsx': ['page-services'],
   'app/ShareButton.tsx': ['page-services'],
   'app/Toaster.tsx': ['page-services', 'paths'],
-  'app/roles.ts': ['paths'],
   'features/archive/ArchiveScreen.tsx': ['paths'],
   'features/archive/NewStoryScreen.tsx': ['page-services'],
   'features/archive/StoryScreen.tsx': ['page-services', 'paths'],

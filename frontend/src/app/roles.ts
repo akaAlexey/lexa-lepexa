@@ -1,14 +1,15 @@
+import { paths } from '../functions/core/paths.ts'
 import type { RoleId } from '../functions/core/permissions.ts'
 import type { IconName } from '../ui/Icon.tsx'
 
 export type TabId = 'trail' | 'search' | 'weekends' | 'lastBattle' | 'archive'
 
 export const TABS: Record<TabId, { path: string; label: string; icon: IconName }> = {
-  trail: { path: '/trail', label: 'Тропа', icon: 'route' },
-  search: { path: '/search', label: 'Поисковикам', icon: 'shovel' },
-  weekends: { path: '/weekends', label: 'Выходные', icon: 'calendar' },
-  lastBattle: { path: '/last-battle', label: 'Последний бой', icon: 'pin' },
-  archive: { path: '/archive', label: 'Истории', icon: 'story' },
+  trail: { path: paths.trail(), label: 'Тропа', icon: 'route' },
+  search: { path: paths.search(), label: 'Поисковикам', icon: 'shovel' },
+  weekends: { path: paths.weekends(), label: 'Выходные', icon: 'calendar' },
+  lastBattle: { path: paths.lastBattle(), label: 'Последний бой', icon: 'pin' },
+  archive: { path: paths.archive(), label: 'Истории', icon: 'story' },
 }
 
 export type { RoleId } from '../functions/core/permissions.ts'
