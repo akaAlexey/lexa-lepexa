@@ -1,7 +1,7 @@
 import type { Fundraiser, Team, VolunteerRequest } from '../../contract/schemas.ts'
 import { formatDayRu } from '../../domain/format.ts'
-import { progressPercent } from '../../domain/fundraising.ts'
 import { describeRoles } from '../../domain/requests.ts'
+import { fundProgress } from '../../functions/fundraising/index.ts'
 import { Button } from '../../ui/Button.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
@@ -53,7 +53,7 @@ export function RequestCard({
             id={`fund-${r.id}`}
             className={s.progress}
             max={100}
-            value={progressPercent(f.collectedRub, f.goalRub)}
+            value={fundProgress(f)}
           />
         </>
       )}
