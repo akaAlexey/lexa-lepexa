@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
 import { useRole } from '../../app/RoleContext.tsx'
@@ -11,6 +11,7 @@ import { describeFighters, NOTIFY_RADIUS_KM, SITE_STATUS_ORDER } from '../../dom
 import { MapView, type MapMarker } from '../../map/MapView.tsx'
 import { tokens } from '../../theme/tokens.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
+import { Button } from '../../ui/Button.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Icon } from '../../ui/Icon.tsx'
@@ -21,6 +22,7 @@ import { Screen } from '../../ui/Screen.tsx'
 import s from './lastBattle.module.css'
 
 const SITE_MARKER_PREFIX = 'site-'
+const NO_GRAVES: Grave[] = []
 
 function BattleMap({ sites, graves }: { sites: LastBattleSite[]; graves: Grave[] }) {
   const navigate = useNavigate()
@@ -102,6 +104,9 @@ function Legend() {
   )
 }
 
+/** Точка в конце фразы, если её там ещё нет («Иванов И.И.» не получает вторую). */
+const withPeriod = (text: string) => (text.endsWith('.') ? text : `${text}.`)
+
 function SiteList({ sites }: { sites: LastBattleSite[] }) {
   return (
     <section aria-labelledby="battle-sites">
@@ -114,7 +119,7 @@ function SiteList({ sites }: { sites: LastBattleSite[] }) {
                 <h3>{site.placeName}</h3>
                 <StatusBadge status={site.status} />
                 <p>
-                  {describeFighters(site)}. {site.dateText}. {site.demo && <DemoBadge />}
+                  {withPeriod(describeFighters(site))} {site.dateText}. {site.demo && <DemoBadge />}
                 </p>
               </Link>
             </Card>
@@ -158,6 +163,7 @@ function SubscribeAction() {
 export function LastBattleScreen() {
   const api = useApi()
   const { role } = useRole()
+  const [showGraves, setShowGraves] = useState(false)
   const sites = useQuery({ queryKey: ['sites'], queryFn: api.listSites })
   const graves = useQuery({ queryKey: ['graves'], queryFn: api.listGraves })
   return (
@@ -176,7 +182,19 @@ export function LastBattleScreen() {
       <QueryState query={sites} what="места">
         {(siteList) => (
           <>
-            {graves.data && <BattleMap sites={siteList} graves={graves.data} />}
+            <Button
+              pressed={showGraves}
+              onClick={() => setShowGraves((v) => !v)}
+              icon="grave"
+              testID="toggle-graves"
+            >
+              {showGraves ? 'Скрыть' : 'Показать'} воинские захоронения
+              {graves.data ? ` · ${graves.data.length}` : ''}
+            </Button>
+            <BattleMap
+              sites={siteList}
+              graves={showGraves ? (graves.data ?? NO_GRAVES) : NO_GRAVES}
+            />
             <Legend />
             <SiteList sites={siteList} />
           </>

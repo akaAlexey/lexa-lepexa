@@ -41,7 +41,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `VITE_TILES=${TILES} npm run build:e2e -- --outDir dist-e2e-${PORT} && npx vite preview --outDir dist-e2e-${PORT} --port ${PORT} --strictPort`,
+    command: `npm run build:e2e -- --outDir dist-e2e-${PORT} && npx vite preview --outDir dist-e2e-${PORT} --port ${PORT} --strictPort`,
+    // Переменная через env, а не «VITE_TILES=… npm»: так команда работает и в cmd на Windows
+    env: { VITE_TILES: TILES },
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

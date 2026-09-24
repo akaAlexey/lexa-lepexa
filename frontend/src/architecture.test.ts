@@ -1,7 +1,7 @@
 // @vitest-environment node
 /// <reference types="node" />
 import { readdirSync, readFileSync } from 'node:fs'
-import { dirname, join, normalize, relative } from 'node:path'
+import { dirname, join, normalize, relative, sep } from 'node:path'
 import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 
@@ -11,6 +11,8 @@ import { describe, expect, it } from 'vitest'
  */
 
 const SRC = normalize(join(process.cwd(), 'src'))
+/** Пути в правилах и исключениях — через «/», на Windows node:path отдаёт «\». */
+const toPosix = (p: string) => p.split(sep).join('/')
 
 /**
  * Ещё не переведённые файлы: файл → правила, которые он пока нарушает.
@@ -24,22 +26,16 @@ const EXCEPTIONS: Record<string, readonly Rule[]> = {
   'features/last-battle/LastBattleScreen.tsx': ['page-services', 'paths'],
   'features/last-battle/NewSiteScreen.tsx': ['page-services', 'paths'],
   'features/last-battle/SiteScreen.tsx': ['page-services', 'paths'],
+  'features/last-battle/SiteStatusAction.tsx': ['page-services'],
   'features/last-battle/routes.tsx': ['paths'],
+  'features/live-photo/ArView.tsx': ['page-services'],
+  'features/live-photo/LivePhotoScreen.tsx': ['page-services'],
+  'features/live-photo/livePhotos.ts': ['page-services'],
+  'features/live-photo/routes.tsx': ['paths'],
   'features/search-hq/DonateDialog.tsx': ['page-services'],
   'features/search-hq/NewRequestScreen.tsx': ['page-services', 'paths'],
   'features/search-hq/SearchScreen.tsx': ['page-services', 'paths'],
   'features/search-hq/routes.tsx': ['paths'],
-  'features/trail/FinishScreen.tsx': ['paths'],
-  'features/trail/PointScreen.tsx': ['paths'],
-  'features/trail/TrailScreen.tsx': ['page-services'],
-  'features/trail/routes.tsx': ['paths'],
-  'features/trail/useTrail.ts': ['page-services', 'paths'],
-  'features/weekends/GroupApplicationScreen.tsx': ['page-services', 'paths'],
-  'features/weekends/GroupList.tsx': ['page-services'],
-  'features/weekends/TripScreen.tsx': ['page-services', 'paths'],
-  'features/weekends/WeekendsScreen.tsx': ['page-services', 'paths'],
-  'features/weekends/groups.ts': ['page-services', 'paths'],
-  'features/weekends/routes.tsx': ['paths'],
 }
 
 type Rule = 'page-services' | 'function-purity' | 'core-independent' | 'pure-layers' | 'paths'
@@ -61,7 +57,7 @@ const PATHS_MODULE = 'functions/core/paths.ts'
 
 /** Адрес экрана: '/trail', `/last-battle/${id}` в коде или path: 'search/requests/new' в роутере. */
 const SCREENS =
-  'trail|search|weekends|last-battle|archive|chronicle|demo|map|routes|places|help|trips|stories|profile'
+  'trail|search|weekends|last-battle|archive|chronicle|live|demo|map|routes|places|help|trips|stories|profile'
 const SCREEN_PATH = new RegExp(`['"\`]/(${SCREENS})(/|['"\`])|path: ['"\`](${SCREENS})(/|['"\`])`)
 
 function listSources(dir: string): string[] {
@@ -86,9 +82,9 @@ function readSource(full: string): SourceFile {
   const imports = info.importedFiles.map(({ fileName }) => {
     const spec = fileName.split('?')[0] ?? fileName
     if (!spec.startsWith('.')) return spec
-    return relative(SRC, join(dirname(full), spec)).replace(/\.tsx?$/, '')
+    return toPosix(relative(SRC, join(dirname(full), spec))).replace(/\.tsx?$/, '')
   })
-  return { rel: relative(SRC, full), text, imports }
+  return { rel: toPosix(relative(SRC, full)), text, imports }
 }
 
 const isPackage = (imp: string, name: string) => imp === name || imp.startsWith(`${name}/`)

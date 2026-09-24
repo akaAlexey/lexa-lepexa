@@ -17,6 +17,8 @@ import { Screen } from '../../ui/Screen.tsx'
 import { SourceList } from '../../ui/SourceList.tsx'
 import { StatusBadge } from '../../ui/StatusBadge.tsx'
 import type { SiteCreatedState } from './NewSiteScreen.tsx'
+import { SiteStatusAction, StatusChanged } from './SiteStatusAction.tsx'
+import { statusActionFor } from './statusAction.ts'
 import s from './lastBattle.module.css'
 
 /** Подъём нужен, пока останки не подняты. */
@@ -80,6 +82,10 @@ function SiteCard({ site, notified }: { site: LastBattleSite; notified: number |
   // Защита от «чёрных копателей»: точные координаты — только поисковикам и краеведам.
   // Это витрина; настоящее скрытие должен делать сервер (docs/BACKEND_REQUESTS.md).
   const seesExactCoords = isCommander || roleId === 'verifier'
+  const statusAction = statusActionFor(roleId, site.status)
+  // Проверка по архиву — главное дело краеведа на этом месте: большая кнопка у неё
+  const confirmIsMain = statusAction === 'confirm'
+  const [changedTo, setChangedTo] = useState<SiteStatus>()
   return (
     <>
       {notified !== undefined && (
@@ -102,7 +108,16 @@ function SiteCard({ site, notified }: { site: LastBattleSite; notified: number |
           Отметить ещё одно место
         </BigButton>
       ) : (
-        needsRaising && <HelpAction site={site} />
+        needsRaising && !confirmIsMain && <HelpAction site={site} />
+      )}
+      {changedTo && <StatusChanged status={changedTo} />}
+      {statusAction && (
+        <SiteStatusAction
+          site={site}
+          action={statusAction}
+          main={confirmIsMain}
+          onDone={setChangedTo}
+        />
       )}
       <Card as="section" aria-labelledby="site-facts">
         <h2 id="site-facts">Что известно</h2>

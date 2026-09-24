@@ -3,6 +3,7 @@ import { routes as archive } from '../features/archive/routes.tsx'
 import { routes as chronicle } from '../features/chronicle/routes.tsx'
 import { routes as demoConsole } from '../features/demo-console/routes.tsx'
 import { routes as lastBattle } from '../features/last-battle/routes.tsx'
+import { routes as livePhoto } from '../features/live-photo/routes.tsx'
 import { RolePickerScreen } from '../features/roles/RolePickerScreen.tsx'
 import { routes as searchHq } from '../features/search-hq/routes.tsx'
 import { routes as trail } from '../features/trail/routes.tsx'
@@ -25,6 +26,7 @@ export const appRoutes: RouteObject[] = [
       ...lastBattle,
       ...archive,
       ...chronicle,
+      ...livePhoto,
       ...demoConsole,
       { path: '*', element: <NotFoundScreen /> },
     ],

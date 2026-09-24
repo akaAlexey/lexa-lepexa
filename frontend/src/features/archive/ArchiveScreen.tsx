@@ -15,6 +15,7 @@ import {
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
+import { Icon } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { StatePill } from '../../ui/StatePill.tsx'
@@ -78,6 +79,26 @@ export function ArchiveScreen() {
                   Рассказать историю
                 </BigButton>
               )}
+              <ul className={s.tiles} aria-label="Ещё в разделе">
+                <li>
+                  <Link to={paths.chronicle()} className={s.tile} data-testid="archive-chronicle">
+                    <Icon name="star" size={1.6} />
+                    <span className={s.tileTitle}>Хроника и памятники</span>
+                    <span className={s.tileText}>
+                      Бои 1941–1943 по годам и 84 памятника войны на карте
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link to={paths.livePhotos()} className={s.tile} data-testid="archive-live">
+                    <Icon name="user" size={1.6} />
+                    <span className={s.tileTitle}>Живое фото</span>
+                    <span className={s.tileText}>
+                      Наведите камеру на снимок — и боец заговорит. Или оживите своё фото
+                    </span>
+                  </Link>
+                </li>
+              </ul>
               {canVerify ? (
                 <section aria-labelledby="archive-queue">
                   <h2 id="archive-queue">Ждут проверки</h2>
@@ -95,15 +116,6 @@ export function ArchiveScreen() {
                   </section>
                 )
               )}
-              <p>
-                <Link
-                  to={paths.chronicle()}
-                  className={s.chronicleLink}
-                  data-testid="archive-chronicle"
-                >
-                  Хроника боёв 1941–1943 — события по годам на карте
-                </Link>
-              </p>
               <section aria-labelledby="archive-published">
                 <h2 id="archive-published">Проверенные истории</h2>
                 <StoryList label="Проверенные истории" stories={published} />
