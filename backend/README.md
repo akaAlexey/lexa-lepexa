@@ -18,7 +18,7 @@ Demo identity headers: `X-Demo-User` and `X-Demo-Team-Id`.
 
 ## Database schema
 
-Alembic migrations build the P0 schema and the full domain schema.
+Database migrations build the P0 schema and the full domain schema.
 
 ```text
 alembic/versions/0001_initial.py
