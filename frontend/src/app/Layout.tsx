@@ -26,9 +26,9 @@ export function Layout() {
         Перейти к содержимому
       </a>
       <nav className={s.nav} aria-label="Разделы">
-        <Link to={paths.home()} className={s.brand} data-testid="nav-home">
+        <Link to={paths.events()} className={s.brand} data-testid="nav-home">
           <Logo size={2} />
-          <span className="visually-hidden">{region.appTitle}: кто вы?</span>
+          <span className="visually-hidden">{region.appTitle}: мероприятия</span>
         </Link>
         <ul className={s.navList}>
           {TAB_ORDER.map((id) => {
@@ -52,11 +52,10 @@ export function Layout() {
       <div className={s.page}>
         {!fullBleed && (
           <header className={s.masthead}>
-            <Link to={paths.home()} className={s.mastTitle}>
+            {/* Демо-данные помечены у самих записей (DemoBadge), не в шапке — решение команды 25.09 */}
+            <Link to={paths.events()} className={s.mastTitle} data-testid="mast-home">
               {region.appTitle}
               <span className={s.mastRegion}> · {region.regionName}</span>
-              {/* Этика: придуманное не выдаём за реальное */}
-              <span className={s.mastDemo}>Демо</span>
             </Link>
             {/* Кнопка аккаунта: «Вход» до входа, «Профиль» после; роль — рядом, меняется в «Другом» */}
             <Link to={paths.other()} className={s.account} data-testid="nav-role">
