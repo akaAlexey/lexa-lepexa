@@ -1,6 +1,7 @@
 import { act, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+import type { ArService } from '../../platform/types.ts'
 import { renderApp } from '../../test/renderApp.tsx'
 
 const login = async (email = 'anna@example.com') => {
@@ -101,8 +102,8 @@ describe('Другое, профиль и личные функции', () => {
     expect(router.state.location.pathname).toBe('/last-battle/S02')
   })
   it('AR запрашивает камеру по кнопке и показывает превью после разрешения', async () => {
-    const stop = vi.fn()
-    const openCamera = vi.fn(async () => ({ stop }))
+    const stop = vi.fn<() => void>()
+    const openCamera = vi.fn<ArService['openCamera']>(async () => ({ stop }))
     renderApp('/other?section=ar', {
       signedIn: true,
       platform: {
@@ -118,5 +119,4 @@ describe('Другое, профиль и личные функции', () => {
     expect(openCamera).toHaveBeenCalledTimes(1)
     expect(screen.getByTestId('ar-camera')).toBeVisible()
   })
-
 })
