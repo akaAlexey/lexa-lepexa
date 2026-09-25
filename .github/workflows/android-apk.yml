@@ -35,10 +35,15 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - uses: android-actions/setup-android@v3
-
+      # Android SDK в образе ubuntu-latest уже есть ($ANDROID_HOME, лицензии приняты).
+      # Доставляем платформу 36, если её нет; android-actions/setup-android не нужен (падал на --licenses)
       - name: Android SDK — платформа 36 и build-tools
-        run: sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls "$ANDROID_HOME/platforms" "$ANDROID_HOME/build-tools" || true
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" --install "platforms;android-36" "build-tools;36.0.0" "platform-tools"
 
       - name: Install deps
         run: npm ci
