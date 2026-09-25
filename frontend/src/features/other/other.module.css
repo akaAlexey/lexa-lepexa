@@ -1,38 +1,7 @@
-/* «Другое»: одна большая панель, шапка — раскрывающийся список разделов (ADR 0012) */
+/* «Другое»: корневой экран — список, выбранный пункт — отдельная страница. */
 .hub {
   border: 1px solid var(--color-ink);
   background: rgb(251 246 236 / 0.86);
-}
-
-.hubHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  width: 100%;
-  min-height: 4.5rem;
-  padding: var(--space-3) var(--space-4);
-  border: 0;
-  border-bottom: 1px solid var(--color-ink);
-  background: rgb(232 222 196 / 0.7);
-  color: var(--color-ink);
-  text-align: left;
-}
-
-.hubTitle {
-  display: grid;
-}
-
-.hubName {
-  font-family: var(--font-heading);
-  font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-.hubHint {
-  color: var(--color-ink-muted);
-  font-size: 0.9rem;
 }
 
 .list {
@@ -236,9 +205,6 @@
 
 .item {
   text-decoration: none;
-}
-.body {
-  border-top: 1px solid var(--color-line-strong);
 }
 .body h2 {
   margin: 0;
