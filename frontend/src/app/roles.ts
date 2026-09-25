@@ -13,7 +13,7 @@ export const TABS: Record<TabId, { path: string; label: string; icon: IconName; 
       path: paths.map(),
       label: 'Карта',
       icon: 'map',
-      section: /^\/(map|trail|last-battle|chronicle)(\/|$)/,
+      section: /^\/(map|trail|chronicle)(\/|$)/,
     },
     events: {
       path: paths.events(),
@@ -32,7 +32,7 @@ export const TABS: Record<TabId, { path: string; label: string; icon: IconName; 
       label: 'Другое',
       icon: 'menu',
       // выбор роли (/roles), «Живое фото», «О нас» и документы — части «Другого»
-      section: /^\/(other|demo|roles|live|about|privacy|terms)?(\/|$)/,
+      section: /^\/(other|last-battle|demo|roles|live|about|privacy|terms)?(\/|$)/,
     },
   }
 
