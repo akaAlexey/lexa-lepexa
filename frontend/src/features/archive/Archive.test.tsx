@@ -17,7 +17,7 @@ describe('«Истории»: народный архив', () => {
   })
 
   it('семья рассказывает историю — она ждёт проверки и видна автору в «Моих историях»', async () => {
-    const { router, platform } = renderApp('/archive/new', { role: 'family' })
+    const { router, platform } = renderApp('/archive/new', { role: 'family', signedIn: true })
     await userEvent.type(await screen.findByTestId('story-title'), 'Письмо прадеда')
     await userEvent.type(screen.getByTestId('story-place'), 'Кромы')
     await userEvent.type(
@@ -38,7 +38,7 @@ describe('«Истории»: народный архив', () => {
   })
 
   it('короткая история не отправляется — ошибки у полей', async () => {
-    const { router } = renderApp('/archive/new', { role: 'family' })
+    const { router } = renderApp('/archive/new', { role: 'family', signedIn: true })
     await userEvent.type(await screen.findByTestId('story-body'), 'Коротко')
     await userEvent.click(screen.getByTestId('story-send'))
     expect(await screen.findByText(/не короче 30 символов/)).toBeInTheDocument()
@@ -78,5 +78,13 @@ describe('«Истории»: народный архив', () => {
     renderApp('/archive/ST02', { role: 'volunteer' })
     expect(await screen.findByTestId('story-status')).toHaveTextContent('Ожидает проверки')
     expect(screen.queryByTestId('review-verify')).not.toBeInTheDocument()
+  })
+
+  it('гость не может открыть форму новой истории', async () => {
+    const { router } = renderApp('/archive/new', { role: 'family' })
+    expect(await screen.findByTestId('signin-form')).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/other')
+    expect(router.state.location.search).toBe('?section=account&next=%2Farchive%2Fnew')
+    expect(screen.queryByTestId('story-send')).not.toBeInTheDocument()
   })
 })
