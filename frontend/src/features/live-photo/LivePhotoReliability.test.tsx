@@ -50,7 +50,7 @@ async function openCamera() {
 
 describe('«Живое фото»: согласие', () => {
   it('до согласия ролик не подгружается, камеры и плеера нет', async () => {
-    renderApp('/live/soldier')
+    renderApp('/live/soldier', { signedIn: true })
     const video = await screen.findByTestId('live-video')
     expect(video).toHaveAttribute('preload', 'none')
     expect(video).not.toHaveAttribute('controls')
@@ -59,7 +59,7 @@ describe('«Живое фото»: согласие', () => {
   })
 
   it('согласие сняли во время просмотра — плеер закрыт, ролик на паузе, кнопки снова неактивны', async () => {
-    renderApp('/live/reichstag')
+    renderApp('/live/reichstag', { signedIn: true })
     await userEvent.click(await screen.findByTestId('live-consent'))
     await userEvent.click(screen.getByTestId('live-watch-video'))
     expect(screen.getByTestId('live-video')).toHaveAttribute('controls')
@@ -71,7 +71,7 @@ describe('«Живое фото»: согласие', () => {
 
   it('Escape закрывает экран камеры и гасит камеру', async () => {
     const c = controllableAr()
-    renderApp('/live/soldier', { platform: { ar: c.ar } })
+    renderApp('/live/soldier', { signedIn: true, platform: { ar: c.ar } })
     await openCamera()
     await c.start()
     await userEvent.keyboard('{Escape}')
@@ -83,7 +83,7 @@ describe('«Живое фото»: согласие', () => {
 describe('«Живое фото»: камера', () => {
   it('найден снимок — ролик играет, потерян — пауза; поздние события после закрытия не трогают ролик', async () => {
     const c = controllableAr()
-    renderApp('/live/soldier', { platform: { ar: c.ar } })
+    renderApp('/live/soldier', { signedIn: true, platform: { ar: c.ar } })
     await openCamera()
     await c.start()
     play.mockClear()
@@ -105,6 +105,7 @@ describe('«Живое фото»: камера', () => {
     ['NotReadableError', 'Камера занята другим приложением'],
   ])('%s — понятная причина и переход к ролику с пометкой ИИ', async (name, text) => {
     renderApp('/live/soldier', {
+      signedIn: true,
       platform: { ar: { trackImage: () => Promise.reject(new DOMException('x', name)) } },
     })
     await openCamera()
@@ -119,6 +120,7 @@ describe('«Живое фото»: камера', () => {
 
   it('http-адрес — объяснение про https и ролик без камеры', async () => {
     renderApp('/live/soldier', {
+      signedIn: true,
       platform: {
         ar: {
           trackImage: () =>
@@ -134,7 +136,7 @@ describe('«Живое фото»: камера', () => {
   it('запуск завис — через 20 с отмена, камера гаснет, предложены повтор и ролик', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     const c = controllableAr()
-    renderApp('/live/soldier', { platform: { ar: c.ar } })
+    renderApp('/live/soldier', { signedIn: true, platform: { ar: c.ar } })
     await openCamera()
     expect(screen.getByTestId('live-ar-status')).toHaveTextContent('Включаем камеру')
     act(() => vi.advanceTimersByTime(START_TIMEOUT_MS))
@@ -149,6 +151,7 @@ describe('«Живое фото»: камера', () => {
   it('«Включить камеру снова» — новый запуск с нуля', async () => {
     let attempts = 0
     renderApp('/live/soldier', {
+      signedIn: true,
       platform: {
         ar: {
           trackImage: () => {
@@ -165,7 +168,7 @@ describe('«Живое фото»: камера', () => {
 
   it('вкладку свернули — камера гаснет, ролик на паузе; вернулись — «Включить камеру снова»', async () => {
     const c = controllableAr()
-    renderApp('/live/soldier', { platform: { ar: c.ar } })
+    renderApp('/live/soldier', { signedIn: true, platform: { ar: c.ar } })
     await openCamera()
     await c.start()
     pause.mockClear()
@@ -183,7 +186,7 @@ describe('«Живое фото»: камера', () => {
 
   it('уход со страницы (pagehide) — камера гаснет', async () => {
     const c = controllableAr()
-    renderApp('/live/soldier', { platform: { ar: c.ar } })
+    renderApp('/live/soldier', { signedIn: true, platform: { ar: c.ar } })
     await openCamera()
     await c.start()
     act(() => {
@@ -196,7 +199,7 @@ describe('«Живое фото»: камера', () => {
     const c = controllableAr()
     const removeDoc = vi.spyOn(document, 'removeEventListener')
     const removeWin = vi.spyOn(window, 'removeEventListener')
-    const { router } = renderApp('/live/soldier', { platform: { ar: c.ar } })
+    const { router } = renderApp('/live/soldier', { signedIn: true, platform: { ar: c.ar } })
     await openCamera()
     await act(() => router.navigate('/live'))
     expect(c.calls[0]!.signal?.aborted).toBe(true)
@@ -226,7 +229,7 @@ describe('«Живое фото»: пометка ИИ и субтитры', () 
   it('в камере текущая реплика видна внизу, дорожка скрыта; после закрытия — снова как была', async () => {
     const track = fakeTrack()
     const c = controllableAr()
-    renderApp('/live/soldier', { platform: { ar: c.ar } })
+    renderApp('/live/soldier', { signedIn: true, platform: { ar: c.ar } })
     await openCamera()
     await c.start()
     expect(track.mode).toBe('hidden')
@@ -242,7 +245,7 @@ describe('«Живое фото»: пометка ИИ и субтитры', () 
   })
 
   it('плеер: русские субтитры по умолчанию и пометка ИИ поверх ролика', async () => {
-    renderApp('/live/soldier')
+    renderApp('/live/soldier', { signedIn: true })
     await userEvent.click(await screen.findByTestId('live-consent'))
     await userEvent.click(screen.getByTestId('live-watch-video'))
     const track = screen.getByTestId('live-video').querySelector('track')!
@@ -253,7 +256,7 @@ describe('«Живое фото»: пометка ИИ и субтитры', () 
   })
 
   it('ролик назван подготовленным заранее, а не созданным сейчас', async () => {
-    renderApp('/live/soldier')
+    renderApp('/live/soldier', { signedIn: true })
     expect(await screen.findByTestId('live-animation')).toHaveTextContent(
       'подготовлен командой заранее',
     )
@@ -262,7 +265,7 @@ describe('«Живое фото»: пометка ИИ и субтитры', () 
   })
 
   it('список и своё фото не обещают генерацию', async () => {
-    renderApp('/live')
+    renderApp('/live', { signedIn: true })
     const own = await screen.findByTestId('live-own')
     expect(own).toHaveTextContent('в демо не создаётся')
     expect(own).toHaveTextContent('подготовлены командой заранее')
@@ -276,7 +279,7 @@ describe('«Живое фото»: адреса файлов на GitHub Pages',
   it('снимок, ролик, субтитры и цель камеры идут с базовым путём сборки', async () => {
     vi.stubEnv('BASE_URL', '/lexa-lepexa/')
     const c = controllableAr()
-    renderApp('/live/soldier', { platform: { ar: c.ar } })
+    renderApp('/live/soldier', { signedIn: true, platform: { ar: c.ar } })
     expect(await screen.findByTestId('live-photo-image')).toHaveAttribute(
       'src',
       '/lexa-lepexa/live/soldier.jpg',

@@ -1,5 +1,5 @@
 import { expect, type Page } from '@playwright/test'
-import { snap, test } from './helpers.ts'
+import { signInOnDevice, snap, test } from './helpers.ts'
 
 /**
  * Настоящее распознавание: вместо камеры — видеопоток со снимком (LIVE_AR_CAMERA=путь к .y4m,
@@ -24,6 +24,9 @@ test.use({
     ],
   },
 })
+
+// «Живое фото» открывается только после входа
+test.beforeEach(async ({ page }) => signInOnDevice(page))
 
 /** Запоминаем все потоки камеры, чтобы проверить, что после уборки они погашены. */
 async function watchCamera(page: Page) {
