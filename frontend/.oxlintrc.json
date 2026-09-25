@@ -31,7 +31,7 @@
       }
     ]
   },
-  "ignorePatterns": ["dist", "node_modules", "playwright-report", "test-results"],
+  "ignorePatterns": ["dist", "node_modules", "playwright-report", "test-results", "android"],
   "overrides": [
     {
       "files": ["src/app/services.tsx", "src/app/RoleContext.tsx"],
