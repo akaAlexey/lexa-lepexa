@@ -30,9 +30,11 @@ export interface ShareService {
   share(item: { title: string; text?: string; url: string }): Promise<ShareResult>
 }
 
-export interface ImageTrackingSession {
+export interface CameraSession {
   stop(): void
 }
+
+export interface ImageTrackingSession extends CameraSession {}
 
 export interface ImageTrackingOptions {
   /** Куда вывести изображение с камеры. */
@@ -48,6 +50,8 @@ export interface ImageTrackingOptions {
 }
 
 export interface ArService {
+  /** Запросить доступ к камере и показать обычное превью в video. */
+  openCamera(video: HTMLVideoElement): Promise<CameraSession>
   /** Узнать снимок в камере и положить поверх него ролик. Ошибка — если камеры нет или доступ запрещён. */
   trackImage(options: ImageTrackingOptions): Promise<ImageTrackingSession>
 }
