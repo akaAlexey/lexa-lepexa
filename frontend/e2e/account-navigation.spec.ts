@@ -2,6 +2,8 @@ import { expect } from '@playwright/test'
 import { expectNoA11yViolations, expectNoHorizontalScroll, snap, test } from './helpers.ts'
 
 test('личные разделы, профиль, подписи и Последний бой', async ({ page }, testInfo) => {
+  // Длинный сквозной сценарий: вход, профиль, разделы, «Последний бой», проверка истории, выход
+  test.slow()
   await page.goto('/other')
   for (const section of ['ar', 'archive', 'photo'])
     await expect(page.getByTestId(`other-${section}`)).toHaveCount(0)
@@ -24,7 +26,14 @@ test('личные разделы, профиль, подписи и После�
   await expectNoHorizontalScroll(page)
   await expectNoA11yViolations(page)
   await snap(page, testInfo, 'account-02-profile')
+  // «Другое»: список разделов на /other, у каждого раздела своя страница с «Назад»
+  await page.getByTestId('other-back').click()
+  await expect(page).toHaveURL(/\/other$/)
+  for (const section of ['account', 'archive', 'ar', 'photo'])
+    await expect(page.getByTestId(`other-${section}`)).toBeVisible()
   await page.getByTestId('other-photo').click()
+  await expect(page.getByTestId('screen-other-photo')).toBeVisible()
+  await page.getByTestId('other-back').click()
   await expect(page.getByTestId('other-account')).toBeVisible()
   await page.getByTestId('other-last-battle').click()
   await expect(page.getByTestId('last-battle-site-S01')).toBeVisible()
