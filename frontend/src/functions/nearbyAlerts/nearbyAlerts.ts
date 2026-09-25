@@ -19,6 +19,9 @@ export async function subscribeNearby({
   api,
   platform,
 }: Pick<Services, 'api' | 'platform'>): Promise<Subscription> {
+  // Запрос системных уведомлений делаем из пользовательского клика по «Сообщать…».
+  // Даже при отказе подписка остаётся полезной: уведомления внутри сайта продолжают работать.
+  await platform.notify.requestPermission().catch(() => undefined)
   const { lat, lon } = await platform.geo.getPosition()
   const subscription = { lat, lon, radiusKm: NOTIFY_RADIUS_KM, topics: ['search' as const] }
   await api.subscribe({ body: subscription })
