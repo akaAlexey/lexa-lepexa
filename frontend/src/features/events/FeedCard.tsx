@@ -22,6 +22,9 @@ interface Props {
   item: FeedItem
   /** Можно ли записаться в заявку: командир набирает людей, а не записывается. */
   canSignUp: boolean
+  /** Гость видит понятную ссылку на вход вместо действия записи. */
+  signedIn: boolean
+  signInPath: string
   /** Уже записан с этого устройства (заявка или выезд). */
   signedUp: boolean
   /** Открыть окно записи с условиями. */
@@ -48,7 +51,16 @@ function Progress({ id, f }: { id: string; f: Fundraiser }) {
 }
 
 /** Запись ленты «Мероприятия»: надстрочник, штамп типа, заголовок, условия и действие. */
-export function FeedCard({ item, canSignUp, signedUp, onSignUp, onDonate, pendingGroups }: Props) {
+export function FeedCard({
+  item,
+  canSignUp,
+  signedIn,
+  signInPath,
+  signedUp,
+  onSignUp,
+  onDonate,
+  pendingGroups,
+}: Props) {
   const headingId = `feed-title-${item.id}`
   const kick = [
     item.postedAt ? posted.format(new Date(item.postedAt)) : undefined,
@@ -100,6 +112,11 @@ export function FeedCard({ item, canSignUp, signedUp, onSignUp, onDonate, pendin
                   Записаться
                 </Button>
               ))}
+            {!canSignUp && !signedIn && (
+              <Link to={signInPath} className={ui.button} data-testid={`request-signin-${item.id}`}>
+                Войти, чтобы записаться
+              </Link>
+            )}
             {item.fundraiser && (
               <Button
                 onClick={() => item.fundraiser && onDonate(item.fundraiser)}
