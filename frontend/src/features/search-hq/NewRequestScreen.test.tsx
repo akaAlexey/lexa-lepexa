@@ -42,31 +42,3 @@ describe('новая заявка командира (user story 2)', () => {
     expect(await api.listRequests()).toHaveLength(1)
   })
 })
-
-describe('«Поисковикам» по ролям', () => {
-  it('командир видит главную кнопку «Набрать волонтёров»', async () => {
-    renderApp('/search', { role: 'commander' })
-    expect(await screen.findByTestId('search-create-request')).toHaveAttribute(
-      'href',
-      '/search/requests/new',
-    )
-  })
-
-  it('волонтёр видит карточку из прототипа и записывается одним нажатием', async () => {
-    renderApp('/search', { role: 'volunteer' })
-    const card = await screen.findByTestId('request-card-R01')
-    expect(card).toHaveTextContent('Вахта Памяти (Орловская обл.)')
-    expect(card).toHaveTextContent('Требуются волонтёры: 5 · 16+')
-    expect(card).toHaveTextContent(/Собрано: 15\s000 из 50\s000 ₽/)
-    await userEvent.click(screen.getByTestId('search-join'))
-    expect(await screen.findByTestId('request-joined-R01')).toHaveTextContent('Вы в команде')
-  })
-
-  it('«Пожертвовать на бензин» — только тестовый платёж с явным предупреждением', async () => {
-    renderApp('/search', { role: 'volunteer' })
-    await userEvent.click(await screen.findByTestId('donate-F01'))
-    expect(await screen.findByRole('dialog')).toHaveTextContent(
-      'Тестовый режим: деньги не списываются',
-    )
-  })
-})

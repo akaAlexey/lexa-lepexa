@@ -22,11 +22,28 @@ describe('выезд «Выходные с поисковиком»', () => {
     expect(platform.storage.get('checklist:W01')).toEqual(['shovel', 'gloves'])
   })
 
-  it('«Записаться на выезд» — подтверждение и минус одно свободное место', async () => {
-    renderApp('/weekends/W01', { role: 'volunteer' })
+  it('«Записаться на выезд» сразу не записывает — сначала окно с условиями', async () => {
+    const { api } = renderApp('/weekends/W01', { role: 'volunteer' })
     expect(await screen.findByTestId('trip-spots')).toHaveTextContent('Свободно мест: 7 из 12')
     await userEvent.click(screen.getByTestId('trip-register'))
-    expect(await screen.findByTestId('trip-registered')).toHaveTextContent('Вы записаны')
-    expect(screen.getByTestId('trip-spots')).toHaveTextContent('Свободно мест: 6 из 12')
+    expect(await screen.findByTestId('signup-dialog')).toBeInTheDocument()
+    expect((await api.getTrip({ id: 'W01' })).spotsTaken).toBe(5)
+  })
+
+  it('все пункты отмечены — «Вы готовы к выезду»', async () => {
+    renderApp('/weekends/W01', { role: 'volunteer' })
+    for (const box of await screen.findAllByRole('checkbox')) await userEvent.click(box)
+    expect(screen.getByTestId('checklist-progress')).toHaveTextContent('Готово 4 из 4')
+    expect(screen.getByTestId('checklist-ready')).toHaveTextContent('Вы готовы к выезду')
+  })
+
+  it('несуществующий выезд — «Выезд не найден» и ссылка к выездам в ленте', async () => {
+    const { router } = renderApp('/weekends/NOPE', { role: 'volunteer' })
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Выезд не найден' }),
+    ).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('link', { name: 'Все выезды в ленте' }))
+    expect(await screen.findByTestId('feed-trip-W01')).toBeInTheDocument()
+    expect(router.state.location.search).toBe('?show=trip')
   })
 })

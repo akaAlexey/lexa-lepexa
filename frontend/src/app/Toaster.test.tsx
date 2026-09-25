@@ -5,7 +5,7 @@ import { renderApp } from '../test/renderApp.tsx'
 
 describe('уведомления внутри приложения', () => {
   it('подписчик в 20 км видит тост и переходит к месту', async () => {
-    const { api, router } = renderApp('/search', { role: 'volunteer' })
+    const { api, router } = renderApp('/events', { role: 'volunteer' })
     await api.subscribe({ body: { lat: 52.97, lon: 36.07, topics: ['search'] } })
     const { site } = await api.createSite({
       body: {

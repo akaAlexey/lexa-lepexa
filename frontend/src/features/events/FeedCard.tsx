@@ -20,11 +20,15 @@ const num = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 })
 
 interface Props {
   item: FeedItem
-  canJoin: boolean
-  joined: boolean
-  joining: boolean
-  onJoin: (id: string) => void
+  /** Можно ли записаться в заявку: командир набирает людей, а не записывается. */
+  canSignUp: boolean
+  /** Уже записан с этого устройства (заявка или выезд). */
+  signedUp: boolean
+  /** Открыть окно записи с условиями. */
+  onSignUp: () => void
   onDonate: (f: Fundraiser) => void
+  /** Командиру: сколько заявок групп на этот выезд ждут решения. */
+  pendingGroups?: number
 }
 
 function Progress({ id, f }: { id: string; f: Fundraiser }) {
@@ -44,7 +48,7 @@ function Progress({ id, f }: { id: string; f: Fundraiser }) {
 }
 
 /** Запись ленты «Мероприятия»: надстрочник, штамп типа, заголовок, условия и действие. */
-export function FeedCard({ item, canJoin, joined, joining, onJoin, onDonate }: Props) {
+export function FeedCard({ item, canSignUp, signedUp, onSignUp, onDonate, pendingGroups }: Props) {
   const headingId = `feed-title-${item.id}`
   const kick = [
     item.postedAt ? posted.format(new Date(item.postedAt)) : undefined,
@@ -85,19 +89,14 @@ export function FeedCard({ item, canJoin, joined, joining, onJoin, onDonate }: P
           <p className={s.meta}>Уже в команде: {item.request.joined}</p>
           {item.fundraiser && <Progress id={`fund-${item.id}`} f={item.fundraiser} />}
           <div className={s.actions}>
-            {canJoin &&
-              (joined ? (
+            {canSignUp &&
+              (signedUp ? (
                 <span className={s.joined} data-testid={`request-joined-${item.id}`}>
                   <Icon name="check" size={1.3} />
-                  Вы в команде
+                  Вы записаны
                 </span>
               ) : (
-                <Button
-                  onClick={() => onJoin(item.id)}
-                  disabled={joining}
-                  icon="shovel"
-                  testID={`request-join-${item.id}`}
-                >
+                <Button onClick={onSignUp} icon="shovel" testID={`request-join-${item.id}`}>
                   Записаться
                 </Button>
               ))}
@@ -130,6 +129,13 @@ export function FeedCard({ item, canJoin, joined, joining, onJoin, onDonate }: P
               </span>
             )}
           </p>
+          {pendingGroups !== undefined && (
+            <p className={s.meta}>
+              <Link to={paths.trip(item.trip.id)} data-testid={`feed-trip-groups-${item.trip.id}`}>
+                Заявки групп ждут решения: {pendingGroups}
+              </Link>
+            </p>
+          )}
           <div className={s.actions}>
             <Link
               to={paths.trip(item.trip.id)}
@@ -138,6 +144,12 @@ export function FeedCard({ item, canJoin, joined, joining, onJoin, onDonate }: P
             >
               Подробнее и запись
             </Link>
+            {signedUp && (
+              <span className={s.joined} data-testid={`feed-trip-registered-${item.trip.id}`}>
+                <Icon name="check" size={1.3} />
+                Вы записаны
+              </span>
+            )}
           </div>
         </>
       )}

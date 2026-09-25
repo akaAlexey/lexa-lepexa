@@ -34,21 +34,28 @@ test.describe('История 2: заявка на 10 волонтёров на 
     await snap(page, testInfo, 'story2-03-published')
   })
 
-  test('заявку видит волонтёр в ленте и может стать частью команды', async ({ page }) => {
+  test('заявку видит волонтёр в ленте и записывается из её карточки', async ({ page }) => {
     await startAs(page, 'volunteer')
     const card = page.getByTestId('request-card-R01')
     await expect(card).toContainText('Вахта Памяти (Орловская обл.)')
     await expect(card).toContainText(/Собрано: 15\s000 из 50\s000 ₽/)
     await expect(page.getByTestId('week-news')).toContainText('Новости недели')
-    await page.getByTestId('search-join').click()
-    await expect(page.getByTestId('request-joined-R01')).toContainText('Вы в команде')
+    await expect(page.getByTestId('search-join')).toHaveCount(0)
+    await card.getByTestId('request-join-R01').click()
+    const dialog = page.getByTestId('signup-dialog')
+    await page.getByTestId('signup-fullName').fill('Иванова Мария Петровна')
+    await page.getByTestId('signup-phone').fill('+7 900 123-45-67')
+    await page.getByTestId('signup-agreed').check()
+    await dialog.getByTestId('signup-confirm').click()
+    await dialog.getByTestId('dialog-close').click()
+    await expect(page.getByTestId('request-joined-R01')).toContainText('Вы записаны')
   })
 
   test('только клавиатура: от «Мероприятий» до опубликованной заявки', async ({
     page,
   }, testInfo) => {
     test.skip(testInfo.project.name === 'phone', 'клавиатурный проход проверяем на ноутбуке')
-    await page.goto('/')
+    await page.goto('/roles')
     await page.getByTestId('role-commander').focus()
     await page.keyboard.press('Enter')
     await expect(page).toHaveURL(/\/events$/)

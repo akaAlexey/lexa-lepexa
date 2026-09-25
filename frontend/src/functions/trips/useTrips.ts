@@ -1,10 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import type { Trip } from '../../contract/schemas.ts'
 import { isNotFound } from '../core/errors.ts'
 import type { Loadable } from '../core/query.ts'
 import { qk } from '../core/queryKeys.ts'
 import { useDeps } from '../core/useDeps.ts'
-import { getTrip, listTrips, registerTrip, replaceTrip } from './trips.ts'
+import { getTrip, listTrips } from './trips.ts'
 
 /** Список выездов для `QueryState`. */
 export function useTrips(): Loadable<Trip[]> {
@@ -24,21 +24,5 @@ export function useTrip(tripId: string, { notFoundIsFinal = false } = {}): Loada
     ...(notFoundIsFinal && {
       retry: (count: number, e: Error) => !isNotFound(e) && count < 1,
     }),
-  })
-}
-
-/**
- * Запись на выезд. После успеха выезд обновляется в карточке и в списке (свободных мест меньше).
- * Экран смотрит `isSuccess` («Вы записаны»), `isPending`, `isError` и `error.message`.
- */
-export function useRegisterTrip(tripId: string) {
-  const deps = useDeps()
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: () => registerTrip(deps, tripId),
-    onSuccess: (updated) => {
-      queryClient.setQueryData(qk.trip(tripId), updated)
-      queryClient.setQueryData<Trip[]>(qk.trips, (list) => replaceTrip(list, updated))
-    },
   })
 }
