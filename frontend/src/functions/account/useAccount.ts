@@ -1,4 +1,5 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
+import { ApiError } from '../../api/client.ts'
 import { memory } from '../core/deviceMemory.ts'
 import { useDeps } from '../core/useDeps.ts'
 import { useDeviceMemory } from '../core/useDeviceMemory.ts'
@@ -17,9 +18,35 @@ import {
 
 /** Вход на этом устройстве: «Вход» в меню превращается в «Профиль». */
 export function useAccount() {
-  const { now } = useDeps()
+  const { api, now } = useDeps()
   const [account, setAccount] = useDeviceMemory(memory.account)
   const [profiles, setProfiles] = useDeviceMemory(memory.profiles)
+
+  useEffect(() => {
+    if (!api.auth) return
+    let alive = true
+    void api.auth
+      .me()
+      .then((remote) => {
+        if (!alive) return
+        if (!remote) {
+          setAccount(undefined)
+          return
+        }
+        const saved = profiles[remote.id]
+        setAccount({
+          id: remote.id,
+          login: maskLogin(remote.login),
+          since: remote.since,
+          name: remote.name,
+          ...saved,
+        })
+      })
+      .catch(() => undefined)
+    return () => {
+      alive = false
+    }
+  }, [api, profiles, setAccount])
   const remember = useCallback(
     (result: SignInResult) => {
       if (!result.ok) return
@@ -29,16 +56,61 @@ export function useAccount() {
     [profiles, setAccount],
   )
   const submit = useCallback(
-    (values: SignInValues): SignInResult => {
-      const result = signIn(values, now())
-      remember(result)
-      return result
+    async (values: SignInValues): Promise<SignInResult> => {
+      const local = signIn(values, now())
+      if (!local.ok || !api.auth) {
+        remember(local)
+        return local
+      }
+      try {
+        const remote = await api.auth.login(values)
+        const result: SignInResult = {
+          ok: true,
+          account: {
+            id: remote.id,
+            login: maskLogin(remote.login),
+            since: remote.since,
+            name: remote.name,
+          },
+        }
+        remember(result)
+        return result
+      } catch (error) {
+        const message = error instanceof ApiError ? error.message : 'Не удалось выполнить вход'
+        return { ok: false, errors: { login: message } }
+      }
     },
-    [now, remember],
+    [api, now, remember],
   )
   const signUp = useCallback(
-    (values: RegisterValues): SignInResult => {
-      const result = register(values, now())
+    async (values: RegisterValues): Promise<SignInResult> => {
+      const local = register(values, now())
+      if (!local.ok) return local
+      let result = local
+      if (api.auth) {
+        try {
+          const remote = await api.auth.register({
+            login: values.login,
+            password: values.password,
+            name: values.name.trim(),
+            terms: values.terms,
+            privacy: values.privacy,
+          })
+          result = {
+            ok: true,
+            account: {
+              id: remote.id,
+              login: maskLogin(remote.login),
+              since: remote.since,
+              name: remote.name,
+            },
+          }
+        } catch (error) {
+          const message =
+            error instanceof ApiError ? error.message : 'Не удалось зарегистрировать пользователя'
+          return { ok: false, errors: { login: message } }
+        }
+      }
       if (result.ok) {
         const profile = {
           name: result.account.name ?? '',
@@ -53,9 +125,12 @@ export function useAccount() {
       }
       return result
     },
-    [now, profiles, setAccount, setProfiles],
+    [api, now, profiles, setAccount, setProfiles],
   )
-  const signOut = useCallback(() => setAccount(undefined), [setAccount])
+  const signOut = useCallback(() => {
+    setAccount(undefined)
+    if (api.auth) void api.auth.logout().catch(() => undefined)
+  }, [api, setAccount])
   const saveProfile = (values: ProfileValues, login?: string) => {
     const errors = { ...validateProfile(values) }
     if (
