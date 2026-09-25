@@ -21,7 +21,6 @@
   right: var(--space-2);
 }
 
-
 .searchField {
   display: flex;
   align-items: center;
@@ -368,7 +367,6 @@
     right: auto;
     width: 26rem;
   }
-
 
   .sheet,
   .sheet[data-open] {
