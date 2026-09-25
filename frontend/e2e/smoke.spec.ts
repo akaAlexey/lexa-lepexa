@@ -30,12 +30,12 @@ test('старт: главная — «Мероприятия»; роль — н
 })
 
 test('прямые ссылки открывают экраны, разделы доступны из меню', async ({ page }, testInfo) => {
+  // Отдельного экрана «Последний бой» нет (PR #17): старый адрес ведёт на «Карту»
   await page.goto('/last-battle')
-  await expect(page.getByRole('heading', { level: 1, name: 'Последний бой' })).toBeVisible()
-  await expect(page.getByTestId('status-found_needs_check')).toBeVisible()
+  await expect(page).toHaveURL(/\/map$/)
   await snap(page, testInfo, '03-last-battle')
 
-  // Четыре раздела ADR 0012: подписи видны всегда, «Последний бой» — внутри «Карты»
+  // Четыре раздела ADR 0012: подписи видны всегда
   await expect(page.getByTestId('tab-map')).toHaveAttribute('aria-current', 'page')
   await page.getByTestId('tab-events').click()
   await expect(page.getByTestId('week-news')).toContainText('Новости недели')
@@ -59,6 +59,6 @@ test('прямые ссылки открывают экраны, разделы 
   await page.getByTestId('tab-stories').click()
   await expect(page.getByRole('heading', { level: 1, name: 'Книга памяти' })).toBeVisible()
   await page.getByTestId('tab-other').click()
-  // аудит P0-4: вход честно назван демонстрационным
-  await expect(page.getByTestId('other-account')).toContainText('Демо-вход')
+  // PR #17: вход и регистрация по телефону или почте
+  await expect(page.getByTestId('other-account')).toContainText('Вход и регистрация')
 })

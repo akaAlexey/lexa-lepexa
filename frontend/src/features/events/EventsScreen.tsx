@@ -18,6 +18,7 @@ import { pendingByTrip, useGroupApplications } from '../../functions/groupApplic
 import { isPublishedState } from '../../functions/helpRequests/index.ts'
 import { useSignups, type SignupTarget } from '../../functions/signup/index.ts'
 import { nearestTrip } from '../../functions/trips/index.ts'
+import { useCurrentPosition } from '../../functions/whereAmI/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Icon } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
@@ -186,11 +187,13 @@ export function EventsScreen() {
 }
 
 /**
- * Главная кнопка волонтёра и гостя: ближайший выезд открывается карточкой с условиями.
+ * Главная кнопка волонтёра и гостя: ближайший выезд в радиусе 50 км от пользователя
+ * (геопозиция неизвестна — ближайший по дате) открывается карточкой с условиями.
  * Записывает только сама карточка — после того как человек прочитал условия (решение команды 25.09).
  */
 function NearestTripButton({ feed }: { feed: FeedState }) {
   const { now } = useDeps()
+  const me = useCurrentPosition()
   if (feed.status === 'pending')
     return (
       <BigButton onClick={() => undefined} disabled icon="calendar" testID="events-nearest-trip">
@@ -198,11 +201,12 @@ function NearestTripButton({ feed }: { feed: FeedState }) {
       </BigButton>
     )
   if (feed.status === 'error') return null
-  const trip = nearestTrip(feed.trips, now())
+  const trip = nearestTrip(feed.trips, now(), me)
   if (!trip) return null
   return (
     <BigButton to={paths.trip(trip.id)} icon="calendar" testID="events-nearest-trip">
-      Ближайший выезд — {formatDayRu(trip.date)}
+      <span className={s.nearTitle}>Ближайший выезд</span>{' '}
+      <span className={s.nearDate}>{formatDayRu(trip.date)}</span>
     </BigButton>
   )
 }

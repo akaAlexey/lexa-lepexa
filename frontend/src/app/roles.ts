@@ -25,14 +25,14 @@ export const TABS: Record<TabId, { path: string; label: string; icon: IconName; 
       path: paths.archive(),
       label: 'Истории',
       icon: 'book',
-      section: /^\/(archive|live)(\/|$)/,
+      section: /^\/archive(\/|$)/,
     },
     other: {
       path: paths.other(),
       label: 'Другое',
       icon: 'menu',
-      // выбор роли (/roles) — часть «Другого», как и «Другое → Роль»
-      section: /^\/(other|demo|roles)?(\/|$)/,
+      // выбор роли (/roles), «Живое фото», «О нас» и документы — части «Другого»
+      section: /^\/(other|demo|roles|live|about|privacy|terms)?(\/|$)/,
     },
   }
 
@@ -58,8 +58,8 @@ export interface Role {
 export const ROLES: readonly Role[] = [
   {
     id: 'family',
-    label: 'Семья',
-    short: 'Семья',
+    label: 'Пользователь',
+    short: 'Пользователь',
     description: 'Прогулка-квест с ребёнком по местам боёв',
     icon: 'family',
     home: paths.events(),

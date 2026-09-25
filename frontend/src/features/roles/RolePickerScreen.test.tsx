@@ -20,7 +20,7 @@ describe('главная и выбор роли', () => {
 
   it('выбор роли живёт на своём адресе: четыре роли — кнопки с понятными подписями', async () => {
     renderApp('/roles')
-    for (const name of [/Семья/, /Волонтёр/, /Командир отряда/, /Краевед/]) {
+    for (const name of [/Пользователь/, /Волонтёр/, /Командир отряда/, /Краевед/]) {
       expect(await screen.findByRole('button', { name })).toBeInTheDocument()
     }
   })

@@ -28,7 +28,7 @@ describe('«Мероприятия»: главная кнопка по роли'
       const { api } = renderApp('/events', { role })
       const nearest = await screen.findByRole('link', { name: /Ближайший выезд/ })
       expect(nearest).toHaveAttribute('data-testid', 'events-nearest-trip')
-      expect(nearest).toHaveTextContent('Ближайший выезд — 3 октября, суббота')
+      expect(nearest).toHaveTextContent(/Ближайший выезд\s*3 октября, суббота/)
       expect(nearest).toHaveAttribute('href', '/weekends/W01')
       expect(mainAction()).toHaveLength(1)
       const before = (await api.getTrip({ id: 'W01' })).spotsTaken

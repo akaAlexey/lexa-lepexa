@@ -2,7 +2,13 @@ import { useCallback } from 'react'
 import { memory } from '../core/deviceMemory.ts'
 import { useDeps } from '../core/useDeps.ts'
 import { useDeviceMemory } from '../core/useDeviceMemory.ts'
-import { signIn, type SignInResult, type SignInValues } from './account.ts'
+import {
+  register,
+  signIn,
+  type RegisterValues,
+  type SignInResult,
+  type SignInValues,
+} from './account.ts'
 
 /** Вход на этом устройстве: «Вход» в меню превращается в «Профиль». */
 export function useAccount() {
@@ -16,6 +22,14 @@ export function useAccount() {
     },
     [now, setAccount],
   )
+  const signUp = useCallback(
+    (values: RegisterValues): SignInResult => {
+      const result = register(values, now())
+      if (result.ok) setAccount(result.account)
+      return result
+    },
+    [now, setAccount],
+  )
   const signOut = useCallback(() => setAccount(undefined), [setAccount])
-  return { account, signIn: submit, signOut }
+  return { account, signIn: submit, signUp, signOut }
 }

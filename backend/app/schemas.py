@@ -48,6 +48,13 @@ class Donation(In):
     amount_rub: int = Field(ge=1)
 
 
+class YooKassaPayment(In):
+    fundraiser_id: str = Field(min_length=1)
+    amount_rub: int = Field(ge=1, le=100_000)
+    # Путь на сайте, куда вернуть после оплаты (например /events). Только относительный.
+    return_path: str = Field(default="/events", pattern=r"^/[^/].*|^/$", max_length=300)
+
+
 class NewGroupApplication(In):
     trip_id: str = Field(min_length=1)
     organization: str = Field(min_length=1)

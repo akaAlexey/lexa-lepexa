@@ -10,17 +10,22 @@ import { createWebShare } from './web/share.ts'
 import { createWebStorage } from './web/storage.ts'
 
 export const GEO_MODE_KEY = 'geo-mode'
+/** Геопозиция по умолчанию из сборки (VITE_GEO_DEFAULT, схема — в config/env.ts). */
+const GEO_DEFAULT: string =
+  (import.meta.env as Record<string, string | undefined> | undefined)?.VITE_GEO_DEFAULT ?? 'device'
 /** Демо-позиция с пульта переживает перезагрузку страницы. */
 export const DEMO_POSITION_KEY = 'demo-position'
 
 /**
- * Веб-платформа. По умолчанию геопозиция демо (точка из конфига региона):
- * показ не зависит от GPS. Реальный GPS включается с демо-пульта (geo-mode = device).
+ * Веб-платформа. По умолчанию — настоящая геопозиция устройства (нужен HTTPS).
+ * Точка из конфига региона — если так выбрано на демо-пульте (geo-mode = demo) или в сборке
+ * (VITE_GEO_DEFAULT=demo: e2e и показ без GPS).
  */
 export function createWebPlatform(): Platform {
   const storage = createWebStorage()
+  const mode = storage.get<string>(GEO_MODE_KEY) ?? GEO_DEFAULT
   const geo =
-    storage.get<string>(GEO_MODE_KEY) === 'device'
+    mode === 'device'
       ? createWebGeo()
       : createDemoGeo(storage.get<LatLon>(DEMO_POSITION_KEY) ?? region.demoPosition)
   return {

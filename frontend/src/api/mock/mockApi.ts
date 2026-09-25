@@ -136,7 +136,7 @@ export function createMockApi(options: MockOptions = {}): ApiClient {
 
   async function respond<T>(produce: () => T): Promise<T> {
     if (latencyMs > 0) await new Promise((r) => setTimeout(r, latencyMs))
-    if (random() < failRate) throw new ApiError('Демо-сбой сервера (mock)', 503)
+    if (random() < failRate) throw new ApiError('Сбой сервера, попробуйте ещё раз', 503)
     load()
     const result = structuredClone(produce())
     save()
@@ -210,6 +210,25 @@ export function createMockApi(options: MockOptions = {}): ApiClient {
         f.collectedRub += input.amountRub
         return { paymentId: nextId('test-pay'), status: 'test_succeeded' as const, fundraiser: f }
       }),
+    // Без сервера ЮKassa недоступна (секретный ключ — только на сервере): платёж имитируется сразу
+    startPayment: ({ body }) =>
+      respond(() => {
+        const input = endpoints.startPayment.body.parse(body)
+        const f = find(db.fundraisers, input.fundraiserId, 'Сбор')
+        f.collectedRub += input.amountRub
+        return {
+          paymentId: nextId('test-pay'),
+          status: 'succeeded' as const,
+          confirmationUrl: null,
+        }
+      }),
+    paymentStatus: ({ id }) =>
+      respond(() => ({
+        paymentId: id,
+        status: 'succeeded' as const,
+        amountRub: null,
+        fundraiser: null,
+      })),
     listTrips: () => respond(() => [...db.trips].sort((a, b) => a.date.localeCompare(b.date))),
     getTrip: ({ id }) => respond(() => find(db.trips, id, 'Выезд')),
     registerTrip: ({ id, body }) =>

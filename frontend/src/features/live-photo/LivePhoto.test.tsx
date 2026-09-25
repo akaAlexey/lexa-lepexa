@@ -12,7 +12,7 @@ beforeAll(() => {
 
 describe('«Живое фото» по QR-коду', () => {
   it('до просмотра: снимок, текст речи, этическая оговорка; без согласия кнопки неактивны', async () => {
-    renderApp('/live/soldier')
+    renderApp('/live/soldier', { signedIn: true })
     expect(await screen.findByTestId('live-photo-image')).toHaveAttribute(
       'src',
       '/live/soldier.jpg',
@@ -25,7 +25,7 @@ describe('«Живое фото» по QR-коду', () => {
   })
 
   it('«Смотреть без камеры»: плеер с пометкой ИИ и русскими субтитрами', async () => {
-    renderApp('/live/reichstag')
+    renderApp('/live/reichstag', { signedIn: true })
     await userEvent.click(await screen.findByTestId('live-consent'))
     await userEvent.click(screen.getByTestId('live-watch-video'))
     const player = screen.getByTestId('live-player')
@@ -41,6 +41,7 @@ describe('«Живое фото» по QR-коду', () => {
     let options: ImageTrackingOptions | undefined
     const stop = vi.fn<() => void>()
     renderApp('/live/soldier', {
+      signedIn: true,
       platform: {
         ar: {
           trackImage: async (o) => {
@@ -68,7 +69,7 @@ describe('«Живое фото» по QR-коду', () => {
   })
 
   it('камера недоступна — понятная ошибка и переход к ролику без камеры', async () => {
-    renderApp('/live/soldier')
+    renderApp('/live/soldier', { signedIn: true })
     await userEvent.click(await screen.findByTestId('live-consent'))
     await userEvent.click(screen.getByTestId('live-open-camera'))
     await userEvent.click(await screen.findByTestId('live-ar-fallback'))
@@ -76,16 +77,23 @@ describe('«Живое фото» по QR-коду', () => {
     expect(screen.getByTestId('live-video')).toHaveAttribute('controls')
   })
 
-  it('список: оба снимка, ссылки на печать и переход из «Историй»', async () => {
-    const { router } = renderApp('/live')
+  it('список: оба снимка, ссылки на печать и переход из «Другого»', async () => {
+    const { router } = renderApp('/live', { signedIn: true })
     expect(await screen.findByTestId('live-item-soldier')).toBeInTheDocument()
     expect(screen.getByTestId('live-item-reichstag')).toHaveTextContent('Скачать для печати')
-    await router.navigate('/archive')
-    expect(await screen.findByTestId('archive-live')).toHaveAttribute('href', '/live')
+    await router.navigate('/other?section=photo')
+    expect(await screen.findByTestId('other-live')).toHaveAttribute('href', '/live')
   })
 
   it('неизвестный снимок — «не найден»', async () => {
-    renderApp('/live/nobody')
+    renderApp('/live/nobody', { signedIn: true })
     expect(await screen.findByTestId('live-not-found')).toBeInTheDocument()
+  })
+
+  it('без входа «Живое фото» ведёт на форму входа и помнит, куда вернуть', async () => {
+    const { router } = renderApp('/live/soldier')
+    expect(await screen.findByTestId('signin-submit')).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/other')
+    expect(router.state.location.search).toContain('next=%2Flive%2Fsoldier')
   })
 })

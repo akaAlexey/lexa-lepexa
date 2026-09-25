@@ -24,12 +24,13 @@ describe('шапка и меню', () => {
     expect(router.state.location.pathname).toBe('/events')
   })
 
-  it('в шапке нет надписи «Демо», а пометки у демо-данных в ленте остались', async () => {
-    renderApp('/events', { role: 'volunteer' })
+  it('ни в шапке, ни в ленте нет пометок «Демо» (решение команды), признак demo в данных остался', async () => {
+    const { api } = renderApp('/events', { role: 'volunteer' })
     const header = (await screen.findByTestId('mast-home')).closest('header')
     expect(header).not.toHaveTextContent(/демо/i)
     const card = await screen.findByTestId('request-card-R01')
-    expect(within(card).getByText(/Демо/)).toBeInTheDocument()
+    expect(within(card).queryByText('Демо-данные')).not.toBeInTheDocument()
+    expect((await api.listRequests()).find((r) => r.id === 'R01')?.demo).toBe(true)
   })
 
   it('выбор роли относится к разделу «Другое»', async () => {

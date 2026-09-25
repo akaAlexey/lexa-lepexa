@@ -28,5 +28,6 @@ export {
 } from './review.ts'
 export { useMyStories, useStories, useStory } from './useStories.ts'
 export { useTellStory } from './useTellStory.ts'
+export { useStoryPrompt } from './useStoryPrompt.ts'
 export { useReview, type ReviewState } from './useReview.ts'
 export { REVIEW_CHECKS, isAwaitingReview, type ReviewCheckId } from '../../domain/archive.ts'

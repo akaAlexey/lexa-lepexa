@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { formatDayRu } from '../../domain/format.ts'
 import { useDeps } from '../../functions/core/useDeps.ts'
 import type { FieldErrors } from '../../functions/core/form.ts'
-import { paths } from '../../functions/core/paths.ts'
+import { otherSection } from '../../functions/core/paths.ts'
 import {
   EMPTY_CONSENT,
   moscowTime,
@@ -86,7 +86,7 @@ export function SignupDialog({ target, onClose }: { target: SignupTarget; onClos
               <p className={s.consentNote}>
                 Возраст 18+ не подтверждён, поэтому нужно согласие родителя или законного
                 представителя. Вам уже есть 18?{' '}
-                <Link to={paths.other('profile')}>Подтвердите возраст в профиле</Link>.
+                <Link to={otherSection('account')}>Подтвердите возраст в профиле</Link>.
               </p>
               <TextField
                 label="ФИО родителя или законного представителя"

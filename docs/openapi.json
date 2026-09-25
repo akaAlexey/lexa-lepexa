@@ -333,6 +333,68 @@
         }
       }
     },
+    "/payments/yookassa": {
+      "post": {
+        "operationId": "startPayment",
+        "summary": "Создать платёж ЮKassa (тестовый магазин) и получить ссылку на оплату",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentStarted"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentStart"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/yookassa/{id}": {
+      "get": {
+        "operationId": "paymentStatus",
+        "summary": "Статус платежа ЮKassa; при succeeded сумма добавляется к сбору",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentState"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/trips": {
       "get": {
         "operationId": "listTrips",
@@ -1640,6 +1702,103 @@
         ],
         "additionalProperties": false,
         "description": "Результат тестового платежа"
+      },
+      "PaymentStart": {
+        "type": "object",
+        "properties": {
+          "fundraiserId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "amountRub": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000,
+            "description": "Сумма в рублях"
+          },
+          "returnPath": {
+            "type": "string",
+            "maxLength": 300,
+            "pattern": "^\\/(?!\\/)",
+            "description": "Путь на сайте, например /events"
+          }
+        },
+        "required": [
+          "fundraiserId",
+          "amountRub",
+          "returnPath"
+        ],
+        "additionalProperties": false,
+        "description": "Пожертвование через ЮKassa (тестовый магазин): сумма и куда вернуть после оплаты"
+      },
+      "PaymentStarted": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "waiting_for_capture",
+              "succeeded",
+              "canceled"
+            ],
+            "description": "Статус платежа ЮKassa"
+          },
+          "confirmationUrl": {
+            "nullable": true,
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "paymentId",
+          "status"
+        ],
+        "additionalProperties": false,
+        "description": "Созданный платёж: пользователя нужно отправить на confirmationUrl (страница оплаты ЮKassa)"
+      },
+      "PaymentState": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "waiting_for_capture",
+              "succeeded",
+              "canceled"
+            ],
+            "description": "Статус платежа ЮKassa"
+          },
+          "amountRub": {
+            "nullable": true,
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "fundraiser": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Fundraiser"
+              }
+            ]
+          }
+        },
+        "required": [
+          "paymentId",
+          "status"
+        ],
+        "additionalProperties": false,
+        "description": "Статус платежа после возврата с ЮKassa. Сумма добавлена к сбору, только когда succeeded"
       },
       "SearchStats": {
         "type": "object",

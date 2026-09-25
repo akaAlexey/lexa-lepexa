@@ -30,9 +30,19 @@ export const patterns = {
   newLivePhoto: '/live/new',
   livePhoto: '/live/:photoId',
   demo: '/demo',
+  about: '/about',
+  privacy: '/privacy',
+  terms: '/terms',
 } as const
 
 export type ScreenId = keyof typeof patterns
+
+/** Раздел «Другого», открытый по ссылке (?section=). */
+export type OtherSection = 'account' | 'archive' | 'ar' | 'photo' | 'role'
+
+/** «Другое» с открытым разделом: «Вход» в шапке сразу открывает форму. */
+export const otherSection = (section: OtherSection, extra?: string) =>
+  `${patterns.other}?section=${section}${extra ? `&${extra}` : ''}`
 
 const seg = encodeURIComponent
 
@@ -42,9 +52,7 @@ export const paths = {
   map: () => patterns.map,
   /** «Мероприятия»; `show` — фильтр ленты (trip, request, fund), ссылкой можно поделиться. */
   events: (show?: string) => (show ? `${patterns.events}?show=${seg(show)}` : patterns.events),
-  /** «Другое»; `section` — сразу открытый раздел (account, profile, role…). */
-  other: (section?: string) =>
-    section ? `${patterns.other}?section=${seg(section)}` : patterns.other,
+  other: () => patterns.other,
   trail: () => patterns.trail,
   point: (routeId: string, pointId: string) => `/trail/${seg(routeId)}/point/${seg(pointId)}`,
   finish: (routeId: string) => `/trail/${seg(routeId)}/finish`,
@@ -64,4 +72,7 @@ export const paths = {
   newLivePhoto: () => patterns.newLivePhoto,
   livePhoto: (photoId: string) => `/live/${seg(photoId)}`,
   demo: () => patterns.demo,
+  about: () => patterns.about,
+  privacy: () => patterns.privacy,
+  terms: () => patterns.terms,
 } as const satisfies Record<ScreenId, (...ids: string[]) => string>

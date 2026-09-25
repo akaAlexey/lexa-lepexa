@@ -37,6 +37,9 @@ const SAMPLE: Record<ScreenId, string> = {
   newLivePhoto: paths.newLivePhoto(),
   livePhoto: paths.livePhoto('soldier'),
   demo: paths.demo(),
+  about: paths.about(),
+  privacy: paths.privacy(),
+  terms: paths.terms(),
 }
 
 describe('адреса экранов', () => {
@@ -66,6 +69,9 @@ describe('адреса экранов', () => {
       newLivePhoto: '/live/new',
       livePhoto: '/live/soldier',
       demo: '/demo',
+      about: '/about',
+      privacy: '/privacy',
+      terms: '/terms',
     })
   })
 

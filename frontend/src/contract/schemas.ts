@@ -245,6 +245,45 @@ export const DonationResult = entity(
   z.object({ paymentId: id, status: z.literal('test_succeeded'), fundraiser: Fundraiser }),
 )
 
+export const PaymentStatus = z
+  .enum(['pending', 'waiting_for_capture', 'succeeded', 'canceled'])
+  .describe('Статус платежа ЮKassa')
+
+export const PaymentStart = entity(
+  'PaymentStart',
+  'Пожертвование через ЮKassa (тестовый магазин): сумма и куда вернуть после оплаты',
+  z.object({
+    fundraiserId: id,
+    amountRub: rub.min(1).max(100_000),
+    returnPath: z
+      .string()
+      .regex(/^\/(?!\/)/)
+      .max(300)
+      .describe('Путь на сайте, например /events'),
+  }),
+)
+
+export const PaymentStarted = entity(
+  'PaymentStarted',
+  'Созданный платёж: пользователя нужно отправить на confirmationUrl (страница оплаты ЮKassa)',
+  z.object({
+    paymentId: id,
+    status: PaymentStatus,
+    confirmationUrl: z.url().nullish(),
+  }),
+)
+
+export const PaymentState = entity(
+  'PaymentState',
+  'Статус платежа после возврата с ЮKassa. Сумма добавлена к сбору, только когда succeeded',
+  z.object({
+    paymentId: id,
+    status: PaymentStatus,
+    amountRub: z.number().int().nullish(),
+    fundraiser: Fundraiser.nullish(),
+  }),
+)
+
 export const SearchStats = entity(
   'SearchStats',
   'Счётчик «Найдено бойцов за месяц»',

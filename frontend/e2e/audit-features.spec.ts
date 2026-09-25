@@ -2,6 +2,7 @@ import { expect } from '@playwright/test'
 import {
   expectNoA11yViolations,
   expectNoHorizontalScroll,
+  signInOnDevice,
   startAs,
   test,
   useDemoDate,
@@ -54,6 +55,7 @@ test('«Оживить своё фото»: снимок, согласие → �
   page,
 }) => {
   await useDemoDate(page)
+  await signInOnDevice(page)
   await startAs(page, 'family')
   await page.goto('/live/new')
   // 1×1 PNG — настоящая картинка, чтобы браузер уменьшил её через canvas

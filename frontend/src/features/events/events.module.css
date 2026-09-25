@@ -233,6 +233,22 @@
   border-bottom: 3px double var(--color-ink);
 }
 
+/* Свёрнуто по умолчанию: плавное раскрытие по высоте (из PR #17) */
+.weekBody {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.weekBody[data-open] {
+  grid-template-rows: 1fr;
+}
+
+.weekInner {
+  min-height: 0;
+  overflow: hidden;
+}
+
 .weekTitle {
   margin: 0;
 }
@@ -280,7 +296,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .weekHint svg {
+  .weekHint svg,
+  .weekBody {
     transition: none;
   }
 }
@@ -386,4 +403,16 @@
   .terms > div {
     grid-template-columns: 1fr;
   }
+}
+
+/* «Ближайший выезд»: название и дата двумя строками */
+.nearTitle {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.nearDate {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 400;
 }

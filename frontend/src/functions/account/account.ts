@@ -63,3 +63,24 @@ export function signIn(values: SignInValues, now: Date): SignInResult {
   if (Object.keys(errors).length > 0) return { ok: false, errors }
   return { ok: true, account: { login: maskLogin(values.login), since: now.toISOString() } }
 }
+
+/** Регистрация: те же логин и пароль плюс обязательное согласие с условиями и политикой. */
+export interface RegisterValues extends SignInValues {
+  repeat: string
+  terms: boolean
+  privacy: boolean
+}
+
+export function validateRegister(values: RegisterValues): FieldErrors {
+  const errors = { ...validateSignIn(values) } as Record<string, string>
+  if (values.password && values.repeat !== values.password) errors.repeat = 'Пароли не совпадают'
+  if (!values.terms) errors.terms = 'Нужно согласие с пользовательскими условиями'
+  if (!values.privacy) errors.privacy = 'Нужно согласие с политикой конфиденциальности'
+  return errors
+}
+
+export function register(values: RegisterValues, now: Date): SignInResult {
+  const errors = validateRegister(values)
+  if (Object.keys(errors).length > 0) return { ok: false, errors }
+  return { ok: true, account: { login: maskLogin(values.login), since: now.toISOString() } }
+}

@@ -7,43 +7,38 @@ const toggle = () => screen.findByRole('button', { name: /Новости нед�
 const body = () =>
   document.getElementById(
     screen.getByTestId('week-news-toggle').getAttribute('aria-controls') ?? '',
-  )
+  ) as HTMLElement
 
 describe('«Новости недели» сворачиваются', () => {
-  it('по умолчанию раскрыты: кнопка сообщает состояние и связана с содержимым', async () => {
+  it('по умолчанию свёрнуты: видны даты и число новостей, содержимое недоступно', async () => {
     renderApp('/events', { role: 'volunteer' })
     const button = await toggle()
-    expect(button).toHaveAttribute('aria-expanded', 'true')
-    expect(button).toHaveTextContent('Свернуть')
-    expect(body()).toBeVisible()
-    expect(within(body()!).getAllByText(/Высота|Поиск|Отряд/).length).toBeGreaterThan(0)
+    expect(button).toHaveAttribute('aria-expanded', 'false')
+    expect(button).toHaveTextContent('Развернуть')
+    expect(body()).toHaveAttribute('inert')
+    const header = screen.getByTestId('week-news').querySelector('header') as HTMLElement
+    expect(within(header).getByText(/\d+ новост/)).toBeInTheDocument()
   })
 
-  it('нажатие сворачивает и запоминает выбор на устройстве', async () => {
+  it('нажатие раскрывает и запоминает выбор на устройстве', async () => {
     const { platform } = renderApp('/events', { role: 'volunteer' })
     const button = await toggle()
     await userEvent.click(button)
-    expect(button).toHaveAttribute('aria-expanded', 'false')
-    expect(button).toHaveTextContent('Развернуть')
-    expect(body()).not.toBeVisible()
-    expect(platform.storage.get('events.weekNewsOpen')).toBe(false)
+    expect(button).toHaveAttribute('aria-expanded', 'true')
+    expect(button).toHaveTextContent('Свернуть')
+    expect(body()).not.toHaveAttribute('inert')
+    expect(within(body()).getAllByText(/Отряд/).length).toBeGreaterThan(0)
+    expect(platform.storage.get('events.weekNewsOpen')).toBe(true)
   })
 
-  it('свёрнутые при прошлом визите — свёрнуты и сейчас; раскрываются клавиатурой', async () => {
-    renderApp('/events', { role: 'volunteer', stored: { 'events.weekNewsOpen': false } })
+  it('раскрытые при прошлом визите — раскрыты и сейчас; сворачиваются клавиатурой', async () => {
+    renderApp('/events', { role: 'volunteer', stored: { 'events.weekNewsOpen': true } })
     const button = await toggle()
-    expect(button).toHaveAttribute('aria-expanded', 'false')
+    expect(button).toHaveAttribute('aria-expanded', 'true')
     button.focus()
     await userEvent.keyboard('{Enter}')
-    expect(button).toHaveAttribute('aria-expanded', 'true')
-    await userEvent.keyboard(' ')
     expect(button).toHaveAttribute('aria-expanded', 'false')
-  })
-
-  it('пометка «Демо-данные» — у заголовка и видна в свёрнутом виде', async () => {
-    renderApp('/events', { role: 'volunteer', stored: { 'events.weekNewsOpen': false } })
-    await toggle()
-    const header = screen.getByTestId('week-news').querySelector('header') as HTMLElement
-    expect(within(header).getByText('Демо-данные')).toBeVisible()
+    await userEvent.keyboard(' ')
+    expect(button).toHaveAttribute('aria-expanded', 'true')
   })
 })

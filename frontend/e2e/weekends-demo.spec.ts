@@ -34,7 +34,8 @@ test.describe('Скрытый демо-пульт', () => {
     page,
   }, testInfo) => {
     await startAs(page, 'family')
-    await expect(page.locator('nav')).not.toContainText(/пульт/i)
+    // меню разделов и подвал — ни в одном нет ссылки на пульт
+    await expect(page.locator('nav').filter({ hasText: /пульт/i })).toHaveCount(0)
 
     await page.goto('/demo')
     await expect(page.getByTestId('demo-build')).toHaveText(/Сборка: \S+/)

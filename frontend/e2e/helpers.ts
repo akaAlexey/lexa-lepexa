@@ -62,6 +62,16 @@ export async function openTrail(page: Page) {
   await expect(page).toHaveURL(/\/trail$/)
 }
 
+/** Вход на этом устройстве до загрузки страницы: «Живое фото» открывается только после входа. */
+export async function signInOnDevice(page: Page) {
+  await page.addInitScript(() =>
+    localStorage.setItem(
+      'tropa:account',
+      JSON.stringify({ login: '+7 ··· ···-45-67', since: '2026-09-25T09:00:00Z' }),
+    ),
+  )
+}
+
 /** Нет горизонтальной прокрутки: вёрстка помещается в ширину экрана. */
 export async function expectNoHorizontalScroll(page: Page) {
   const overflow = await page.evaluate(
