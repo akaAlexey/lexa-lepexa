@@ -412,6 +412,20 @@ export const ArchiveStatus = entity(
   z.enum(['pending', 'clarify', 'verified', 'rejected']),
 )
 
+export const StoryPhoto = entity(
+  'StoryPhoto',
+  'Архивный снимок к истории: файл на сайте, подпись и открытый источник с лицензией',
+  z.object({
+    src: z
+      .string()
+      .min(1)
+      .describe('Путь к файлу на сайте, например archive-photos/bolkhov-1943.jpg'),
+    caption: z.string().min(1).describe('Что на снимке, где и когда'),
+    sourceUrl: z.url().describe('Страница источника, например Wikimedia Commons'),
+    license: z.string().min(1).describe('Лицензия снимка, например «Общественное достояние»'),
+  }),
+)
+
 export const ArchiveStory = entity(
   'ArchiveStory',
   'История человека или места от пользователя. Всем видна только после проверки краеведом или отрядом',
@@ -425,6 +439,7 @@ export const ArchiveStory = entity(
     status: ArchiveStatus,
     verifiedBy: z.string().optional(),
     reviewNote: z.string().optional().describe('Комментарий проверяющего автору'),
+    photos: z.array(StoryPhoto).optional().describe('Архивные снимки из открытых источников'),
     createdAt: isoDateTime,
     demo,
   }),
@@ -598,6 +613,7 @@ export type GroupApplicationStatus = z.infer<typeof GroupApplicationStatus>
 export type GroupApplication = z.infer<typeof GroupApplication>
 export type NewGroupApplication = z.infer<typeof NewGroupApplication>
 export type ArchiveStory = z.infer<typeof ArchiveStory>
+export type StoryPhoto = z.infer<typeof StoryPhoto>
 export type NewArchiveStory = z.infer<typeof NewArchiveStory>
 export type LivePhoto = z.infer<typeof LivePhoto>
 export type SiteStatus = z.infer<typeof SiteStatus>

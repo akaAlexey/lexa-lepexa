@@ -211,3 +211,27 @@ async def test_memorials_and_live_photos(api):
     photo = (await api.get("/live-photos")).json()[0]
     assert (await api.get(f"/live-photos/{photo['id']}")).json() == photo
     assert (await api.get("/live-photos/nope")).status_code == 404
+
+
+async def test_story_photos_come_with_source_and_license(api):
+    story = (await api.get("/stories/ST19")).json()
+    assert story["photos"][0]["src"] == "archive-photos/bolkhov-1943.jpg"
+    assert story["photos"][0]["sourceUrl"].startswith("https://commons.wikimedia.org/")
+    assert story["photos"][0]["license"] == "Общественное достояние"
+    # у истории без снимков поля нет, а не null
+    assert "photos" not in (await api.get("/stories/ST01")).json()
+
+
+async def test_demo_accounts_are_seeded_without_working_passwords():
+    from sqlalchemy import func, select
+
+    from app import models_domain as md
+
+    async with Session() as s:
+        assert await s.scalar(select(func.count()).select_from(md.User)) == 15
+        assert await s.scalar(select(func.count()).select_from(md.Role)) == 4
+        assert await s.scalar(select(func.count()).select_from(md.UserRole)) == 15
+        hashes = set((await s.scalars(select(md.User.password_hash))).all())
+        assert hashes == {"!"}
+        # повторный запуск ничего не дублирует
+        assert await seed(s) == 0

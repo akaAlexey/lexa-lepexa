@@ -2150,6 +2150,39 @@
         ],
         "description": "pending — «Ожидает проверки», clarify — «Нужно уточнение», verified — «Подтверждено», rejected — «Отклонено»"
       },
+      "StoryPhoto": {
+        "type": "object",
+        "properties": {
+          "src": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Путь к файлу на сайте, например archive-photos/bolkhov-1943.jpg"
+          },
+          "caption": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Что на снимке, где и когда"
+          },
+          "sourceUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "Страница источника, например Wikimedia Commons"
+          },
+          "license": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Лицензия снимка, например «Общественное достояние»"
+          }
+        },
+        "required": [
+          "src",
+          "caption",
+          "sourceUrl",
+          "license"
+        ],
+        "additionalProperties": false,
+        "description": "Архивный снимок к истории: файл на сайте, подпись и открытый источник с лицензией"
+      },
       "ArchiveStory": {
         "type": "object",
         "properties": {
@@ -2187,6 +2220,13 @@
           "reviewNote": {
             "description": "Комментарий проверяющего автору",
             "type": "string"
+          },
+          "photos": {
+            "description": "Архивные снимки из открытых источников",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoryPhoto"
+            }
           },
           "createdAt": {
             "type": "string",

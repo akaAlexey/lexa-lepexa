@@ -5,6 +5,7 @@ import type {
   GroupApplication,
   LastBattleSite,
   Source,
+  StoryPhoto,
   Team,
   Trip,
   VolunteerRequest,
@@ -22,6 +23,14 @@ import type {
  */
 
 const wiki = (title: string) => `https://ru.wikipedia.org/wiki/${encodeURIComponent(title)}`
+
+/** Архивный снимок из Wikimedia Commons (общественное достояние), файл — в public/archive-photos. */
+const photo = (file: string, caption: string, sourceUrl: string): StoryPhoto => ({
+  src: `archive-photos/${file}`,
+  caption,
+  sourceUrl,
+  license: 'Общественное достояние',
+})
 
 const KUTUZOV = 'Орловская_стратегическая_наступательная_операция_«Кутузов»'
 const AUG_1943 = 'Хроника_Великой_Отечественной_войны_(август_1943_года)'
@@ -987,6 +996,18 @@ export const stories: ArchiveStory[] = [
     author: 'Краеведческий кружок',
     status: 'verified',
     verifiedBy: 'Краевед',
+    photos: [
+      photo(
+        'orel-t34-moskovskaya-1943.jpg',
+        'Танки Т-34 идут по Московской улице освобождённого Орла, 5 августа 1943 года',
+        'https://commons.wikimedia.org/wiki/File:Orel_T34_by_Moskovskaya_Street_1943.2.jpg',
+      ),
+      photo(
+        'skver-tankistov-1943.jpg',
+        'Советские бойцы на отдыхе на Первомайской площади (ныне сквер Танкистов), 5 августа 1943 года',
+        'https://commons.wikimedia.org/wiki/File:Skver_tankistov1943.jpg',
+      ),
+    ],
     createdAt: '2026-09-04T10:00:00Z',
     demo: false,
   },
@@ -1052,6 +1073,18 @@ export const stories: ArchiveStory[] = [
     author: 'Учитель истории',
     status: 'verified',
     verifiedBy: 'Краевед',
+    photos: [
+      photo(
+        'rifle-division-1943.jpg',
+        '16-я стрелковая дивизия в боях на Орловщине, лето 1943 года',
+        'https://commons.wikimedia.org/wiki/File:16th_Rifle_Division_of_the_Red_Army_participating_in_fighting_in_the_Oryol_Oblast_in_the_summer_of_1943.jpg',
+      ),
+      photo(
+        'pervomayskaya-1943.jpg',
+        'Первомайская площадь Орла весной 1943 года — за несколько месяцев до освобождения',
+        'https://commons.wikimedia.org/wiki/File:%D0%9F%D0%B5%D1%80%D0%B2%D0%BE%D0%BC%D0%B0%D0%B9%D1%81%D0%BA%D0%B0%D1%8F_1943.jpg',
+      ),
+    ],
     createdAt: '2026-08-30T10:00:00Z',
     demo: false,
   },
@@ -1066,6 +1099,92 @@ export const stories: ArchiveStory[] = [
     status: 'verified',
     verifiedBy: 'Краевед',
     createdAt: '2026-08-29T10:00:00Z',
+    demo: false,
+  },
+  {
+    id: 'ST19',
+    title: 'Болхов снова стал советским',
+    place: 'Болхов',
+    story:
+      'Болхов, у которого весной 1942 года захлебнулась Болховская операция, освободили 29 июля 1943 года в ходе операции «Кутузов». Фронтовой снимок того дня: автоматчики перебежками идут на новый рубеж мимо разрушенного храма.',
+    sourceText:
+      'Статья «Орловская стратегическая наступательная операция «Кутузов»», Википедия; фото — Wikimedia Commons',
+    author: 'Краеведческий кружок',
+    status: 'verified',
+    verifiedBy: 'Краевед',
+    photos: [
+      photo(
+        'bolkhov-1943.jpg',
+        'Бой за город: автоматчики перебежками выходят на новый рубеж. Болхов, 29 июля 1943 года',
+        'https://commons.wikimedia.org/wiki/File:%D0%91%D0%BE%D0%B9_%D0%B7%D0%B0_%D0%B3%D0%BE%D1%80%D0%BE%D0%B4._%D0%9F%D1%80%D0%BE%D0%B1%D0%B5%D0%B6%D0%BA%D0%B8_%D0%B0%D0%B2%D1%82%D0%BE%D0%BC%D0%B0%D1%82%D1%87%D0%B8%D0%BA%D0%BE%D0%B2_%D0%BD%D0%B0_%D0%BD%D0%BE%D0%B2%D1%8B%D0%B9_%D1%80%D1%83%D0%B1%D0%B5%D0%B6._%D0%93%D0%BE%D1%80%D0%BE%D0%B4_%D0%91%D0%BE%D0%BB%D1%85%D0%BE%D0%B2_%D1%81%D0%BD%D0%BE%D0%B2%D0%B0_%D1%81%D1%82%D0%B0%D0%BB_%D1%81%D0%BE%D0%B2%D0%B5%D1%82%D1%81%D0%BA%D0%B8%D0%BC.jpg',
+      ),
+    ],
+    createdAt: '2026-08-28T10:00:00Z',
+    demo: false,
+  },
+  {
+    id: 'ST20',
+    title: 'Жители помогали разведчикам',
+    place: 'Орловская область',
+    story:
+      'Летом 1943 года местные жители подсказывали наступающим частям, где стоит противник. На фронтовом снимке августа 1943 года крестьянка Наталья Николаевна Полякова показывает командиру взвода 84-й отдельной гвардейской разведывательной роты 83-й гвардейской стрелковой дивизии расположение вражеских частей.',
+    sourceText: 'Фотоархив военных лет, Wikimedia Commons',
+    author: 'Школьный музей',
+    status: 'verified',
+    verifiedBy: 'Краевед',
+    photos: [
+      photo(
+        'polyakova-1943.jpg',
+        'Крестьянка Н. Н. Полякова указывает разведчикам 83-й гвардейской стрелковой дивизии расположение вражеских частей, август 1943 года',
+        'https://commons.wikimedia.org/wiki/File:%D0%9A%D1%80%D0%B5%D1%81%D1%82%D1%8C%D1%8F%D0%BD%D0%BA%D0%B0_%D0%9D._%D0%9F%D0%BE%D0%BB%D1%8F%D0%BA%D0%BE%D0%B2%D0%B0_%D1%80%D0%B0%D1%81%D1%81%D0%BA%D0%B0%D0%B7%D1%8B%D0%B2%D0%B0%D0%B5%D1%82_%D1%81%D0%BE%D0%B2%D0%B5%D1%82%D1%81%D0%BA%D0%B8%D0%BC_%D1%80%D0%B0%D0%B7%D0%B2%D0%B5%D0%B4%D1%87%D0%B8%D0%BA%D0%B0%D0%BC_%D0%BE_%D1%80%D0%B0%D1%81%D0%BF%D0%BE%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B8_%D0%B2%D1%80%D0%B0%D0%B6%D0%B5%D1%81%D0%BA%D0%B8%D1%85_%D1%87%D0%B0%D1%81%D1%82%D0%B5%D0%B9.jpg',
+      ),
+    ],
+    createdAt: '2026-08-27T10:00:00Z',
+    demo: false,
+  },
+  {
+    id: 'ST21',
+    title: 'Фильм «Битва за Орёл», 1943',
+    place: 'Орёл',
+    story:
+      'В 1943 году вышел полнометражный документальный фильм «Битва за Орёл» об Орловской стратегической наступательной операции. Его снимали фронтовые операторы, и по нему сегодня видно, каким был путь к освобождению Орла.',
+    sourceText: 'Афиша и кадр фильма, Wikimedia Commons',
+    author: 'Краеведческий кружок',
+    status: 'verified',
+    verifiedBy: 'Краевед',
+    photos: [
+      photo(
+        'battle-of-oryol-poster.jpg',
+        'Афиша документального фильма «Битва за Орёл», 1943 год',
+        'https://commons.wikimedia.org/wiki/File:The_Battle_of_Oryol.jpg',
+      ),
+      photo(
+        'battle-of-oryol-frame.jpg',
+        'Кадр из фильма «Битва за Орёл», 1943 год',
+        'https://commons.wikimedia.org/wiki/File:The_Battle_of_Oryol_4.jpg',
+      ),
+    ],
+    createdAt: '2026-08-26T10:00:00Z',
+    demo: false,
+  },
+  {
+    id: 'ST22',
+    title: 'Июль 1943: подбитые «Фердинанды»',
+    place: 'Орловский участок фронта',
+    story:
+      'В июле 1943 года на северном фасе Курской дуги немецкое наступление остановили, и началась операция «Кутузов». На снимке того месяца советские военные осматривают тяжёлые самоходные установки «Фердинанд», подбитые на Орловском участке фронта.',
+    sourceText: 'Фотоархив военных лет, Wikimedia Commons',
+    author: 'Учитель истории',
+    status: 'verified',
+    verifiedBy: 'Поисковый отряд',
+    photos: [
+      photo(
+        'ferdinand-orel-1943.jpg',
+        'Советские военные осматривают немецкие САУ «Фердинанд», подбитые на Орловском участке фронта, июль 1943 года',
+        'https://commons.wikimedia.org/wiki/File:%D0%A1%D0%BE%D0%B2%D0%B5%D1%82%D1%81%D0%BA%D0%B8%D0%B5_%D0%B2%D0%BE%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BE%D1%81%D0%BC%D0%B0%D1%82%D1%80%D0%B8%D0%B2%D0%B0%D1%8E%D1%82_%D0%BD%D0%B5%D0%BC%D0%B5%D1%86%D0%BA%D0%B8%D0%B5_%D0%A1%D0%90%D0%A3_%C2%AB%D0%A4%D0%B5%D1%80%D0%B4%D0%B8%D0%BD%D0%B0%D0%BD%D0%B4%C2%BB,_%D0%BF%D0%BE%D0%B4%D0%B1%D0%B8%D1%82%D1%8B%D0%B5_%D0%BD%D0%B0_%D0%9E%D1%80%D0%BB%D0%BE%D0%B2%D1%81%D0%BA%D0%BE%D0%BC_%D1%83%D1%87%D0%B0%D1%81%D1%82%D0%BA%D0%B5.jpg',
+      ),
+    ],
+    createdAt: '2026-08-25T10:00:00Z',
     demo: false,
   },
   // Истории от вымышленных пользователей — демо
@@ -1104,6 +1223,13 @@ export const stories: ArchiveStory[] = [
     sourceText: 'Воспоминания прабабушки, записанные внучкой',
     author: 'Семья Климовых',
     status: 'pending',
+    photos: [
+      photo(
+        'lenin-street-1941.jpg',
+        'Иллюстрация из открытого архива, не семейный снимок: немецкие войска на улице Ленина (бывшей Болховской) в день оккупации Орла, 3 октября 1941 года',
+        'https://commons.wikimedia.org/wiki/File:Nazi_army_on_Lenin_Street_Oryol.jpg',
+      ),
+    ],
     createdAt: '2026-09-21T18:00:00Z',
     demo: true,
   },
@@ -1154,6 +1280,13 @@ export const stories: ArchiveStory[] = [
     sourceText: 'Воспоминания мамы, записанные дочерью',
     author: 'Жительница Орла',
     status: 'pending',
+    photos: [
+      photo(
+        'orel-vokzal.jpg',
+        'Иллюстрация из открытого архива, не семейный снимок: Орловский вокзал, снимок около 1910 года. Здание простояло до 1943 года',
+        'https://commons.wikimedia.org/wiki/File:001_orel_vokzal_1868-1943.jpg',
+      ),
+    ],
     createdAt: '2026-09-17T18:00:00Z',
     demo: true,
   },

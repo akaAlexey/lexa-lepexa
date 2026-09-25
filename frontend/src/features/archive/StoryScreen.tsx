@@ -26,6 +26,7 @@ import { Notice } from '../../ui/Notice.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { StatePill } from '../../ui/StatePill.tsx'
 import s from './archive.module.css'
+import { ArchivePhotos } from './ArchivePhotos.tsx'
 import { StoryImages } from './StoryImages.tsx'
 
 /** Чек-лист и решение проверяющего — как экран «Проверка источника» на макете. */
@@ -129,6 +130,7 @@ function StoryCard({ story, sent }: { story: ArchiveStory; sent: boolean }) {
           {story.reviewNote}
         </Notice>
       )}
+      {story.photos && story.photos.length > 0 && <ArchivePhotos photos={story.photos} />}
       <StoryImages storyId={story.id} canAdd={canAddImages} />
       {story.status === 'verified' && story.verifiedBy && !story.reviewNote && (
         <p className={s.meta} data-testid="story-verified-by">

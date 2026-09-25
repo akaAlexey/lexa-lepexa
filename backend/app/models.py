@@ -240,5 +240,6 @@ class ArchiveStory(Base):
     status: Mapped[str] = mapped_column(String(20))
     verified_by: Mapped[str | None] = mapped_column(String(255))
     review_note: Mapped[str | None] = mapped_column(Text)
+    photos: Mapped[list | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
     demo: Mapped[bool] = mapped_column(Boolean)

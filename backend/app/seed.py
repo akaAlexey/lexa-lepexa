@@ -16,10 +16,15 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from . import models as m
+from . import models_domain as md
 from .db import Session, engine
 from .geo import NOTIFY_RADIUS_KM
 
 DATA = Path(__file__).with_name("seed_data.json")
+# Вымышленные демо-аккаунты и роли — в своём файле: фронт их не генерирует
+USERS = Path(__file__).with_name("demo_users.json")
+# Войти под демо-аккаунтом нельзя: такой хеш не совпадёт ни с одним паролем
+NO_LOGIN = "!"
 
 
 def _dt(value: str) -> datetime:
@@ -163,6 +168,7 @@ def rows(data: dict) -> list:
             status=s["status"],
             verified_by=s.get("verifiedBy"),
             review_note=s.get("reviewNote"),
+            photos=s.get("photos"),
             created_at=_dt(s["createdAt"]),
             demo=s["demo"],
         )
@@ -204,10 +210,53 @@ def rows(data: dict) -> list:
     return out
 
 
+def account_rows(accounts: dict) -> list:
+    """Роли и демо-аккаунты (таблицы целевой схемы users, roles)."""
+    out: list = [md.Role(id=r["id"], name=r["name"], description=r.get("description")) for r in accounts["roles"]]
+    out += [
+        md.User(
+            id=u["id"],
+            email=u["email"],
+            username=u["username"],
+            password_hash=NO_LOGIN,
+            first_name=u.get("firstName"),
+            last_name=u.get("lastName"),
+            phone=None,
+            is_active=True,
+            created_at=_dt(u["createdAt"]),
+            updated_at=_dt(u["createdAt"]),
+        )
+        for u in accounts["users"]
+    ]
+    return out
+
+
+async def seed_accounts(session: AsyncSession, accounts: dict) -> int:
+    """Роли, демо-аккаунты и их роли — только недостающие."""
+    added = 0
+    for row in account_rows(accounts):
+        model = type(row)
+        if await session.scalar(select(model.id).where(model.id == row.id)) is None:
+            session.add(row)
+            added += 1
+            await session.flush()
+    for u in accounts["users"]:
+        exists = await session.scalar(
+            select(md.UserRole.user_id).where(md.UserRole.user_id == u["id"], md.UserRole.role_id == u["role"])
+        )
+        if exists is None:
+            session.add(md.UserRole(user_id=u["id"], role_id=u["role"]))
+            added += 1
+            await session.flush()
+    return added
+
+
 async def seed(session: AsyncSession, data: dict | None = None) -> int:
     """Вставляет недостающие записи. Возвращает, сколько добавлено."""
     data = data if data is not None else json.loads(DATA.read_text(encoding="utf-8"))
     added = 0
+    if USERS.exists():
+        added += await seed_accounts(session, json.loads(USERS.read_text(encoding="utf-8")))
     for row in rows(data):
         model = type(row)
         exists = await session.scalar(select(model.id).where(model.id == row.id))

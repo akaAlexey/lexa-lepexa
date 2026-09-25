@@ -1,0 +1,26 @@
+{
+  "_comment": "Вымышленные демо-аккаунты для заполненности базы. Почта — зарезервированный домен example.com, телефоны не указаны. password_hash '!' — войти под этими аккаунтами нельзя: вход на сайте пока на устройстве пользователя.",
+  "roles": [
+    { "id": "family", "name": "Пользователь", "description": "Семейные маршруты, истории, записи на выезды" },
+    { "id": "volunteer", "name": "Волонтёр", "description": "Запись в заявки отрядов, помощь делом и рублём" },
+    { "id": "commander", "name": "Командир отряда", "description": "Набор волонтёров, места поиска, решения по заявкам групп" },
+    { "id": "verifier", "name": "Краевед, учитель, музей", "description": "Проверка историй и мест по источникам" }
+  ],
+  "users": [
+    { "id": "U01", "username": "anna_orel", "email": "anna.orel@example.com", "firstName": "Анна", "lastName": "Смирнова", "role": "family", "createdAt": "2026-09-01T09:00:00Z" },
+    { "id": "U02", "username": "pravnuk_bolkhov", "email": "pravnuk.bolkhov@example.com", "firstName": "Дмитрий", "lastName": "Кузнецов", "role": "family", "createdAt": "2026-09-02T09:00:00Z" },
+    { "id": "U03", "username": "klimovy", "email": "klimovy.family@example.com", "firstName": "Ольга", "lastName": "Климова", "role": "family", "createdAt": "2026-09-03T09:00:00Z" },
+    { "id": "U04", "username": "gromovy", "email": "gromovy.family@example.com", "firstName": "Сергей", "lastName": "Громов", "role": "family", "createdAt": "2026-09-04T09:00:00Z" },
+    { "id": "U05", "username": "vnuchka_novosil", "email": "vnuchka.novosil@example.com", "firstName": "Мария", "lastName": "Иванова", "role": "family", "createdAt": "2026-09-05T09:00:00Z" },
+    { "id": "U06", "username": "orlovchanka", "email": "orlovchanka@example.com", "firstName": "Елена", "lastName": "Орлова", "role": "family", "createdAt": "2026-09-06T09:00:00Z" },
+    { "id": "U07", "username": "volonter_maxim", "email": "maxim.volunteer@example.com", "firstName": "Максим", "lastName": "Соколов", "role": "volunteer", "createdAt": "2026-09-07T09:00:00Z" },
+    { "id": "U08", "username": "volonter_irina", "email": "irina.volunteer@example.com", "firstName": "Ирина", "lastName": "Морозова", "role": "volunteer", "createdAt": "2026-09-08T09:00:00Z" },
+    { "id": "U09", "username": "volonter_artem", "email": "artem.volunteer@example.com", "firstName": "Артём", "lastName": "Волков", "role": "volunteer", "createdAt": "2026-09-09T09:00:00Z" },
+    { "id": "U10", "username": "volonter_polina", "email": "polina.volunteer@example.com", "firstName": "Полина", "lastName": "Лебедева", "role": "volunteer", "createdAt": "2026-09-10T09:00:00Z" },
+    { "id": "U11", "username": "komandir_rubezh", "email": "rubezh.team@example.com", "firstName": "Андрей", "lastName": "Козлов", "role": "commander", "createdAt": "2026-09-11T09:00:00Z" },
+    { "id": "U12", "username": "komandir_dolg", "email": "dolg.team@example.com", "firstName": "Николай", "lastName": "Новиков", "role": "commander", "createdAt": "2026-09-12T09:00:00Z" },
+    { "id": "U13", "username": "kraeved_mtsensk", "email": "kraeved.mtsensk@example.com", "firstName": "Татьяна", "lastName": "Павлова", "role": "verifier", "createdAt": "2026-09-13T09:00:00Z" },
+    { "id": "U14", "username": "uchitel_istorii", "email": "uchitel.istorii@example.com", "firstName": "Виктор", "lastName": "Фёдоров", "role": "verifier", "createdAt": "2026-09-14T09:00:00Z" },
+    { "id": "U15", "username": "shkolny_muzey", "email": "shkolny.muzey@example.com", "firstName": "Людмила", "lastName": "Егорова", "role": "verifier", "createdAt": "2026-09-15T09:00:00Z" }
+  ]
+}
