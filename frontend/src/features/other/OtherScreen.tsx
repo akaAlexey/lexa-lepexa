@@ -181,7 +181,7 @@ function Panel({ id }: { id: SectionId }) {
 function ArPanel() {
   const { platform } = useDeps()
   const video = useRef<HTMLVideoElement>(null)
-  const session = useRef<{ stop(): void }>()
+  const session = useRef<{ stop(): void } | undefined>(undefined)
   const [status, setStatus] = useState<'idle' | 'starting' | 'active' | 'error'>('idle')
   const [error, setError] = useState('')
 
