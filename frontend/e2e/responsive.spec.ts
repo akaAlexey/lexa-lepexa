@@ -6,7 +6,7 @@ const SCREENS = [
   { url: '/roles', main: 'role-family' },
   { url: '/trail', main: 'trail-start' },
   { url: '/trail/park-3km/point/rubezh', main: 'task-option-0' },
-  { url: '/weekends/W01', main: 'trip-register' },
+  { url: '/weekends/W01', main: 'trip-signin' },
   { url: '/last-battle', main: 'last-battle-subscribe' },
   { url: '/last-battle/S01', main: 'site-help' },
   // Разделы дизайна «Стол и газета» (ADR 0012)
