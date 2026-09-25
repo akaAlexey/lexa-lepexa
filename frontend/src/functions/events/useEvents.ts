@@ -1,20 +1,22 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
-import type { VolunteerRequest } from '../../contract/schemas.ts'
+import type { Trip, VolunteerRequest } from '../../contract/schemas.ts'
 import { buildFeed, type FeedItem } from '../../domain/events.ts'
+import { memory } from '../core/deviceMemory.ts'
 import { qk } from '../core/queryKeys.ts'
 import { useDeps } from '../core/useDeps.ts'
+import { useDeviceMemory } from '../core/useDeviceMemory.ts'
 import { weekNews } from './weekNews.ts'
 
 export type FeedState =
   | { status: 'pending' }
   | { status: 'error'; retry: () => void }
-  | { status: 'ready'; items: FeedItem[]; requests: VolunteerRequest[] }
+  | { status: 'ready'; items: FeedItem[]; requests: VolunteerRequest[]; trips: Trip[] }
 
 /**
  * Лента «Мероприятия»: заявки, выезды, сборы и отряды одним списком (ADR 0012).
  * Заявки и выезды обязательны; без сборов и отрядов лента всё равно показывается.
- * Запись в заявку — функция helpRequests (`useJoinRequest`).
+ * Запись в заявку — только из карточки: пользователь сам выбирает, куда идти.
  */
 export function useEventsFeed(): FeedState {
   const { api } = useDeps()
@@ -45,12 +47,18 @@ export function useEventsFeed(): FeedState {
   }
   // Сборы и отряды дополняют карточки: ждём их, но не дольше их собственной ошибки
   const extrasPending = fundraisers.isPending || teams.isPending
-  if (!items || !requests.data || extrasPending) return { status: 'pending' }
-  return { status: 'ready', items, requests: requests.data }
+  if (!items || !requests.data || !trips.data || extrasPending) return { status: 'pending' }
+  return { status: 'ready', items, requests: requests.data, trips: trips.data }
 }
 
 export function useWeekNews() {
   const { now } = useDeps()
   const [news] = useState(() => weekNews(now()))
   return news
+}
+
+/** «Новости недели» раскрыты или свёрнуты — выбор запоминается на устройстве. */
+export function useWeekNewsOpen(): [boolean, () => void] {
+  const [open, setOpen] = useDeviceMemory(memory.weekNewsOpen)
+  return [open, () => setOpen((prev) => !prev)]
 }

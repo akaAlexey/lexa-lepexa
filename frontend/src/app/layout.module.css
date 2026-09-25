@@ -49,7 +49,7 @@
 /* Шапка-«выходные данные» газеты: издание и регион слева, вход справа */
 .masthead {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
   gap: 0 var(--space-3);
@@ -65,7 +65,9 @@
 
 .mastTitle {
   display: inline-flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  min-width: 0;
+  white-space: nowrap;
   align-items: center;
   gap: 0 var(--space-2);
   min-height: var(--touch-min);
@@ -74,27 +76,13 @@
   text-decoration: none;
 }
 
-.mastRegion {
-  font-weight: 400;
-}
-
-.mastDemo {
-  padding: 0 0.4rem;
-  border: 1px dashed var(--color-sepia);
-  color: var(--color-ink-muted);
-  font-weight: 400;
-  text-transform: none;
-}
-
-/* Телефон: шапка в одну строку — регион и роль видны в «Другом» */
+/* Телефон: шапка всегда в одну строку — роль видна в «Другом» */
 @media (max-width: 30rem) {
-  .mastRegion,
   .accountRole {
     display: none;
   }
 
   .masthead {
-    flex-wrap: nowrap;
     padding: 0 var(--space-3);
   }
 }
@@ -118,6 +106,59 @@
 .accountRole {
   color: var(--color-ink-muted);
   font-weight: 400;
+}
+
+/* Итог оплаты ЮKassa после возврата на сайт */
+.payment {
+  position: relative;
+  max-width: 62rem;
+  margin: var(--space-3) auto 0;
+  padding: 0 var(--space-4);
+}
+
+.paymentClose {
+  position: absolute;
+  top: 0;
+  right: var(--space-4);
+  display: grid;
+  place-items: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Подвал страницы: «О нас», документы и «Есть история?» */
+.footer {
+  max-width: 62rem;
+  margin: var(--space-8) auto 0;
+  padding: var(--space-4) var(--space-4) var(--space-6);
+  border-top: 3px double var(--color-ink);
+  font-size: 0.85rem;
+}
+
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+}
+
+.footerLinks a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  color: var(--color-ink);
+}
+
+.footerLinks .footerAccent {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.footerNote {
+  margin: var(--space-2) 0 0;
+  color: var(--color-ink-muted);
 }
 
 /* Меню разделов: тёмная полоса снизу, подписи видны всегда */
@@ -153,10 +194,10 @@
   padding: var(--space-1) 0.1rem;
   color: var(--color-rail-text);
   text-decoration: none;
-  /* «Мероприятия» помещается в четверть экрана 360 px одной строкой */
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   line-height: 1.15;
-  white-space: nowrap;
+  hyphens: auto;
+  overflow-wrap: normal;
   text-align: center;
 }
 

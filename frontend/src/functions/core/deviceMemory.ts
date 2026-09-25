@@ -8,6 +8,13 @@ import { DEMO_POSITION_KEY, GEO_MODE_KEY, type StorageService } from '../../plat
  * Слоты с id (`memory.quest(id)`) кэшируются: один id — один объект.
  * Ключи прежние: то, что уже лежит на телефонах, читается после обновления.
  */
+/** Платёж, ушедший на страницу оплаты ЮKassa. */
+export interface PendingPayment {
+  id: string
+  fundraiserId: string
+  amountRub: number
+}
+
 export interface MemorySlot<T> {
   readonly key: string
   readonly initial: T
@@ -112,10 +119,35 @@ export const memory = {
   checklist: perId((tripId) => memorySlot<string[]>(`checklist:${tripId}`, [], stringList)),
   /** Заявки отрядов, в которые пользователь записался. */
   joinedRequests: memorySlot<string[]>('search.joinedRequests', []),
+  /** Выезды, на которые пользователь записался с этого устройства. */
+  registeredTrips: memorySlot<string[]>('trips.registered', [], stringList),
+  /**
+   * Возраст из профиля для записи на выезды: пишет профиль (подтверждение 18+), читает запись.
+   * По умолчанию возраст не подтверждён — нужна подпись родителя.
+   */
+  ageStatus: memorySlot<{ adultVerified: boolean; age?: number }>(
+    'profile.age',
+    { adultVerified: false },
+    (raw) => {
+      const v = raw as { adultVerified?: unknown; age?: unknown } | null
+      if (typeof v?.adultVerified !== 'boolean') return undefined
+      return typeof v.age === 'number'
+        ? { adultVerified: v.adultVerified, age: v.age }
+        : { adultVerified: v.adultVerified }
+    },
+  ),
+  /** «Новости недели» раскрыты или свёрнуты (по умолчанию — решение команды). */
+  weekNewsOpen: memorySlot<boolean>('events.weekNewsOpen', false, (raw) =>
+    typeof raw === 'boolean' ? raw : undefined,
+  ),
   /** Заявки групп, поданные с этого устройства. */
   myGroups: memorySlot<string[]>('groups:mine', []),
   /** Истории, отправленные с этого устройства. */
   myStories: memorySlot<string[]>('archive:mine', []),
+  /** Платёж ЮKassa, на оплату которого ушёл пользователь: после возврата проверяем статус. */
+  pendingPayment: memorySlot<PendingPayment | undefined>('payment:pending', undefined),
+  /** Предложение «Рассказать историю» в «Истории» закрыто на этом устройстве. */
+  storyPromptClosed: memorySlot<boolean>('archive:prompt-closed', false),
   /** «Живые фото», загруженные с этого устройства и ждущие генерации. */
   myLivePhotos: memorySlot<MyLivePhoto[]>('live:mine', [], livePhotoList),
   /** Подписка на находки рядом — восстанавливается при старте. */

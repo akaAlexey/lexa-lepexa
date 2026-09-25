@@ -16,6 +16,15 @@ test.describe('Выходные с поисковиком', () => {
     await expectNoA11yViolations(page)
     await snap(page, testInfo, 'weekends-01-trip')
     await page.getByTestId('trip-register').click()
+    // запись — через окно с условиями; без подтверждённых 18+ — с согласием родителя
+    const dialog = page.getByTestId('signup-dialog')
+    await expect(dialog).toContainText('Орёл, ж/д вокзал, у главного входа (демо)')
+    await page.getByTestId('signup-fullName').fill('Петров Иван Сергеевич')
+    await page.getByTestId('signup-phone').fill('89001234567')
+    await page.getByTestId('signup-agreed').check()
+    await dialog.getByTestId('signup-confirm').click()
+    await expect(page.getByTestId('signup-done')).toBeVisible()
+    await dialog.getByTestId('dialog-close').click()
     await expect(page.getByTestId('trip-registered')).toContainText('Вы записаны')
   })
 })
@@ -25,7 +34,8 @@ test.describe('Скрытый демо-пульт', () => {
     page,
   }, testInfo) => {
     await startAs(page, 'family')
-    await expect(page.locator('nav')).not.toContainText(/пульт/i)
+    // меню разделов и подвал — ни в одном нет ссылки на пульт
+    await expect(page.locator('nav').filter({ hasText: /пульт/i })).toHaveCount(0)
 
     await page.goto('/demo')
     await expect(page.getByTestId('demo-build')).toHaveText(/Сборка: \S+/)
@@ -37,7 +47,7 @@ test.describe('Скрытый демо-пульт', () => {
 
     await page.getByTestId('demo-reset').click()
     await expect(page.getByTestId('demo-reset-done')).toContainText('Данные сброшены')
-    await page.goto('/')
+    await page.goto('/roles')
     await expect(page.getByTestId('role-family')).toHaveAttribute('aria-pressed', 'false')
   })
 })

@@ -1,10 +1,12 @@
-import type { RouteObject } from 'react-router'
-import { patterns } from '../../functions/core/paths.ts'
+import { Navigate, type RouteObject } from 'react-router'
+import { paths, patterns } from '../../functions/core/paths.ts'
 import { NewRequestScreen } from './NewRequestScreen.tsx'
-import { SearchScreen } from './SearchScreen.tsx'
 
-/** Маршруты модуля. Новые экраны модуля добавляются только сюда. */
+/**
+ * Маршруты модуля. Экран «Поисковикам» убран (решение команды 25.09): заявки и сборы — в ленте
+ * «Мероприятия», старый адрес /search ведёт туда же с фильтром заявок.
+ */
 export const routes: RouteObject[] = [
-  { path: patterns.search, element: <SearchScreen /> },
+  { path: patterns.search, element: <Navigate to={paths.events('request')} replace /> },
   { path: patterns.newRequest, element: <NewRequestScreen /> },
 ]

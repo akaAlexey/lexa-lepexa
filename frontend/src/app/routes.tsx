@@ -1,4 +1,4 @@
-import type { RouteObject } from 'react-router'
+import { Navigate, type RouteObject } from 'react-router'
 import { routes as archive } from '../features/archive/routes.tsx'
 import { routes as chronicle } from '../features/chronicle/routes.tsx'
 import { routes as demoConsole } from '../features/demo-console/routes.tsx'
@@ -11,18 +11,21 @@ import { RolePickerScreen } from '../features/roles/RolePickerScreen.tsx'
 import { routes as searchHq } from '../features/search-hq/routes.tsx'
 import { routes as trail } from '../features/trail/routes.tsx'
 import { routes as weekends } from '../features/weekends/routes.tsx'
+import { paths, patterns } from '../functions/core/paths.ts'
 import { Layout } from './Layout.tsx'
 import { NotFoundScreen } from './NotFoundScreen.tsx'
 
 /**
  * Карта URL. Каждый экран и каждая карточка — свой адрес: «Назад» работает, ссылкой можно поделиться.
  * Модули подключают свои маршруты из features/<модуль>/routes.tsx.
+ * Главная — «Мероприятия» (решение команды 25.09.2026); роль выбирается на /roles или в «Другом».
  */
 export const appRoutes: RouteObject[] = [
   {
     element: <Layout />,
     children: [
-      { index: true, element: <RolePickerScreen /> },
+      { index: true, element: <Navigate to={paths.events()} replace /> },
+      { path: patterns.roles, element: <RolePickerScreen /> },
       ...mapHub,
       ...events,
       ...trail,

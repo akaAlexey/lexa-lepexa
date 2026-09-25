@@ -5,7 +5,7 @@
 
 ## Решение по «3 нажатиям»
 
-Нажатия считаются **от домашнего экрана роли**: роль выбирается один раз и запоминается на устройстве. Ввод текста нажатием не считается. Для истории 1 путь от самого старта — 2 нажатия (роль → «Начать тропу»).
+Нажатия считаются **от домашнего экрана роли**: роль выбирается один раз и запоминается на устройстве. Ввод текста нажатием не считается. С v3.2 домашний экран всех ролей — «Мероприятия» (решение команды 25.09); семейная тропа — «Карта» → «Маршрут и задания для ребёнка».
 
 ## User story 1 — семейная тропа
 
@@ -24,17 +24,17 @@
 
 ## User story 2 — заявка на 10 волонтёров на завтра
 
-| Что проверяем                                                                                                                                                              | Где  |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
-| «Завтра» считается по московскому времени, в том числе после полуночи и на смене года                                                                                      | U    |
-| Русские формы числа («1 землекоп», «3 землекопа», «10 землекопов»), описание «1 повар и 2 водителя»                                                                        | U    |
-| Проверка формы: людей ≥ 1, дата не в прошлом, место не пустое                                                                                                              | U    |
-| Форма заполнена заранее: отряд «Высота», чип «Завтра» выбран, «3 октября, суббота», землекопы, место                                                                       | К, E |
-| Три нажатия: «Набрать волонтёров» → «10» → «Опубликовать» → «Заявка опубликована», карточка первой: «Высота», «Требуется: 10 землекопов», «3 октября, суббота»             | К, E |
-| Пустое место — ошибка у поля (`aria-invalid`), заявка не уходит                                                                                                            | К    |
-| Волонтёр видит карточку из прототипа («Вахта Памяти (Орловская обл.)», «Требуется: 5 землекопов», «Собрано: 15 000 из 50 000 ₽») и одной кнопкой становится частью команды | К, E |
-| «Пожертвовать на бензин» — только диалог тестового платежа «деньги не списываются»                                                                                         | К    |
-| Весь сценарий проходится только клавиатурой (ноутбук)                                                                                                                      | E    |
+| Что проверяем                                                                                                                                                                                                                                               | Где  |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
+| «Завтра» считается по московскому времени, в том числе после полуночи и на смене года                                                                                                                                                                       | U    |
+| Русские формы числа («1 землекоп», «3 землекопа», «10 землекопов»), описание «1 повар и 2 водителя»                                                                                                                                                         | U    |
+| Проверка формы: людей ≥ 1, дата не в прошлом, место не пустое                                                                                                                                                                                               | U    |
+| Форма заполнена заранее: отряд «Высота», чип «Завтра» выбран, «3 октября, суббота», землекопы, место                                                                                                                                                        | К, E |
+| Три нажатия: «Набрать волонтёров» → «10» → «Опубликовать» → «Заявка опубликована», карточка первой: «Высота», «Требуется: 10 землекопов», «3 октября, суббота»                                                                                              | К, E |
+| Пустое место — ошибка у поля (`aria-invalid`), заявка не уходит                                                                                                                                                                                             | К    |
+| Волонтёр видит карточку из прототипа («Вахта Памяти (Орловская обл.)», «Требуется: 5 землекопов», «Собрано: 15 000 из 50 000 ₽») и записывается из её карточки через окно с условиями (время, место сбора, что взять, возраст; без 18+ — согласие родителя) | К, E |
+| «Пожертвовать на бензин» — только диалог тестового платежа «деньги не списываются»                                                                                                                                                                          | К    |
+| Весь сценарий проходится только клавиатурой (ноутбук)                                                                                                                                                                                                       | E    |
 
 ## User story 3 — место гибели и уведомление
 
@@ -126,22 +126,26 @@
 
 URL и `data-testid`, на которые опираются тесты. Меняются только вместе с тестами.
 
-| Экран         | URL                              | testID                                                                                                                                                                       |
-| ------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Тропа         | `/trail`                         | `trail-start` (главная), `trail-progress`, `trail-map`, `marker-<pointId>`                                                                                                   |
-| Точка         | `/trail/:routeId/point/:pointId` | `point-story`, `point-sources`, `point-step`, `task`, `task-question`, `task-option-<i>` (главная — ответ), `task-feedback`, `point-next`                                    |
-| Финиш         | `/trail/:routeId/finish`         | `finish-stamps`                                                                                                                                                              |
-| Поисковикам   | `/search`                        | командир: `search-create-request`; волонтёр: `search-join`; `found-counter`, `request-card-<id>`, `request-joined-<id>`, `donate-<fundraiserId>`, `request-published`        |
-| Новая заявка  | `/search/requests/new`           | `request-team`, `date-today`, `date-tomorrow`, `request-date-label`, `count-5/10/20`, `request-role`, `request-place`, `request-publish` (главная)                           |
-| Выходные      | `/weekends`                      | `weekends-register` (главная), `trip-<id>` со ссылкой на выезд                                                                                                               |
-| Выезд         | `/weekends/:tripId`              | `trip-date`, `trip-spots`, `checklist-progress`, чекбоксы с подписью пункта, `trip-register` (главная), `trip-registered`                                                    |
-| Последний бой | `/last-battle`                   | командир: `last-battle-add`; остальные: `last-battle-subscribe`; `subscribe-done`, `battle-map`, `marker-site-<id>`, `marker-grave-<id>`                                     |
-| Новое место   | `/last-battle/new`               | `site-fighters-count`, `site-unit`, `site-date-text`, `site-source`, `site-place`, `site-lat`, `site-lon`, `site-publish` (главная)                                          |
-| Место         | `/last-battle/:siteId`           | `site-fighters`, `site-date`, `site-sources`, `site-need`, `status-<status>`, `site-volunteers`, `site-help` (главная, если нужен подъём), `site-help-done`, `site-notified` |
-| Демо-пульт    | `/demo`                          | `demo-lat`, `demo-lon`, `demo-geo-apply`, `demo-inject-site`, `demo-reset`, `demo-reset-done`, `demo-build`                                                                  |
-| Уведомление   | любой                            | `toast` со ссылкой «Открыть место»                                                                                                                                           |
+| Экран         | URL                                | testID                                                                                                                                                                                                                     |
+| ------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Тропа         | `/trail`                           | `trail-start` (главная), `trail-progress`, `trail-map`, `marker-<pointId>`                                                                                                                                                 |
+| Точка         | `/trail/:routeId/point/:pointId`   | `point-story`, `point-sources`, `point-step`, `task`, `task-question`, `task-option-<i>` (главная — ответ), `task-feedback`, `point-next`                                                                                  |
+| Финиш         | `/trail/:routeId/finish`           | `finish-stamps`                                                                                                                                                                                                            |
+| Главная       | `/` → `/events`                    | переход без записи в историю                                                                                                                                                                                               |
+| Выбор роли    | `/roles`                           | `role-<id>`, после выбора — `/events`                                                                                                                                                                                      |
+| Мероприятия   | `/events?show=<all                 | request                                                                                                                                                                                                                    | trip | fund>` | командир: `search-create-request`; краевед: `events-archive`; остальные: `events-nearest-trip` (главная); `events-filter-<…>`, `week-news`, `week-news-toggle`, `request-card-<id>`, `request-join-<id>` (окно записи), `request-joined-<id>`, `feed-trip-<id>`, `feed-trip-registered-<id>`, `feed-trip-groups-<id>`, `feed-fund-<id>`, `donate-<fundraiserId>`, `request-published` |
+| Окно записи   | диалог                             | `signup-dialog`, `signup-terms`, `signup-starts`, `signup-ends`, `signup-consent`, `signup-fullName`, `signup-phone`, `signup-agreed`, `signup-adult`, `signup-too-young`, `signup-confirm`, `signup-done`, `signup-error` |
+| Поисковикам   | `/search` → `/events?show=request` | экран убран (v3.2)                                                                                                                                                                                                         |
+| Новая заявка  | `/search/requests/new`             | `request-team`, `date-today`, `date-tomorrow`, `request-date-label`, `count-5/10/20`, `request-role`, `request-place`, `request-publish` (главная)                                                                         |
+| Выходные      | `/weekends` → `/events?show=trip`  | экран убран (v3.2)                                                                                                                                                                                                         |
+| Выезд         | `/weekends/:tripId`                | `trip-date`, `trip-time`, `trip-spots`, `checklist-progress`, чекбоксы с подписью пункта, `trip-register` (главная, открывает окно записи), `trip-registered`, `trip-group`, `group-<id>`, `group-sent`                    |
+| Последний бой | `/last-battle`                     | командир: `last-battle-add`; остальные: `last-battle-subscribe`; `subscribe-done`, `battle-map`, `marker-site-<id>`, `marker-grave-<id>`                                                                                   |
+| Новое место   | `/last-battle/new`                 | `site-fighters-count`, `site-unit`, `site-date-text`, `site-source`, `site-place`, `site-lat`, `site-lon`, `site-publish` (главная)                                                                                        |
+| Место         | `/last-battle/:siteId`             | `site-fighters`, `site-date`, `site-sources`, `site-need`, `status-<status>`, `site-volunteers`, `site-help` (главная, если нужен подъём), `site-help-done`, `site-notified`                                               |
+| Демо-пульт    | `/demo`                            | `demo-lat`, `demo-lon`, `demo-geo-apply`, `demo-inject-site`, `demo-reset`, `demo-reset-done`, `demo-build`                                                                                                                |
+| Уведомление   | любой                              | `toast` со ссылкой «Открыть место»                                                                                                                                                                                         |
 
-Хранилище устройства: `role`, `quest:<routeId>` (`{ routeId, donePointIds }`), `checklist:<tripId>` (массив id), `subscription` (`{ lat, lon, radiusKm }`), демо-позиция.
+Хранилище устройства: `role`, `quest:<routeId>` (`{ routeId, donePointIds }`), `checklist:<tripId>` (массив id), `subscription` (`{ lat, lon, radiusKm }`), демо-позиция, `search.joinedRequests` и `trips.registered` (записи), `profile.age` (`{ adultVerified, age? }` — пишет профиль), `events.weekNewsOpen`.
 
 ## Вопросы к арбитру по тестам
 

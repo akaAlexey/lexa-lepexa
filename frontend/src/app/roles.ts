@@ -25,13 +25,14 @@ export const TABS: Record<TabId, { path: string; label: string; icon: IconName; 
       path: paths.archive(),
       label: 'Истории',
       icon: 'book',
-      section: /^\/(archive|live)(\/|$)/,
+      section: /^\/archive(\/|$)/,
     },
     other: {
       path: paths.other(),
       label: 'Другое',
       icon: 'menu',
-      section: /^\/(other|demo)?(\/|$)/,
+      // выбор роли (/roles), «Живое фото», «О нас» и документы — части «Другого»
+      section: /^\/(other|demo|roles|live|about|privacy|terms)?(\/|$)/,
     },
   }
 
@@ -49,7 +50,7 @@ export interface Role {
   short: string
   description: string
   icon: IconName
-  /** Домашний экран роли: главный сценарий — не больше 3 нажатий отсюда (ADR 0010). */
+  /** Домашний экран роли: главный сценарий — не больше 3 нажатий отсюда (ADR 0010). У всех — «Мероприятия». */
   home: string
 }
 
@@ -57,11 +58,11 @@ export interface Role {
 export const ROLES: readonly Role[] = [
   {
     id: 'family',
-    label: 'Семья',
-    short: 'Семья',
+    label: 'Пользователь',
+    short: 'Пользователь',
     description: 'Прогулка-квест с ребёнком по местам боёв',
     icon: 'family',
-    home: paths.trail(),
+    home: paths.events(),
   },
   {
     id: 'volunteer',
@@ -85,7 +86,7 @@ export const ROLES: readonly Role[] = [
     short: 'Краевед',
     description: 'Проверить истории и подтвердить данные',
     icon: 'book',
-    home: paths.archive(),
+    home: paths.events(),
   },
 ]
 

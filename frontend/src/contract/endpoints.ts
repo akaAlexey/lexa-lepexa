@@ -81,7 +81,8 @@ export const endpoints = {
   joinRequest: endpoint({
     method: 'POST',
     path: '/requests/{id}/join',
-    summary: '«Стать частью команды»',
+    summary: 'Записаться в заявку отряда (после окна с условиями; до 18+ — с согласием родителя)',
+    body: s.SignupRequest,
     response: s.VolunteerRequest,
   }),
   listFundraisers: endpoint({
@@ -96,6 +97,19 @@ export const endpoints = {
     summary: 'Пожертвование (только тестовый режим ЮKassa/CloudPayments)',
     body: s.Donation,
     response: s.DonationResult,
+  }),
+  startPayment: endpoint({
+    method: 'POST',
+    path: '/payments/yookassa',
+    summary: 'Создать платёж ЮKassa (тестовый магазин) и получить ссылку на оплату',
+    body: s.PaymentStart,
+    response: s.PaymentStarted,
+  }),
+  paymentStatus: endpoint({
+    method: 'GET',
+    path: '/payments/yookassa/{id}',
+    summary: 'Статус платежа ЮKassa; при succeeded сумма добавляется к сбору',
+    response: s.PaymentState,
   }),
   listTrips: endpoint({
     method: 'GET',
@@ -112,7 +126,8 @@ export const endpoints = {
   registerTrip: endpoint({
     method: 'POST',
     path: '/trips/{id}/register',
-    summary: 'Записаться на выезд',
+    summary: 'Записаться на выезд (после окна с условиями; до 18+ — с согласием родителя)',
+    body: s.SignupRequest,
     response: s.Trip,
   }),
   listGroupApplications: endpoint({

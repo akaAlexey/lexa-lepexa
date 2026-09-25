@@ -1,9 +1,17 @@
 import { expect } from '@playwright/test'
-import { expectNoA11yViolations, expectNoHorizontalScroll, snap, test } from './helpers.ts'
+import {
+  expectNoA11yViolations,
+  expectNoHorizontalScroll,
+  signInOnDevice,
+  snap,
+  test,
+} from './helpers.ts'
 
 /** «Живое фото»: QR-код на снимке ведёт на /live/<id>, камера узнаёт снимок, ролик играет поверх. */
 
 test.describe('«Живое фото»: экраны', () => {
+  test.beforeEach(async ({ page }) => signInOnDevice(page))
+
   for (const { url, main } of [
     { url: '/live', main: 'live-list-open' },
     { url: '/live/soldier', main: 'live-open-camera' },
@@ -41,4 +49,10 @@ test.describe('«Живое фото»: экраны', () => {
     await video.scrollIntoViewIfNeeded()
     await snap(page, testInfo, 'live-02-video')
   })
+})
+
+test('без входа «Живое фото» открывает форму входа', async ({ page }) => {
+  await page.goto('/live/soldier')
+  await expect(page).toHaveURL(/\/other\?section=account/)
+  await expect(page.getByTestId('signin-submit')).toBeVisible()
 })

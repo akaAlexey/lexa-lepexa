@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { paths } from '../../functions/core/paths.ts'
+import { otherSection, paths } from '../../functions/core/paths.ts'
 import { QueryState } from '../../app/QueryState.tsx'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
@@ -17,8 +17,8 @@ export function LivePhotoListScreen() {
       title="Живое фото"
       lead="Наведите камеру телефона на снимок с QR-кодом — боец заговорит. Ролики — реконструкция нейросетью"
       back={
-        <BackLink to={paths.archive()} testID="back-link">
-          К историям
+        <BackLink to={otherSection('photo')} testID="back-link">
+          К разделу «Другое»
         </BackLink>
       }
       testID="screen-live-list"

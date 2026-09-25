@@ -61,6 +61,32 @@ async function call(
   return parsed.data as Record<string, unknown> & { id: string }
 }
 
+/**
+ * Вызов сервиса, который включается ключами на сервере (ЮKassa). Без ключей сервер честно
+ * отвечает 503 «не настроено» — это ожидаемо (в CI ключей нет), вызов считается проверенным.
+ * С ключами ответ сверяется с контрактом, как обычно.
+ */
+async function callOptional(name: EndpointName, args: { id?: string; body?: unknown }) {
+  const e = endpoints[name]
+  if (READ_ONLY && e.method !== 'GET') return undefined
+  const path = e.path.replace('{id}', encodeURIComponent(args.id ?? ''))
+  const probe = await fetch(BASE + path, {
+    method: e.method,
+    headers: { 'Content-Type': 'application/json', 'X-Demo-User': `cc-${run}` },
+    body: args.body === undefined ? undefined : JSON.stringify(args.body),
+  })
+  if (probe.status === 503) {
+    pass(
+      `${e.method.padEnd(5)} ${e.path} (не настроено на сервере — 503, как и ожидается без ключей)`,
+    )
+    return undefined
+  }
+  return call(name, args)
+}
+
+/** Запись после окна с условиями: 18+ подтверждён — согласие родителя не нужно. */
+const SIGNUP = { termsAccepted: true, adultVerified: true, age: 30 } as const
+
 async function first(name: EndpointName) {
   const list = (await call(name)) as unknown as { id: string }[] | undefined
   return list?.[0]
@@ -130,9 +156,18 @@ const request = await call('createRequest', {
   },
 })
 await call('listRequests')
-if (request) await call('joinRequest', { id: request.id })
+if (request) await call('joinRequest', { id: request.id, body: SIGNUP })
 const fundraiser = await first('listFundraisers')
-if (fundraiser) await call('donate', { body: { fundraiserId: fundraiser.id, amountRub: 100 } })
+if (fundraiser) {
+  await call('donate', { body: { fundraiserId: fundraiser.id, amountRub: 100 } })
+  const started = (await callOptional('startPayment', {
+    body: { fundraiserId: fundraiser.id, amountRub: 100, returnPath: '/events' },
+  })) as { paymentId?: string } | undefined
+  // без ключей платежа нет — статус проверяем на правильном по форме id, сервер ответит 503
+  await callOptional('paymentStatus', {
+    id: started?.paymentId ?? '00000000-0000-0000-0000-000000000000',
+  })
+}
 
 // ---------- Выезды ----------
 const trips = (await call('listTrips')) as unknown as
@@ -141,7 +176,7 @@ const trip = trips?.[0]
 if (trip) {
   await call('getTrip', { id: trip.id })
   const free = trips?.find((t) => t.spotsTaken < t.spotsTotal)
-  if (free) await call('registerTrip', { id: free.id })
+  if (free) await call('registerTrip', { id: free.id, body: SIGNUP })
   const application = await call('createGroupApplication', {
     body: {
       tripId: trip.id,

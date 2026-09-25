@@ -137,7 +137,7 @@ function SiteCard({ site, notified }: { site: LastBattleSite; notified: number |
         testID="site-share"
       />
       <p>
-        <Link to={paths.lastBattle()}>Все места на карте</Link>
+        <Link to={paths.map()}>Все места на карте</Link>
       </p>
     </>
   )
@@ -152,15 +152,15 @@ export function SiteScreen() {
     <Screen
       title={notFound ? 'Место не найдено' : (site.data?.placeName ?? 'Место гибели')}
       back={
-        <BackLink to={paths.lastBattle()} testID="back-link">
-          К местам поиска
+        <BackLink to={paths.map()} testID="back-link">
+          К карте
         </BackLink>
       }
       testID="screen-site"
     >
       {notFound ? (
         <p data-testid="site-not-found">
-          Такого места нет или его удалили. <Link to={paths.lastBattle()}>Все места на карте</Link>
+          Такого места нет или его удалили. <Link to={paths.map()}>Все места на карте</Link>
         </p>
       ) : (
         <QueryState query={site} what="место">

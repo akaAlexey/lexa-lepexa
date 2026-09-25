@@ -2,13 +2,17 @@
 export {
   addMyGroup,
   decideGroupApplication,
+  groupSentState,
   groupState,
+  isGroupSentState,
   listGroupApplications,
+  pendingByTrip,
   prependApplication,
   replaceApplication,
   submitGroupApplication,
   visibleApplications,
   type GroupDecision,
+  type GroupSentState,
   type GroupTone,
 } from './groupApplications.ts'
 export { groupApplicationForm, type GroupFormContext, type GroupFormValues } from './form.ts'

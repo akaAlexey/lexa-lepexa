@@ -6,7 +6,7 @@ import { ChoiceChips } from '../../ui/ChoiceChips.tsx'
 import { Dialog } from '../../ui/Dialog.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 
-/** Пожертвование только через тестовый режим платёжного провайдера: деньги не списываются. */
+/** Пожертвование через ЮKassa (тестовый магазин): оплата на странице ЮKassa, деньги не списываются. */
 export function DonateDialog({
   fundraiser,
   onClose,
@@ -18,7 +18,10 @@ export function DonateDialog({
 
   return (
     <Dialog title={fundraiser.title} onClose={onClose} testID={`donate-dialog-${fundraiser.id}`}>
-      <Notice>Тестовый режим: деньги не списываются.</Notice>
+      <Notice>
+        Оплата через ЮKassa в тестовом режиме: реальные деньги не списываются. Для проверки — карта
+        5555 5555 5555 4477, любой срок и CVC.
+      </Notice>
       <ChoiceChips
         legend="Сумма"
         options={DONATION_AMOUNTS.map((a) => ({
@@ -33,17 +36,19 @@ export function DonateDialog({
         <Notice tone="success" testID="donate-result">
           Спасибо! Тестовый платёж на {formatRub(amount)} прошёл, деньги не списаны.
         </Notice>
+      ) : status === 'redirect' ? (
+        <Notice testID="donate-redirect">Переходим на страницу оплаты ЮKassa…</Notice>
       ) : (
         <Button
           onClick={() => void confirm()}
           disabled={status === 'sending'}
           testID="donate-confirm"
         >
-          Пожертвовать {formatRub(amount)} (тест)
+          Оплатить {formatRub(amount)} через ЮKassa
         </Button>
       )}
       {status === 'error' && (
-        <Notice tone="error">Тестовый платёж не прошёл. Попробуйте ещё раз.</Notice>
+        <Notice tone="error">Не удалось начать оплату. Попробуйте ещё раз.</Notice>
       )}
     </Dialog>
   )

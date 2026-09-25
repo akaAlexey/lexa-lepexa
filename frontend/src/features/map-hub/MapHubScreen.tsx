@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, type PointerEvent } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useRole } from '../../app/RoleContext.tsx'
 import { region } from '../../config/region.ts'
@@ -15,6 +15,8 @@ import { questStatus } from '../../domain/trail.ts'
 import { paths } from '../../functions/core/paths.ts'
 import { can } from '../../functions/core/permissions.ts'
 import { useMapHub } from '../../functions/mapHub/useMapHub.ts'
+import { useNearbySubscription } from '../../functions/nearbyAlerts/index.ts'
+import { NOTIFY_RADIUS_KM } from '../../domain/lastBattle.ts'
 import { POINT_ICON, useQuestProgress } from '../../functions/quest/index.ts'
 import { MapView, type MapMarker } from '../../map/MapView.tsx'
 import { tokens } from '../../theme/tokens.ts'
@@ -28,6 +30,11 @@ import s from './mapHub.module.css'
 import { useWide } from './useWide.ts'
 
 type SheetTab = 'places' | 'history'
+
+/** Свёрнутая шторка — полоска с вкладками, px. */
+const SHEET_MIN = 56
+/** Сверху остаётся место для поиска, px. */
+const SHEET_TOP_GAP = 150
 
 const KIND_ICON: Record<Place['kind'], IconName> = {
   point: 'route',
@@ -104,12 +111,63 @@ export function MapHubScreen() {
   const year: YearFilter = CHRONICLE_YEARS.find((y) => y === yearParam) ?? 'all'
   const selectedKey = params.get('place') ?? undefined
   const selected = hub.places.find((p) => p.key === selectedKey)
-  const [sheetOpen, setSheetOpen] = useState(true)
+  const [viewportHeight, setViewportHeight] = useState(() => window.innerHeight)
+  // Шторка тянется пальцем на любую высоту: от полоски с вкладками до почти всего экрана
+  const [sheetH, setSheetH] = useState(() => Math.round(window.innerHeight * 0.45))
+  const [dragging, setDragging] = useState(false)
+  const drag = useRef<{ y: number; h: number; moved: boolean } | null>(null)
+  const sheetMax = Math.max(SHEET_MIN + 40, viewportHeight - SHEET_TOP_GAP)
+  const sheetOpen = sheetH > SHEET_MIN + 8
+  const setSheetOpen = (open: boolean | ((v: boolean) => boolean)) => {
+    const next = typeof open === 'function' ? open(sheetOpen) : open
+    setSheetH((h) =>
+      next ? (h > SHEET_MIN + 8 ? h : Math.round(viewportHeight * 0.45)) : SHEET_MIN,
+    )
+  }
+  const clampH = (h: number) => Math.min(sheetMax, Math.max(SHEET_MIN, h))
+  const onDragStart = (e: PointerEvent<HTMLElement>) => {
+    if (wide) return
+    const sheet = e.currentTarget.closest('section')
+    drag.current = {
+      y: e.clientY,
+      h: sheet?.getBoundingClientRect().height ?? sheetH,
+      moved: false,
+    }
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+  }
+  const onDragMove = (e: PointerEvent<HTMLElement>) => {
+    const d = drag.current
+    if (!d) return
+    const dy = d.y - e.clientY
+    if (!d.moved && Math.abs(dy) < 4) return
+    if (!d.moved) setDragging(true)
+    d.moved = true
+    setSheetH(clampH(d.h + dy))
+  }
+  const onDragEnd = () => {
+    const d = drag.current
+    if (!d) return
+    setDragging(false)
+    // Почти свёрнута — прилипает к полоске с вкладками
+    if (d.moved) setSheetH((h) => (h < SHEET_MIN + 36 ? SHEET_MIN : h))
+    // Отпустили без движения — обычное нажатие: onClick переключит шторку
+    window.setTimeout(() => {
+      drag.current = null
+    }, 0)
+  }
   const h1 = useRef<HTMLHeadingElement>(null)
 
   useEffect(() => {
     document.title = `Карта — ${region.appTitle}`
-    h1.current?.focus({ preventScroll: true })
+    document
+      .querySelector<HTMLInputElement>('[data-testid="hub-search"]')
+      ?.focus({ preventScroll: true })
+  }, [])
+
+  useEffect(() => {
+    const updateHeight = () => setViewportHeight(window.innerHeight)
+    window.addEventListener('resize', updateHeight)
+    return () => window.removeEventListener('resize', updateHeight)
   }, [])
 
   const update = (next: Record<string, string | undefined>, replace = true) => {
@@ -152,10 +210,10 @@ export function MapHubScreen() {
         : {
             top: 90,
             right: 32,
-            bottom: sheetOpen ? Math.round(window.innerHeight * 0.45) + 40 : 110,
+            bottom: Math.min(sheetH, viewportHeight - 200) + 40,
             left: 32,
           },
-    [wide, sheetOpen],
+    [wide, sheetH, viewportHeight],
   )
 
   return (
@@ -173,6 +231,7 @@ export function MapHubScreen() {
         selectedId={selectedKey}
         fitToContent
         fitPadding={padding}
+        userPosition={hub.position}
         variant="fill"
         testID="hub-map"
       />
@@ -180,6 +239,8 @@ export function MapHubScreen() {
       <section
         className={s.sheet}
         data-open={sheetOpen || undefined}
+        data-dragging={dragging || undefined}
+        style={wide ? undefined : { height: sheetH, maxHeight: 'none' }}
         aria-label="Панель карты"
         data-testid="hub-sheet"
       >
@@ -187,7 +248,21 @@ export function MapHubScreen() {
           type="button"
           className={s.handle}
           aria-expanded={sheetOpen}
-          onClick={() => setSheetOpen((v) => !v)}
+          onPointerDown={onDragStart}
+          onPointerMove={onDragMove}
+          onPointerUp={onDragEnd}
+          onPointerCancel={onDragEnd}
+          onClick={() => {
+            if (drag.current?.moved) return
+            setSheetOpen((v) => !v)
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+              e.preventDefault()
+              const step = Math.round(viewportHeight * 0.15) * (e.key === 'ArrowUp' ? 1 : -1)
+              setSheetH((h) => clampH(h + step))
+            }
+          }}
           data-testid="hub-sheet-toggle"
         >
           <span className={s.grip} aria-hidden="true" />
@@ -195,11 +270,10 @@ export function MapHubScreen() {
             {sheetOpen ? 'Свернуть панель' : 'Развернуть панель'}
           </span>
         </button>
-        <div className={s.tabs} role="tablist" aria-label="Что показать">
+        <div className={s.tabs} role="group" aria-label="Что показать">
           <button
             type="button"
-            role="tab"
-            aria-selected={tab === 'places'}
+            aria-pressed={tab === 'places'}
             className={s.tab}
             onClick={() => update({ tab: undefined, year: undefined })}
             data-testid="hub-tab-places"
@@ -208,8 +282,7 @@ export function MapHubScreen() {
           </button>
           <button
             type="button"
-            role="tab"
-            aria-selected={tab === 'history'}
+            aria-pressed={tab === 'history'}
             className={s.tab}
             onClick={() => {
               update({ tab: 'history', place: undefined })
@@ -220,7 +293,7 @@ export function MapHubScreen() {
             История края
           </button>
         </div>
-        <div className={s.body} role="tabpanel" hidden={!sheetOpen && !wide}>
+        <div className={s.body} hidden={!sheetOpen && !wide}>
           {hub.pending && (
             <p role="status" data-testid="loading">
               Загружаем карту…
@@ -274,7 +347,7 @@ function SearchBox({ places, onPick }: { places: Place[]; onPick: (p: Place) => 
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Места боя, музеи, исторические маршруты..."
-          aria-controls={listId}
+          aria-controls={found.length > 0 || showEmpty ? listId : undefined}
           autoComplete="off"
           data-testid="hub-search"
         />
@@ -296,7 +369,7 @@ function SearchBox({ places, onPick }: { places: Place[]; onPick: (p: Place) => 
                 <span>
                   <span className={s.resultTitle}>{p.title}</span>
                   <span className={s.resultHint}>
-                    {PLACE_KIND_LABEL[p.kind]} · {p.subtitle}
+                    {PLACE_KIND_LABEL[p.kind]} · {p.subtitle} {p.demo && <DemoBadge />}
                   </span>
                 </span>
               </button>
@@ -316,7 +389,7 @@ function RouteCard({ route, main }: { route: Route; main: boolean }) {
   return (
     <article className={s.routeCard} data-testid={`hub-route-${route.id}`}>
       <p className={ui.kick}>
-        Семейный маршрут · {status.done} из {status.total} точек
+        Маршрут · {status.done} из {status.total} точек
       </p>
       <h3 className={s.cardTitle}>{route.title}</h3>
       <p className={s.muted}>
@@ -380,9 +453,7 @@ function Overview({
             </li>
           ))}
         </ul>
-        <Link to={paths.lastBattle()} className={s.more} data-testid="hub-last-battle">
-          «Последний бой»: все места и подписка на находки
-        </Link>
+        <SubscribeFinds />
       </section>
       <section aria-labelledby="hub-list" className={s.block}>
         <h2 id="hub-list" className={s.blockTitle}>
@@ -400,13 +471,45 @@ function Overview({
                 <Icon name={KIND_ICON[p.kind]} size={1.1} />
                 <span>
                   <span className={s.resultTitle}>{p.title}</span>
-                  <span className={s.resultHint}>{p.subtitle}</span>
+                  <span className={s.resultHint}>
+                    {p.subtitle} {p.demo && <DemoBadge />}
+                  </span>
                 </span>
               </button>
             </li>
           ))}
         </ul>
       </section>
+    </>
+  )
+}
+
+/** Подписка на находки рядом (перенесена с бывшего экрана «Последний бой»). */
+function SubscribeFinds() {
+  const { subscribed, busy, failed, subscribe } = useNearbySubscription()
+  if (subscribed) {
+    return (
+      <p className={s.muted} data-testid="subscribe-done">
+        Вы подписаны: сообщим о находках в радиусе {NOTIFY_RADIUS_KM} км
+      </p>
+    )
+  }
+  return (
+    <>
+      <button
+        type="button"
+        className={ui.button}
+        onClick={() => void subscribe()}
+        disabled={busy}
+        data-testid="last-battle-subscribe"
+      >
+        <Icon name="bell" size={1.1} /> Сообщать о находках рядом
+      </button>
+      {failed && (
+        <p className={s.muted} role="alert" data-testid="subscribe-error">
+          Не удалось подписаться: проверьте доступ к геопозиции и связь
+        </p>
+      )}
     </>
   )
 }

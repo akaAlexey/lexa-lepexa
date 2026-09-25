@@ -9,7 +9,7 @@ const photo = () => new File(['фото'], 'ded.jpg', { type: 'image/jpeg' })
 
 describe('«Оживить своё фото»', () => {
   it('этическая оговорка и фраза из кейса выбрана по умолчанию', async () => {
-    renderApp('/live/new', { role: 'family' })
+    renderApp('/live/new', { role: 'family', signedIn: true })
     expect(await screen.findByTestId('live-new-ethics')).toHaveTextContent(
       'только для мемориальных целей',
     )
@@ -18,7 +18,7 @@ describe('«Оживить своё фото»', () => {
   })
 
   it('без фото и согласия не отправляется', async () => {
-    renderApp('/live/new', { role: 'family' })
+    renderApp('/live/new', { role: 'family', signedIn: true })
     await userEvent.click(await screen.findByTestId('live-new-submit'))
     expect(screen.getByTestId('live-new-photo-error')).toHaveTextContent('Выберите фотографию')
     expect(screen.getByTestId('live-new-consent-error')).toHaveTextContent('согласия')
@@ -26,7 +26,7 @@ describe('«Оживить своё фото»', () => {
   })
 
   it('фото, согласие → принято: речь из кейса, пример ролика с пометкой ИИ, «Мои живые фото» на устройстве', async () => {
-    const { platform } = renderApp('/live/new', { role: 'family' })
+    const { platform } = renderApp('/live/new', { role: 'family', signedIn: true })
     await userEvent.upload(await screen.findByTestId('live-new-file'), photo())
     expect(await screen.findByTestId('live-new-preview')).toBeInTheDocument()
     await userEvent.type(screen.getByTestId('live-new-name'), 'Красноармеец Петров П.П.')
@@ -47,7 +47,7 @@ describe('«Оживить своё фото»', () => {
   })
 
   it('рассказ о подвиге вместо фразы: короткий не принимается', async () => {
-    renderApp('/live/new', { role: 'family' })
+    renderApp('/live/new', { role: 'family', signedIn: true })
     await userEvent.click(await screen.findByTestId('live-new-text-feat'))
     await userEvent.type(screen.getByTestId('live-new-feat'), 'Коротко')
     await userEvent.click(screen.getByTestId('live-new-submit'))
@@ -55,12 +55,12 @@ describe('«Оживить своё фото»', () => {
   })
 
   it('из списка «живых фото» и с братской могилы на карте хроники — переход к своему фото', async () => {
-    renderApp('/live', { role: 'family' })
+    renderApp('/live', { role: 'family', signedIn: true })
     expect(await screen.findByTestId('live-own-link')).toHaveAttribute('href', '/live/new')
   })
 
   it('на карте хроники у братской могилы — «Создать живое фото»', async () => {
-    renderApp('/chronicle', { role: 'family' })
+    renderApp('/chronicle', { role: 'family', signedIn: true })
     const map = await screen.findByTestId('chronicle-map')
     const graves = await within(map).findAllByRole('button', { name: /^Братская могила/ })
     await userEvent.click(graves[0]!)

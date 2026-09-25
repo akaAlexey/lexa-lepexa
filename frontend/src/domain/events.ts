@@ -27,6 +27,11 @@ export const EVENT_FILTERS: readonly { value: EventFilter; label: string }[] = [
   { value: 'fund', label: 'Сборы' },
 ]
 
+/** Фильтр из адреса (?show=…): незнакомое значение — «Все». */
+export function eventFilterOf(value: string | null): EventFilter {
+  return EVENT_FILTERS.some((f) => f.value === value) ? (value as EventFilter) : 'all'
+}
+
 export const EVENT_KIND_LABEL: Record<EventKind, string> = {
   request: 'Набор волонтёров',
   trip: 'Выезд',

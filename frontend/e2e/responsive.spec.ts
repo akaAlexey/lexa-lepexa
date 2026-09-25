@@ -3,17 +3,15 @@ import { expectNoA11yViolations, expectNoHorizontalScroll, test, useDemoDate } f
 
 /** Каждый экран P0 и его главное действие (одна большая красная кнопка). */
 const SCREENS = [
-  { url: '/', main: 'role-family' },
+  { url: '/roles', main: 'role-family' },
   { url: '/trail', main: 'trail-start' },
   { url: '/trail/park-3km/point/rubezh', main: 'task-option-0' },
-  { url: '/search', main: 'search-join' },
-  { url: '/weekends', main: 'weekends-register' },
   { url: '/weekends/W01', main: 'trip-register' },
   { url: '/last-battle', main: 'last-battle-subscribe' },
   { url: '/last-battle/S01', main: 'site-help' },
   // Разделы дизайна «Стол и газета» (ADR 0012)
   { url: '/map', main: 'hub-route-start' },
-  { url: '/events', main: 'search-join' },
+  { url: '/events', main: 'events-nearest-trip' },
   { url: '/archive', main: 'archive-new' },
   { url: '/other?section=account', main: 'signin-submit' },
 ] as const
@@ -21,7 +19,7 @@ const SCREENS = [
 test.describe('Адаптив и доступность каждого экрана', () => {
   test.beforeEach(async ({ page }) => {
     await useDemoDate(page)
-    await page.goto('/')
+    await page.goto('/roles')
     await page.getByTestId('role-volunteer').click()
   })
 
@@ -53,5 +51,44 @@ test.describe('Адаптив и доступность каждого экра�
       await expect(page.getByTestId('screen-not-implemented')).toHaveCount(0)
       await expect(page.locator('[data-main-action]'), url).toHaveCount(1)
     }
+  })
+
+  test('поиск по карте объявляет список только когда он существует', async ({ page }) => {
+    await page.goto('/map')
+    const search = page.getByTestId('hub-search')
+    await expect(search).not.toHaveAttribute('aria-controls', /.+/)
+    await search.fill('несуществующее место')
+    const listId = await search.getAttribute('aria-controls')
+    expect(listId).toBeTruthy()
+    await expect(page.locator(`[id="${listId}"]`)).toBeVisible()
+  })
+
+  test('если карта не загрузилась, точки остаются доступны списком', async ({ page }) => {
+    await page.addInitScript(() => {
+      const getContext = HTMLCanvasElement.prototype.getContext
+      HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, type, ...args) {
+        if (type === 'webgl' || type === 'webgl2' || type === 'experimental-webgl') return null
+        return getContext.call(this, type, ...args)
+      } as typeof getContext
+    })
+    await page.goto('/map')
+    await expect(page.getByTestId('hub-map-fallback')).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByTestId('hub-route-start')).toBeVisible()
+    await expectNoA11yViolations(page)
+  })
+
+  test('главное действие мероприятий зависит от роли', async ({ page }) => {
+    // ADR 0013: роль выбирается на /roles, после выбора — «Мероприятия»
+    await page.goto('/roles')
+    await page.getByTestId('role-family').click()
+    await expect(page).toHaveURL(/\/events$/)
+    await expect(page.getByTestId('events-nearest-trip')).toContainText('Ближайший выезд')
+    await expect(page.getByTestId('search-join')).toHaveCount(0)
+    await page.goto('/roles')
+    await page.getByTestId('role-verifier').click()
+    await expect(page.getByTestId('events-archive')).toHaveText('Проверить истории')
+    await page.goto('/roles')
+    await page.getByTestId('role-commander').click()
+    await expect(page.getByTestId('search-create-request')).toHaveText('Набрать волонтёров')
   })
 })

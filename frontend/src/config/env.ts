@@ -15,6 +15,8 @@ const EnvSchema = z
     ),
     VITE_TILES: z.enum(['openfreemap', 'none']).default('openfreemap'),
     VITE_MOCK_LATENCY_MS: z.coerce.number().int().nonnegative().default(300),
+    // Геопозиция по умолчанию: device — настоящий GPS, demo — точка из конфига региона (e2e, показ)
+    VITE_GEO_DEFAULT: z.enum(['device', 'demo']).default('device'),
   })
   .refine((env) => env.VITE_API_MODE === 'mock' || env.VITE_API_URL, {
     message: 'VITE_API_URL обязателен при VITE_API_MODE=live',

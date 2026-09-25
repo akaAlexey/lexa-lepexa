@@ -3,9 +3,11 @@
  * `patterns` — шаблоны для роутера, `paths` — готовые ссылки для экранов, уведомлений и «Поделиться».
  * Шаг B (ADR 0012): новые разделы «Карта» (/map), «Мероприятия» (/events), «Другое» (/other);
  * прежние адреса остаются вложенными экранами этих разделов.
+ * Спринт v3.2: «/» — это «Мероприятия», выбор роли — /roles.
  */
 export const patterns = {
   home: '/',
+  roles: '/roles',
   map: '/map',
   events: '/events',
   other: '/other',
@@ -28,16 +30,28 @@ export const patterns = {
   newLivePhoto: '/live/new',
   livePhoto: '/live/:photoId',
   demo: '/demo',
+  about: '/about',
+  privacy: '/privacy',
+  terms: '/terms',
 } as const
 
 export type ScreenId = keyof typeof patterns
+
+/** Раздел «Другого», открытый по ссылке (?section=). */
+export type OtherSection = 'account' | 'archive' | 'ar' | 'photo' | 'role'
+
+/** «Другое» с открытым разделом: «Вход» в шапке сразу открывает форму. */
+export const otherSection = (section: OtherSection, extra?: string) =>
+  `${patterns.other}?section=${section}${extra ? `&${extra}` : ''}`
 
 const seg = encodeURIComponent
 
 export const paths = {
   home: () => patterns.home,
+  roles: () => patterns.roles,
   map: () => patterns.map,
-  events: () => patterns.events,
+  /** «Мероприятия»; `show` — фильтр ленты (trip, request, fund), ссылкой можно поделиться. */
+  events: (show?: string) => (show ? `${patterns.events}?show=${seg(show)}` : patterns.events),
   other: () => patterns.other,
   trail: () => patterns.trail,
   point: (routeId: string, pointId: string) => `/trail/${seg(routeId)}/point/${seg(pointId)}`,
@@ -58,4 +72,7 @@ export const paths = {
   newLivePhoto: () => patterns.newLivePhoto,
   livePhoto: (photoId: string) => `/live/${seg(photoId)}`,
   demo: () => patterns.demo,
+  about: () => patterns.about,
+  privacy: () => patterns.privacy,
+  terms: () => patterns.terms,
 } as const satisfies Record<ScreenId, (...ids: string[]) => string>

@@ -47,6 +47,8 @@ export interface MapViewProps {
   variant?: 'inline' | 'fill'
   /** Отступы кадра при подгонке, px: шторка и поиск не закрывают метки. */
   fitPadding?: { top: number; right: number; bottom: number; left: number }
+  /** Где пользователь: синяя точка «я здесь» поверх карты. */
+  userPosition?: LatLon | null
   testID: string
 }
 
@@ -68,9 +70,11 @@ export function MapView({
   selectedId,
   variant = 'inline',
   fitPadding,
+  userPosition,
   testID,
 }: MapViewProps) {
   const container = useRef<HTMLElement>(null)
+  const frame = useRef<HTMLDivElement>(null)
   const [map, setMap] = useState<MlMap | null>(null)
   const [failed, setFailed] = useState(false)
   const [anchors, setAnchors] = useState<{ marker: MapMarker; el: HTMLElement }[]>([])
@@ -79,6 +83,12 @@ export function MapView({
   useEffect(() => {
     let disposed = false
     let instance: MlMap | undefined
+    const timeout = window.setTimeout(() => {
+      if (disposed) return
+      disposed = true
+      instance?.remove()
+      setFailed(true)
+    }, 10_000)
     // Воркер MapLibre собирается Vite отдельно: сам пакет ищет его рядом с чанком и не находит.
     Promise.all([
       import('maplibre-gl'),
@@ -97,6 +107,7 @@ export function MapView({
         })
         instance.on('load', () => {
           if (disposed || !instance) return
+          window.clearTimeout(timeout)
           setMap(instance)
           const grid = gridLayer()
           instance.addSource('grid', grid.source)
@@ -106,9 +117,14 @@ export function MapView({
           )
         })
       })
-      .catch(() => !disposed && setFailed(true))
+      .catch(() => {
+        if (disposed) return
+        window.clearTimeout(timeout)
+        setFailed(true)
+      })
     return () => {
       disposed = true
+      window.clearTimeout(timeout)
       instance?.remove()
     }
   }, [])
@@ -173,6 +189,43 @@ export function MapView({
     })
   }, [map, route])
 
+  // Метки уменьшаются при отдалении: масштаб 0,45…1 между зумом 8 и 13
+  useEffect(() => {
+    if (!map) return
+    const apply = () => {
+      const z = map.getZoom()
+      const scale = Math.min(1, Math.max(0.45, 0.45 + ((z - 8) / 5) * 0.55))
+      frame.current?.style.setProperty('--marker-scale', scale.toFixed(3))
+    }
+    apply()
+    map.on('zoom', apply)
+    return () => {
+      map.off('zoom', apply)
+    }
+  }, [map])
+
+  // Точка «я здесь»
+  useEffect(() => {
+    if (!map || !userPosition) return
+    let marker: Marker | undefined
+    let cancelled = false
+    void import('maplibre-gl').then(({ Marker }) => {
+      if (cancelled) return
+      const el = document.createElement('div')
+      el.className = s.me ?? ''
+      el.setAttribute('data-testid', `${testID}-me`)
+      el.setAttribute('role', 'img')
+      el.setAttribute('aria-label', 'Вы здесь')
+      marker = new Marker({ element: el })
+        .setLngLat([userPosition.lon, userPosition.lat])
+        .addTo(map)
+    })
+    return () => {
+      cancelled = true
+      marker?.remove()
+    }
+  }, [map, userPosition, testID])
+
   useEffect(() => {
     if (!map || !fitToContent) return
     const points = [...markers, ...(route ?? [])]
@@ -193,9 +246,9 @@ export function MapView({
     const m = markers.find((x) => x.id === selectedId)
     if (!m) return
     const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    // Центр на выбранной метке, масштаб прежний: пользователь сам решает, насколько приблизить
     map.easeTo({
       center: [m.lon, m.lat],
-      zoom: Math.max(map.getZoom(), 13),
       duration: reduce ? 0 : 600,
       ...(fitPadding ? { padding: fitPadding } : {}),
     })
@@ -204,13 +257,14 @@ export function MapView({
   if (failed) {
     return (
       <div className={s.fallback} data-testid={`${testID}-fallback`} role="note">
-        Карта недоступна на этом устройстве. Все точки есть в списке ниже.
+        Карта недоступна на этом устройстве. Точки можно открыть из списка на этой странице.
       </div>
     )
   }
 
   return (
     <div
+      ref={frame}
       className={variant === 'fill' ? s.frameFill : s.frame}
       data-map-frame={variant === 'fill' ? undefined : ''}
     >

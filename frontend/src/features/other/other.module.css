@@ -26,7 +26,7 @@
 
 .hubName {
   font-family: var(--font-heading);
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 600;
   line-height: 1.2;
 }
@@ -36,19 +36,67 @@
   font-size: 0.9rem;
 }
 
-.arrowDown {
-  transition: transform 0.15s;
+.arrow {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  background: rgb(43 42 38 / 0.08);
+  transition:
+    transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background-color 0.2s;
 }
 
-.arrowUp {
+.arrow[data-open] {
   transform: rotate(180deg);
-  transition: transform 0.15s;
+  background: rgb(43 42 38 / 0.14);
+}
+
+.hubHead:hover .arrow {
+  background: rgb(43 42 38 / 0.16);
+}
+
+/* Плавное раскрытие списка: высота 0fr → 1fr, пункты проявляются по очереди */
+.listWrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.listWrap[data-open] {
+  grid-template-rows: 1fr;
 }
 
 .list {
+  min-height: 0;
+  overflow: hidden;
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.list li {
+  opacity: 0;
+  transform: translateY(-0.4rem);
+  transition:
+    opacity 0.2s,
+    transform 0.25s;
+}
+
+.listWrap[data-open] .list li {
+  opacity: 1;
+  transform: none;
+  transition-delay: calc(var(--i, 0) * 35ms + 60ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listWrap,
+  .list li,
+  .arrow {
+    transition: none;
+  }
 }
 
 .list li + li {
@@ -69,9 +117,18 @@
   cursor: pointer;
 }
 
+.item {
+  transition: background-color 0.15s;
+}
+
 .item:hover,
+.item:focus-visible,
 .item[aria-current='true'] {
-  background: rgb(43 42 38 / 0.05);
+  background: rgb(43 42 38 / 0.07);
+}
+
+.item[aria-current='true'] {
+  box-shadow: inset 3px 0 0 var(--color-olive);
 }
 
 .itemIcon {
@@ -193,4 +250,46 @@
   display: grid;
   gap: var(--space-3);
   justify-items: start;
+}
+
+/* Вход / регистрация: две вкладки-кнопки */
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--color-ink);
+}
+
+.tab {
+  min-height: var(--touch-min);
+  border: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.tab[aria-selected='true'] {
+  background: var(--color-ink);
+  color: var(--color-surface);
+}
+
+.consent {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.consent .check {
+  align-items: flex-start;
+  line-height: 1.35;
+}
+
+.consent .check input {
+  flex: none;
+  margin-top: 0.1rem;
+}
+
+.error {
+  color: var(--color-danger);
+  font-size: 0.9rem;
 }
