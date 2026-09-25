@@ -38,7 +38,7 @@ export const patterns = {
 export type ScreenId = keyof typeof patterns
 
 /** Раздел «Другого», открытый по ссылке (?section=). */
-export type OtherSection = 'account' | 'archive' | 'ar' | 'photo' | 'role'
+export type OtherSection = 'account' | 'archive' | 'ar' | 'photo' | 'role' | 'last-battle'
 
 /** «Другое» с открытым разделом: «Вход» в шапке сразу открывает форму. */
 export const otherSection = (section: OtherSection, extra?: string) =>
