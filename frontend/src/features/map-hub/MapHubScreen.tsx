@@ -236,24 +236,6 @@ export function MapHubScreen() {
         testID="hub-map"
       />
       <SearchBox places={hub.places} onPick={(p) => select(p.key)} />
-      {!hub.position && (
-        <div className={s.locate}>
-          <button
-            type="button"
-            className={ui.button}
-            onClick={hub.requestLocation}
-            data-testid="hub-locate"
-          >
-            <Icon name="pin" size={1.1} />
-            {hub.locationFailed ? 'Повторить определение места' : 'Показывать меня на карте'}
-          </button>
-          {hub.locationFailed && (
-            <p className={s.locateError} role="status">
-              Разрешите сайту доступ к геопозиции, чтобы отметить вас на карте.
-            </p>
-          )}
-        </div>
-      )}
       <section
         className={s.sheet}
         data-open={sheetOpen || undefined}
