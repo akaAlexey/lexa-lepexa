@@ -93,7 +93,11 @@ export function OtherScreen() {
         }
         testID={`screen-other-${active.id}`}
       >
-        <section className={s.body} aria-label={active.title} data-testid={`other-panel-${active.id}`}>
+        <section
+          className={s.body}
+          aria-label={active.title}
+          data-testid={`other-panel-${active.id}`}
+        >
           <Panel id={active.id} />
         </section>
       </Screen>
