@@ -5,6 +5,7 @@ import os
 
 os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///file:tropa_test?mode=memory&cache=shared&uri=true"
 os.environ["CORS_ORIGINS"] = "http://localhost:5173"
+os.environ["AUTH_COOKIE_SECURE"] = "0"
 
 import httpx  # noqa: E402
 import pytest  # noqa: E402

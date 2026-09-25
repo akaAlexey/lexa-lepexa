@@ -19,8 +19,30 @@ type Method<E extends Endpoint> = keyof EndpointArgs<E> extends never
 
 export type EndpointMethods = { [K in EndpointName]: Method<Endpoints[K]> }
 
+export interface AuthAccount {
+  id: string
+  login: string
+  name?: string
+  since: string
+}
+
+export interface AuthApi {
+  login(input: { login: string; password: string }): Promise<AuthAccount>
+  register(input: {
+    login: string
+    password: string
+    name: string
+    terms: boolean
+    privacy: boolean
+  }): Promise<AuthAccount>
+  me(): Promise<AuthAccount | null>
+  logout(): Promise<void>
+}
+
 /** Единый интерфейс API. Его реализуют mock- и live-адаптеры. */
 export interface ApiClient extends EndpointMethods {
+  /** Реальная серверная авторизация есть у live-адаптера; mock использует локальную витрину. */
+  auth?: AuthApi
   /** Подписка на поток уведомлений. Возвращает функцию отписки. */
   onNotification(listener: (n: AppNotification) => void): () => void
   /** Только mock: вернуть данные к исходным фикстурам (сброс демо). */
