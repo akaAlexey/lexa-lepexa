@@ -27,11 +27,22 @@ python start.py
 DATABASE_URL=postgresql+asyncpg://USER:PASSWORD@HOST:PORT/DATABASE   # уже задана — не трогать
 CORS_ORIGINS=https://team-shpilit.github.io,https://marshrutypobedy.ru,https://www.marshrutypobedy.ru
 SEED_DEMO=1
+DEMO_IDENTITY_ENABLED=0
+AUTH_COOKIE_SECURE=1
+AUTH_COOKIE_SAMESITE=none
 PORT=<порт, который требует Deploy-F>
 ```
 
 Эти три origin разрешены и по умолчанию (`app/config.py`), переменная нужна только чтобы добавить новые.
 Пароль базы в git не кладём.
+
+Авторизация требует миграцию `0005_server_auth` (её запускает `start.py`). Сайт должен быть
+собран с `API_URL=https://api.marshrutypobedy.ru/api/v1` в переменных GitHub Actions.
+Для фронта на другом сайте cookie использует `SameSite=None; Secure`, а браузер может
+ограничивать сторонние cookie. Надёжный вариант для собственного домена — сайт
+`marshrutypobedy.ru` и API `api.marshrutypobedy.ru` (один site). Для локального HTTP
+указать `AUTH_COOKIE_SECURE=0`, `AUTH_COOKIE_SAMESITE=lax` и прокси Vite `/api/v1`.
+В production не включать `DEMO_IDENTITY_ENABLED`: заголовок `X-Demo-User` тогда игнорируется.
 
 ## 3. База: создать, дополнить, пересоздать
 
