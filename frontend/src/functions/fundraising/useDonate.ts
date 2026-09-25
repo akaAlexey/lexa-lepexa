@@ -1,16 +1,22 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+import type { Fundraiser } from '../../contract/schemas.ts'
 import { memory } from '../core/deviceMemory.ts'
 import { qk } from '../core/queryKeys.ts'
 import { useDeps } from '../core/useDeps.ts'
 import { useDeviceMemory } from '../core/useDeviceMemory.ts'
-import { DEFAULT_DONATION, startPayment } from './fundraising.ts'
+import {
+  DEFAULT_DONATION,
+  PAYMENT_POLL_LIMIT,
+  PAYMENT_POLL_MS,
+  startPayment,
+} from './fundraising.ts'
 
 export type DonateStatus = 'idle' | 'sending' | 'redirect' | 'done' | 'error'
 
 /**
  * Пожертвование в сбор через ЮKassa (тестовый магазин). С сервером — переход на страницу оплаты
- * ЮKassa, после возврата статус проверяет `usePaymentReturn`. Без сервера (mock) — платёж имитируется.
+ * ЮKassa, после возврата на /payment статус проверяет `usePaymentResult`. Без сервера (mock) — платёж имитируется.
  */
 export function useDonate(fundraiserId: string): {
   amount: number
@@ -27,8 +33,7 @@ export function useDonate(fundraiserId: string): {
   const confirm = async () => {
     setStatus('sending')
     try {
-      const returnPath = window.location.pathname + window.location.search
-      const started = await startPayment(deps, fundraiserId, amount, returnPath)
+      const started = await startPayment(deps, fundraiserId, amount)
       if (started.confirmationUrl) {
         setPending({ id: started.paymentId, fundraiserId, amountRub: amount })
         setStatus('redirect')
@@ -44,50 +49,61 @@ export function useDonate(fundraiserId: string): {
   return { amount, setAmount, status, confirm }
 }
 
-export type PaymentReturn =
+export type PaymentResult =
   | { state: 'none' }
   | { state: 'checking' }
-  | { state: 'succeeded'; amountRub: number }
-  | { state: 'pending'; amountRub: number }
+  | { state: 'succeeded'; amountRub: number; fundraiser?: Fundraiser }
+  /** ЮKassa ещё не подтвердила платёж за минуту опроса. */
+  | { state: 'waiting'; amountRub: number }
   | { state: 'canceled'; amountRub: number }
+  /** Сервер или ЮKassa не ответили. */
   | { state: 'error' }
 
-/** Вернулись со страницы оплаты ЮKassa: узнаём статус платежа и обновляем сборы. */
-export function usePaymentReturn(): { result: PaymentReturn; close: () => void } {
+/**
+ * Страница результата (/payment): опрашивает статус платежа, пока ЮKassa его не подтвердит или не отменит.
+ * Незавершённый платёж остаётся в памяти устройства — обновление страницы проверит его снова.
+ * «Проверить ещё раз» — новый экземпляр компонента (key), опрос начинается заново.
+ */
+export function usePaymentResult(): PaymentResult {
   const deps = useDeps()
   const queryClient = useQueryClient()
   const [pending, setPending] = useDeviceMemory(memory.pendingPayment)
-  // Итог приходит из ответа ЮKassa; пока его нет, а платёж ждёт проверки — «проверяем»
-  const [outcome, setResult] = useState<PaymentReturn>()
-  const result: PaymentReturn = outcome ?? (pending ? { state: 'checking' } : { state: 'none' })
+  const [outcome, setOutcome] = useState<PaymentResult>()
 
   useEffect(() => {
     if (!pending) return
     let active = true
-    deps.api.paymentStatus({ id: pending.id }).then(
-      (p) => {
-        if (!active) return
-        if (p.status === 'succeeded') {
-          setResult({ state: 'succeeded', amountRub: pending.amountRub })
-          setPending(undefined)
-          void queryClient.invalidateQueries({ queryKey: qk.fundraisers })
-        } else if (p.status === 'canceled') {
-          setResult({ state: 'canceled', amountRub: pending.amountRub })
-          setPending(undefined)
-        } else {
-          setResult({ state: 'pending', amountRub: pending.amountRub })
-        }
-      },
-      () => active && setResult({ state: 'error' }),
-    )
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let polls = 0
+    const check = async () => {
+      let p
+      try {
+        p = await deps.api.paymentStatus({ id: pending.id })
+      } catch {
+        if (active) setOutcome({ state: 'error' })
+        return
+      }
+      if (!active) return
+      const amountRub = p.amountRub ?? pending.amountRub
+      if (p.status === 'succeeded') {
+        setOutcome({ state: 'succeeded', amountRub, fundraiser: p.fundraiser ?? undefined })
+        setPending(undefined)
+        void queryClient.invalidateQueries({ queryKey: qk.fundraisers })
+      } else if (p.status === 'canceled') {
+        setOutcome({ state: 'canceled', amountRub })
+        setPending(undefined)
+      } else if (++polls >= PAYMENT_POLL_LIMIT) {
+        setOutcome({ state: 'waiting', amountRub })
+      } else {
+        timer = setTimeout(() => void check(), PAYMENT_POLL_MS)
+      }
+    }
+    void check()
     return () => {
       active = false
+      clearTimeout(timer)
     }
   }, [pending, deps.api, queryClient, setPending])
 
-  const close = useCallback(() => {
-    setResult({ state: 'none' })
-    setPending(undefined)
-  }, [setPending])
-  return { result, close }
+  return outcome ?? (pending ? { state: 'checking' } : { state: 'none' })
 }

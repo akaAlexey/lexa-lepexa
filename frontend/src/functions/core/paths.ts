@@ -30,6 +30,8 @@ export const patterns = {
   newLivePhoto: '/live/new',
   livePhoto: '/live/:photoId',
   demo: '/demo',
+  /** Сюда ЮKassa возвращает после оплаты (YOOKASSA_RETURN_URL на сервере). */
+  payment: '/payment',
   about: '/about',
   privacy: '/privacy',
   terms: '/terms',
@@ -72,7 +74,12 @@ export const paths = {
   newLivePhoto: () => patterns.newLivePhoto,
   livePhoto: (photoId: string) => `/live/${seg(photoId)}`,
   demo: () => patterns.demo,
+  payment: () => patterns.payment,
   about: () => patterns.about,
   privacy: () => patterns.privacy,
   terms: () => patterns.terms,
 } as const satisfies Record<ScreenId, (...ids: string[]) => string>
+
+/** Карточка бойца семейного архива (A7) или её правка; `new` — форма нового бойца. */
+export const familyFighter = (id: string, edit = false) =>
+  otherSection('archive', `fighter=${seg(id)}${edit ? '&edit=1' : ''}`)

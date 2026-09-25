@@ -251,21 +251,13 @@ export const PaymentStatus = z
 
 export const PaymentStart = entity(
   'PaymentStart',
-  'Пожертвование через ЮKassa (тестовый магазин): сумма и куда вернуть после оплаты',
-  z.object({
-    fundraiserId: id,
-    amountRub: rub.min(1).max(100_000),
-    returnPath: z
-      .string()
-      .regex(/^\/(?!\/)/)
-      .max(300)
-      .describe('Путь на сайте, например /events'),
-  }),
+  'Пожертвование через ЮKassa (тестовый магазин). Куда вернуть после оплаты, решает сервер (страница /payment)',
+  z.object({ fundraiserId: id, amountRub: rub.min(1).max(100_000) }),
 )
 
 export const PaymentStarted = entity(
   'PaymentStarted',
-  'Созданный платёж: пользователя нужно отправить на confirmationUrl (страница оплаты ЮKassa)',
+  'Созданный платёж: paymentId — id на нашем сервере; пользователя нужно отправить на confirmationUrl (страница оплаты ЮKassa)',
   z.object({
     paymentId: id,
     status: PaymentStatus,

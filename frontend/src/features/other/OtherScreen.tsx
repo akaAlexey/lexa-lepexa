@@ -11,6 +11,7 @@ import { Icon, type IconName } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
+import { FamilyArchivePanel } from './FamilyArchivePanel.tsx'
 import { ProfilePanel } from './ProfilePanel.tsx'
 import s from './other.module.css'
 
@@ -44,7 +45,7 @@ function sectionsFor(signedIn: boolean): Section[] {
     {
       id: 'archive',
       title: 'Семейный архив',
-      hint: 'Пока доступен рассказ в «Историях»',
+      hint: 'Бойцы семьи и поиск в «Памяти народа»',
       icon: 'archive',
       requiresAccount: true,
     },
@@ -84,12 +85,14 @@ export function OtherScreen() {
   }
 
   if (active) {
+    // Внутри архива (карточка, форма) «Назад» ведёт к списку бойцов, а не к меню «Другого»
+    const inArchive = active.id === 'archive' && params.has('fighter')
     return (
       <Screen
         title={active.title}
         back={
-          <BackLink to={paths.other()} testID="other-back">
-            Назад
+          <BackLink to={inArchive ? otherSection('archive') : paths.other()} testID="other-back">
+            {inArchive ? 'К семейному архиву' : 'Назад'}
           </BackLink>
         }
         testID={`screen-other-${active.id}`}
@@ -99,7 +102,7 @@ export function OtherScreen() {
           aria-label={active.title}
           data-testid={`other-panel-${active.id}`}
         >
-          <Panel id={active.id} />
+          <Panel id={active.id} owner={account ? (account.id ?? account.login) : undefined} />
         </section>
       </Screen>
     )
@@ -141,24 +144,15 @@ export function OtherScreen() {
   )
 }
 
-function Panel({ id }: { id: SectionId }) {
+/** `owner` — чей архив: у старого входа нет id, тогда ключ — скрытый логин. */
+function Panel({ id, owner }: { id: SectionId; owner?: string }) {
   switch (id) {
     case 'last-battle':
       return <Navigate to={paths.lastBattle()} replace />
     case 'account':
       return <AccountPanel />
     case 'archive':
-      return (
-        <>
-          <p>
-            Здесь будут бойцы вашей семьи: имена, документы и найденные записи в «Памяти народа» и
-            ОБД «Мемориал». Пока расскажите о прадеде в «Историях» — краевед проверит рассказ.
-          </p>
-          <BigButton to={paths.newStory()} icon="story" testID="other-family-story">
-            Рассказать историю
-          </BigButton>
-        </>
-      )
+      return owner ? <FamilyArchivePanel key={owner} owner={owner} /> : null
     case 'ar':
       return <ArPanel />
     case 'photo':

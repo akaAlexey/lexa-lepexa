@@ -1,7 +1,7 @@
 import { matchPath, type RouteObject } from 'react-router'
 import { describe, expect, it } from 'vitest'
 import { appRoutes } from '../../app/routes.tsx'
-import { paths, patterns, type ScreenId } from './paths.ts'
+import { familyFighter, paths, patterns, type ScreenId } from './paths.ts'
 
 /** Все адреса маршрутов приложения с ведущим «/». */
 function routePaths(routes: RouteObject[], base = ''): string[] {
@@ -37,6 +37,7 @@ const SAMPLE: Record<ScreenId, string> = {
   newLivePhoto: paths.newLivePhoto(),
   livePhoto: paths.livePhoto('soldier'),
   demo: paths.demo(),
+  payment: paths.payment(),
   about: paths.about(),
   privacy: paths.privacy(),
   terms: paths.terms(),
@@ -69,6 +70,7 @@ describe('адреса экранов', () => {
       newLivePhoto: '/live/new',
       livePhoto: '/live/soldier',
       demo: '/demo',
+      payment: '/payment',
       about: '/about',
       privacy: '/privacy',
       terms: '/terms',
@@ -84,6 +86,12 @@ describe('адреса экранов', () => {
 
   it('id с пробелами и слэшами кодируются, адрес не ломается', () => {
     expect(paths.site('a b/c')).toBe('/last-battle/a%20b%2Fc')
+  })
+
+  it('карточка бойца семейного архива — раздел «Другого» с параметром fighter', () => {
+    expect(familyFighter('F-1')).toBe('/other?section=archive&fighter=F-1')
+    expect(familyFighter('F-1', true)).toBe('/other?section=archive&fighter=F-1&edit=1')
+    expect(familyFighter('a&b')).toBe('/other?section=archive&fighter=a%26b')
   })
 
   it('каждый маршрут роутера описан шаблоном, и наоборот', () => {

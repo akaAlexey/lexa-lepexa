@@ -20,8 +20,11 @@ class Settings(BaseSettings):
     yookassa_shop_id: str = ""
     yookassa_secret_key: str = ""
     yookassa_api_url: str = "https://api.yookassa.ru/v3"
-    # Куда ЮKassa вернёт пользователя после оплаты (адрес сайта).
-    site_url: str = "https://marshrutypobedy.ru"
+    # Куда ЮKassa вернёт пользователя после оплаты: страница результата на сайте. От клиента не принимается.
+    yookassa_return_url: str = ""
+    # Шлюз выплат (тестовый) — на будущее, кодом пока не используется.
+    yookassa_payout_agent_id: str = ""
+    yookassa_payout_secret_key: str = ""
     # Серверная сессия входа: HttpOnly-cookie, токен хранится в БД только в виде SHA-256.
     auth_cookie_name: str = "mp_session"
     auth_cookie_secure: bool = True
@@ -30,6 +33,15 @@ class Settings(BaseSettings):
     @property
     def yookassa_enabled(self) -> bool:
         return bool(self.yookassa_shop_id and self.yookassa_secret_key)
+
+    @property
+    def payment_return_url(self) -> str:
+        return self.yookassa_return_url or "https://marshrutypobedy.ru/payment"
+
+    @property
+    def yookassa_test_key(self) -> bool:
+        """Платежи — только в тестовом режиме: ключ боевого магазина не начинается с test_."""
+        return self.yookassa_secret_key.startswith("test_")
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

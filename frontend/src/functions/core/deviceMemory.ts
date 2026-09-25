@@ -1,4 +1,5 @@
 import type { LatLon, Subscription } from '../../contract/schemas.ts'
+import { parseFighters, type FamilyFighter } from '../../domain/familyArchive.ts'
 import { emptyProgress, type QuestProgress } from '../../domain/trail.ts'
 import { DEMO_POSITION_KEY, GEO_MODE_KEY, type StorageService } from '../../platform/index.ts'
 
@@ -136,6 +137,8 @@ export const memory = {
       )
     },
   ),
+  /** Семейный архив владельца (A7): бойцы семьи и найденные записи, только на этом устройстве. */
+  family: perId((owner) => memorySlot<FamilyFighter[]>(`family:${owner}`, [], parseFighters)),
   /** Изображения к историям, добавленные с этого устройства (до загрузки на сервер). */
   storyImages: perId((storyId) =>
     memorySlot<{ src: string; caption: string }[]>(`archive:images:${storyId}`, [], (raw) =>

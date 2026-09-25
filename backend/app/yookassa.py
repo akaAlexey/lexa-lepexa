@@ -1,17 +1,19 @@
-"""Клиент ЮKassa API v3: создать платёж и узнать его статус.
+"""Клиент ЮKassa API v3 (только тестовый магазин): создать платёж и узнать его статус.
 
-Ключи — только из окружения (settings.yookassa_shop_id / yookassa_secret_key). Без внешних зависимостей:
-urllib в отдельном потоке, чтобы не блокировать event loop.
+Ключи — только из окружения (settings.yookassa_shop_id / yookassa_secret_key), во фронт не попадают.
+Сетевые сбои и 5xx повторяются с тем же Idempotence-Key — ЮKassa не создаст второй платёж.
 """
 
 import asyncio
-import base64
-import json
-import urllib.error
-import urllib.request
-import uuid
+
+import httpx
 
 from .config import settings
+
+TIMEOUT = httpx.Timeout(15.0, connect=5.0)
+ATTEMPTS = 3
+# Тесты подставляют сюда httpx.MockTransport — в CI нет запросов к ЮKassa.
+transport: httpx.AsyncBaseTransport | None = None
 
 
 class YooKassaError(Exception):
@@ -20,32 +22,36 @@ class YooKassaError(Exception):
         self.status = status
 
 
-def _auth() -> str:
-    raw = f"{settings.yookassa_shop_id}:{settings.yookassa_secret_key}".encode()
-    return "Basic " + base64.b64encode(raw).decode()
-
-
-def _request(method: str, path: str, body: dict | None = None, idempotence_key: str | None = None) -> dict:
-    data = json.dumps(body).encode() if body is not None else None
-    req = urllib.request.Request(settings.yookassa_api_url + path, data=data, method=method)
-    req.add_header("Authorization", _auth())
-    req.add_header("Content-Type", "application/json")
-    if idempotence_key:
-        req.add_header("Idempotence-Key", idempotence_key)
+async def _request(method: str, path: str, body: dict | None = None, idempotence_key: str | None = None) -> dict:
+    headers = {"Idempotence-Key": idempotence_key} if idempotence_key else {}
+    async with httpx.AsyncClient(
+        base_url=settings.yookassa_api_url,
+        auth=(settings.yookassa_shop_id, settings.yookassa_secret_key),
+        timeout=TIMEOUT,
+        transport=transport,
+    ) as client:
+        for attempt in range(1, ATTEMPTS + 1):
+            try:
+                resp = await client.request(method, path, json=body, headers=headers)
+            except httpx.TransportError as e:
+                if attempt == ATTEMPTS:
+                    raise YooKassaError(502, "ЮKassa недоступна") from e
+            else:
+                if resp.status_code < 500 or attempt == ATTEMPTS:
+                    break
+            await asyncio.sleep(0.5 * attempt)
+    if resp.is_success:
+        return resp.json()
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            return json.loads(resp.read().decode())
-    except urllib.error.HTTPError as e:
-        try:
-            detail = json.loads(e.read().decode()).get("description", "")
-        except Exception:  # noqa: BLE001 — тело ошибки может быть не JSON
-            detail = ""
-        raise YooKassaError(e.code, detail or f"ЮKassa ответила {e.code}") from e
-    except urllib.error.URLError as e:
-        raise YooKassaError(502, "ЮKassa недоступна") from e
+        detail = resp.json().get("description", "")
+    except ValueError:  # тело ошибки может быть не JSON
+        detail = ""
+    raise YooKassaError(resp.status_code, detail or f"ЮKassa ответила {resp.status_code}")
 
 
-async def create_payment(amount_rub: int, description: str, return_url: str, metadata: dict) -> dict:
+async def create_payment(
+    amount_rub: int, description: str, return_url: str, metadata: dict, idempotence_key: str
+) -> dict:
     body = {
         "amount": {"value": f"{amount_rub}.00", "currency": "RUB"},
         "capture": True,
@@ -53,8 +59,8 @@ async def create_payment(amount_rub: int, description: str, return_url: str, met
         "description": description[:128],
         "metadata": metadata,
     }
-    return await asyncio.to_thread(_request, "POST", "/payments", body, str(uuid.uuid4()))
+    return await _request("POST", "/payments", body, idempotence_key)
 
 
 async def get_payment(payment_id: str) -> dict:
-    return await asyncio.to_thread(_request, "GET", f"/payments/{payment_id}")
+    return await _request("GET", f"/payments/{payment_id}")

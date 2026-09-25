@@ -1716,21 +1716,14 @@
             "minimum": 1,
             "maximum": 100000,
             "description": "Сумма в рублях"
-          },
-          "returnPath": {
-            "type": "string",
-            "maxLength": 300,
-            "pattern": "^\\/(?!\\/)",
-            "description": "Путь на сайте, например /events"
           }
         },
         "required": [
           "fundraiserId",
-          "amountRub",
-          "returnPath"
+          "amountRub"
         ],
         "additionalProperties": false,
-        "description": "Пожертвование через ЮKassa (тестовый магазин): сумма и куда вернуть после оплаты"
+        "description": "Пожертвование через ЮKassa (тестовый магазин). Куда вернуть после оплаты, решает сервер (страница /payment)"
       },
       "PaymentStarted": {
         "type": "object",
@@ -1760,7 +1753,7 @@
           "status"
         ],
         "additionalProperties": false,
-        "description": "Созданный платёж: пользователя нужно отправить на confirmationUrl (страница оплаты ЮKassa)"
+        "description": "Созданный платёж: paymentId — id на нашем сервере; пользователя нужно отправить на confirmationUrl (страница оплаты ЮKassa)"
       },
       "PaymentState": {
         "type": "object",

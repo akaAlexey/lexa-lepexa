@@ -3,7 +3,9 @@ export {
   DEFAULT_DONATION,
   donate,
   DONATION_AMOUNTS,
+  PAYMENT_POLL_LIMIT,
+  PAYMENT_POLL_MS,
   startPayment,
   type DonationResult,
 } from './fundraising.ts'
-export { useDonate, usePaymentReturn, type DonateStatus, type PaymentReturn } from './useDonate.ts'
+export { useDonate, usePaymentResult, type DonateStatus, type PaymentResult } from './useDonate.ts'

@@ -6,7 +6,6 @@ import { Icon } from '../ui/Icon.tsx'
 import { Logo } from '../ui/Logo.tsx'
 import s from './layout.module.css'
 import { TAB_ORDER, TABS, tabOf } from './roles.ts'
-import { PaymentReturn } from './PaymentReturn.tsx'
 import { Toaster } from './Toaster.tsx'
 
 /**
@@ -63,7 +62,6 @@ export function Layout() {
           </header>
         )}
         <main id="main" className={s.main} tabIndex={-1}>
-          <PaymentReturn />
           <Outlet />
         </main>
         {!fullBleed && (

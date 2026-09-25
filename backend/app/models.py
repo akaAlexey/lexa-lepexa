@@ -186,6 +186,22 @@ class FundraiserDonation(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 
+class YooKassaPayment(Base):
+    """Платёж ЮKassa (тестовый магазин) в сбор. Сумма зачисляется в сбор один раз — при первом succeeded (0006)."""
+
+    __tablename__ = "yookassa_payments"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)  # наш id (uuid4), он же Idempotence-Key
+    yookassa_id: Mapped[str | None] = mapped_column(String(50), unique=True)
+    fundraiser_id: Mapped[str] = mapped_column(ForeignKey("fundraisers.id", ondelete="CASCADE"), index=True)
+    amount_rub: Mapped[int] = mapped_column(Integer)
+    # new → pending → succeeded | canceled; failed — ЮKassa не создала платёж
+    status: Mapped[str] = mapped_column(String(30))
+    credited_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    user_key: Mapped[str] = mapped_column(String(255))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
 # ---------- Выходные с поисковиком (0003) ----------
 
 

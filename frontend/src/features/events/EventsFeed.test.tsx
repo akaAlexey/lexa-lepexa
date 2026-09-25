@@ -69,6 +69,9 @@ describe('лента «Мероприятий»: карточки', () => {
     const dialog = screen.getByTestId('donate-dialog-F03')
     expect(dialog).toHaveTextContent('реальные деньги не списываются')
     expect(within(dialog).getByTestId('donate-confirm')).toHaveTextContent('через ЮKassa')
+    expect(within(dialog).getByTestId('donate-test-caption')).toHaveTextContent(
+      'Тестовый платёж — деньги не списываются',
+    )
   })
 
   it('командир видит на карточке выезда, что заявки групп ждут решения', async () => {

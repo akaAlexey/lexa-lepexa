@@ -108,26 +108,6 @@
 }
 
 /* Итог оплаты ЮKassa после возврата на сайт */
-.payment {
-  position: relative;
-  max-width: 62rem;
-  margin: var(--space-3) auto 0;
-  padding: 0 var(--space-4);
-}
-
-.paymentClose {
-  position: absolute;
-  top: 0;
-  right: var(--space-4);
-  display: grid;
-  place-items: center;
-  width: var(--touch-min);
-  height: var(--touch-min);
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-
 /* Подвал страницы: «О нас», документы и «Есть история?» */
 .footer {
   max-width: 62rem;
