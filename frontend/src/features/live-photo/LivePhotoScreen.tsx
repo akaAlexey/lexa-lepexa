@@ -11,6 +11,7 @@ import { Button } from '../../ui/Button.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { SourceList } from '../../ui/SourceList.tsx'
 import { ArView } from './ArView.tsx'
@@ -176,6 +177,11 @@ export function LivePhotoScreen() {
   return (
     <Screen
       title={notFound ? 'Снимок не найден' : `Живое фото: ${photo.data?.title ?? '…'}`}
+      back={
+        <BackLink to={paths.livePhotos()} testID="back-link">
+          К живым фото
+        </BackLink>
+      }
       testID="screen-live-photo"
     >
       {notFound ? (

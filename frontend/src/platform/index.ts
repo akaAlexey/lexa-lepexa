@@ -4,6 +4,7 @@ import { createDemoGeo } from './demo/geo.ts'
 import type { Platform } from './types.ts'
 import { createWebAr } from './web/ar.ts'
 import { createWebGeo } from './web/geo.ts'
+import { createWebImages } from './web/images.ts'
 import { createWebNotify } from './web/notify.ts'
 import { createWebShare } from './web/share.ts'
 import { createWebStorage } from './web/storage.ts'
@@ -22,7 +23,23 @@ export function createWebPlatform(): Platform {
     storage.get<string>(GEO_MODE_KEY) === 'device'
       ? createWebGeo()
       : createDemoGeo(storage.get<LatLon>(DEMO_POSITION_KEY) ?? region.demoPosition)
-  return { geo, notify: createWebNotify(), storage, share: createWebShare(), ar: createWebAr() }
+  return {
+    geo,
+    notify: createWebNotify(),
+    storage,
+    share: createWebShare(),
+    ar: createWebAr(),
+    images: createWebImages(),
+  }
 }
 
-export type { Platform, GeoService, NotifyService, ShareService, StorageService } from './types.ts'
+export { readAsDataUrl } from './web/images.ts'
+export { registerOffline } from './web/offline.ts'
+export type {
+  Platform,
+  GeoService,
+  ImageService,
+  NotifyService,
+  ShareService,
+  StorageService,
+} from './types.ts'

@@ -19,47 +19,18 @@ const toPosix = (p: string) => p.split(sep).join('/')
  * Тест падает и на новое нарушение, и на исключение, которое уже не нужно. К концу шага A список пуст.
  */
 const EXCEPTIONS: Record<string, readonly Rule[]> = {
-  'app/QueryState.tsx': ['page-services'],
-  'app/RoleContext.tsx': ['page-services'],
-  'app/ShareButton.tsx': ['page-services'],
-  'app/Toaster.tsx': ['page-services', 'paths'],
-  'app/roles.ts': ['paths'],
-  'features/archive/ArchiveScreen.tsx': ['paths'],
-  'features/archive/NewStoryScreen.tsx': ['page-services'],
-  'features/archive/StoryScreen.tsx': ['page-services', 'paths'],
-  'features/archive/routes.tsx': ['paths'],
-  'features/archive/stories.ts': ['page-services', 'paths'],
   'features/chronicle/ChronicleScreen.tsx': ['page-services', 'paths'],
   'features/chronicle/routes.tsx': ['paths'],
   'features/demo-console/DemoConsoleScreen.tsx': ['page-services'],
   'features/demo-console/routes.tsx': ['paths'],
-  'features/last-battle/LastBattleScreen.tsx': ['page-services', 'paths'],
-  'features/last-battle/NewSiteScreen.tsx': ['page-services', 'paths'],
-  'features/last-battle/SiteScreen.tsx': ['page-services', 'paths'],
-  'features/last-battle/SiteStatusAction.tsx': ['page-services'],
-  'features/last-battle/routes.tsx': ['paths'],
   'features/live-photo/ArView.tsx': ['page-services'],
   'features/live-photo/LivePhotoScreen.tsx': ['page-services'],
   'features/live-photo/livePhotos.ts': ['page-services'],
   'features/live-photo/routes.tsx': ['paths'],
-  'features/search-hq/DonateDialog.tsx': ['page-services'],
-  'features/search-hq/NewRequestScreen.tsx': ['page-services', 'paths'],
-  'features/search-hq/SearchScreen.tsx': ['page-services', 'paths'],
-  'features/search-hq/routes.tsx': ['paths'],
-  'features/trail/FinishScreen.tsx': ['paths'],
-  'features/trail/PointScreen.tsx': ['paths'],
-  'features/trail/TrailScreen.tsx': ['page-services'],
-  'features/trail/routes.tsx': ['paths'],
-  'features/trail/useTrail.ts': ['page-services', 'paths'],
-  'features/weekends/GroupApplicationScreen.tsx': ['page-services', 'paths'],
-  'features/weekends/GroupList.tsx': ['page-services'],
-  'features/weekends/TripScreen.tsx': ['page-services', 'paths'],
-  'features/weekends/WeekendsScreen.tsx': ['page-services', 'paths'],
-  'features/weekends/groups.ts': ['page-services', 'paths'],
-  'features/weekends/routes.tsx': ['paths'],
 }
 
-type Rule = 'page-services' | 'function-purity' | 'core-independent' | 'pure-layers' | 'paths'
+type Rule =
+  'page-services' | 'function-purity' | 'core-independent' | 'pure-layers' | 'paths' | 'role-checks'
 
 const RULE_TEXT: Record<Rule, string> = {
   'page-services':
@@ -68,6 +39,8 @@ const RULE_TEXT: Record<Rule, string> = {
   'core-independent': 'functions/core зависит от функции',
   'pure-layers': 'domain/, contract/ или api/ импортирует React или роутер',
   paths: 'адрес экрана записан вне functions/core/paths.ts',
+  'role-checks':
+    'права роли проверяются сравнением с id роли, а не через functions/core/permissions',
 }
 
 /** Корень композиции: здесь сервисы создаются и передаются в приложение. */
@@ -75,6 +48,10 @@ const COMPOSITION_ROOT = new Set(['main.tsx', 'app/App.tsx', 'app/services.tsx']
 /** Единственное место, где функции получают сервисы. */
 const DEPS_HOOK = 'functions/core/useDeps.ts'
 const PATHS_MODULE = 'functions/core/paths.ts'
+/** Права ролей (R3): сравнивать роль с конкретным id можно только здесь и в правилах domain/. */
+const PERMISSIONS_MODULE = 'functions/core/permissions.ts'
+const ROLE_ID = `['"](family|volunteer|commander|verifier)['"]`
+const ROLE_CHECK = new RegExp(`[!=]==\\s*${ROLE_ID}|${ROLE_ID}\\s*[!=]==`)
 
 /** Адрес экрана: '/trail', `/last-battle/${id}` в коде или path: 'search/requests/new' в роутере. */
 const SCREENS =
@@ -162,6 +139,9 @@ function violations(file: SourceFile): Rule[] {
 
   if (rel !== PATHS_MODULE && !inDir(rel, 'contract') && !inDir(rel, 'api')) {
     if (SCREEN_PATH.test(codeWithoutComments(file.text))) found.add('paths')
+  }
+  if (rel !== PERMISSIONS_MODULE && !inDir(rel, 'domain')) {
+    if (ROLE_CHECK.test(codeWithoutComments(file.text))) found.add('role-checks')
   }
   return [...found].sort()
 }
@@ -265,6 +245,18 @@ describe('правила ловят нарушения (самопроверка
       violations(file('features/x/X.tsx', [], "// пример: '/search'\nconst s = 'search'")),
     ).toEqual([])
     expect(violations(file('functions/core/paths.ts', [], "const t = '/trail'"))).toEqual([])
+  })
+
+  it('проверка роли сравнением вместо can()', () => {
+    expect(violations(file('features/x/X.tsx', [], "role?.id === 'commander'"))).toContain(
+      'role-checks',
+    )
+    expect(violations(file('functions/x/x.ts', [], "'verifier' !== roleId"))).toContain(
+      'role-checks',
+    )
+    expect(violations(file('features/x/X.tsx', [], "can(role?.id, 'place.create')"))).toEqual([])
+    expect(violations(file('features/x/X.tsx', [], 'role?.id === r.id'))).toEqual([])
+    expect(violations(file(PERMISSIONS_MODULE, [], "(r) => r === 'commander'"))).toEqual([])
   })
 
   it('цикл между функциями', () => {

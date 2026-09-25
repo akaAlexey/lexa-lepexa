@@ -4,6 +4,7 @@ import { QueryState } from '../../app/QueryState.tsx'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { assetUrl, livePhotoUrl, useLivePhotos } from './livePhotos.ts'
 import s from './livePhoto.module.css'
@@ -15,6 +16,11 @@ export function LivePhotoListScreen() {
     <Screen
       title="Живое фото"
       lead="Наведите камеру телефона на снимок с QR-кодом — боец заговорит. Ролики — реконструкция нейросетью"
+      back={
+        <BackLink to={paths.archive()} testID="back-link">
+          К историям
+        </BackLink>
+      }
       testID="screen-live-list"
     >
       <QueryState query={photos} what="снимки">

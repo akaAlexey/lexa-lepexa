@@ -121,3 +121,17 @@ export function reviewBlocker(
   if (REVIEW_CHECKS.some((c) => !checks.includes(c.id))) return 'Отметьте все пункты проверки'
   return undefined
 }
+
+/**
+ * Годы войны, о которых история, — для списка «Книги памяти» (ADR 0012).
+ * Из названия и рассказа берутся годы 1939–1945: один год — «1942», несколько — «1941–1943».
+ */
+export function storyYears(story: { title: string; story: string }): string | undefined {
+  const years = [...`${story.title} ${story.story}`.matchAll(/\b(19(?:39|4[0-5]))\b/g)]
+    .map((m) => Number(m[1]))
+    .sort((a, b) => a - b)
+  const first = years[0]
+  const last = years[years.length - 1]
+  if (first === undefined || last === undefined) return undefined
+  return first === last ? String(first) : `${first}–${last}`
+}

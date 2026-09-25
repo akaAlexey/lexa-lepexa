@@ -1,7 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { useRole } from '../../app/RoleContext.tsx'
-import { SUBSCRIPTION_KEY, subscribeNearby, useServices } from '../../app/services.tsx'
+import { useServices } from '../../app/services.tsx'
+import { isSubscribed, subscribeNearby } from '../../functions/nearbyAlerts/index.ts'
 import type { LatLon, NewLastBattleSite } from '../../contract/schemas.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Button } from '../../ui/Button.tsx'
@@ -108,7 +109,7 @@ export function DemoConsoleScreen() {
     setBusy(true)
     setInjectStatus(undefined)
     try {
-      if (!platform.storage.get(SUBSCRIPTION_KEY)) await subscribeNearby(services)
+      if (!isSubscribed(services)) await subscribeNearby(services)
       const position = await platform.geo.getPosition()
       await api.createSite({ body: demoSiteNear(position) })
       await queryClient.invalidateQueries({ queryKey: ['sites'] })

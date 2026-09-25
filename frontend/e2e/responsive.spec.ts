@@ -11,6 +11,11 @@ const SCREENS = [
   { url: '/weekends/W01', main: 'trip-register' },
   { url: '/last-battle', main: 'last-battle-subscribe' },
   { url: '/last-battle/S01', main: 'site-help' },
+  // Разделы дизайна «Стол и газета» (ADR 0012)
+  { url: '/map', main: 'hub-route-start' },
+  { url: '/events', main: 'search-join' },
+  { url: '/archive', main: 'archive-new' },
+  { url: '/other?section=account', main: 'signin-submit' },
 ] as const
 
 test.describe('Адаптив и доступность каждого экрана', () => {

@@ -6,8 +6,8 @@ test.describe('Выходные с поисковиком', () => {
 
   test('список дат → карточка выезда → чек-лист → запись', async ({ page }, testInfo) => {
     await startAs(page, 'volunteer')
-    await page.getByTestId('tab-weekends').click()
-    await page.getByTestId('trip-W01').getByRole('link').click()
+    await page.getByTestId('tab-events').click()
+    await page.getByTestId('feed-trip-open-W01').click()
     await expect(page).toHaveURL(/\/weekends\/W01$/)
     await expect(page.getByTestId('trip-date')).toHaveText('3 октября, суббота')
     await page.getByRole('checkbox', { name: 'Лопата' }).check()

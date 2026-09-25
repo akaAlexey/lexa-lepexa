@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { StorageService } from '../../platform/index.ts'
-import { readMemory, writeMemory, type MemorySlot } from './deviceMemory.ts'
+import { forgetMemory, readMemory, writeMemory, type MemorySlot } from './deviceMemory.ts'
 import { useDeps } from './useDeps.ts'
 
 /** Подписчики слотов: все компоненты, читающие один слот, видят его изменение. */
@@ -38,7 +38,9 @@ export function useDeviceMemory<T>(slot: MemorySlot<T>): [T, (next: T | ((prev: 
     (next: T | ((prev: T) => T)) => {
       const current = readMemory(storage, slot)
       const updated = typeof next === 'function' ? (next as (prev: T) => T)(current) : next
-      writeMemory(storage, slot, updated)
+      // undefined — «забыть»: в хранилище не остаётся строки 'undefined'
+      if (updated === undefined) forgetMemory(storage, slot)
+      else writeMemory(storage, slot, updated)
       notify(storage, slot.key)
     },
     [storage, slot],

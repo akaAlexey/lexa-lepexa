@@ -1,0 +1,371 @@
+/*
+ * Карта-хаб (ADR 0012). Телефон: карта на всё место над меню, поиск сверху, шторка снизу.
+ * Ноутбук: панель с вкладками слева поверх карты, поиск над ней.
+ */
+.hub {
+  position: fixed;
+  inset: 0 0 calc(var(--nav-height) + env(safe-area-inset-bottom)) 0;
+  overflow: hidden;
+}
+
+.search {
+  position: absolute;
+  z-index: 5;
+  top: var(--space-2);
+  left: var(--space-2);
+  right: var(--space-2);
+}
+
+.searchField {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-ink-muted);
+  box-shadow: var(--shadow-float);
+}
+
+.searchField:focus-within {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.searchField input {
+  flex: 1;
+  min-width: 0;
+  min-height: calc(var(--touch-min) - 2px);
+  border: 0;
+  background: transparent;
+  color: var(--color-ink);
+  outline: none;
+}
+
+.results {
+  max-height: 50dvh;
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+  border: 1px solid var(--color-ink);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-panel);
+}
+
+.results li + li {
+  border-top: 1px solid var(--color-line);
+}
+
+.result,
+.placeItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  background: transparent;
+  color: var(--color-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.result:hover,
+.placeItem:hover {
+  background: rgb(43 42 38 / 0.06);
+}
+
+.result > span,
+.placeItem > span {
+  display: grid;
+}
+
+.resultTitle {
+  font-weight: 700;
+}
+
+.resultHint {
+  color: var(--color-ink-muted);
+  font-size: 0.85rem;
+}
+
+.noResults {
+  padding: var(--space-3);
+  color: var(--color-ink-muted);
+}
+
+/* Шторка: газетная бумага, тонкая линейка сверху, ручка для сворачивания */
+.sheet {
+  position: absolute;
+  z-index: 4;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 3.4rem;
+  border-top: 1px solid var(--color-ink);
+  background: var(--color-surface);
+  box-shadow: 0 -4px 14px rgb(0 0 0 / 0.25);
+}
+
+.sheet[data-open] {
+  max-height: 45dvh;
+  height: 45dvh;
+}
+
+.handle {
+  position: absolute;
+  /* зона нажатия 28 px (WCAG 2.2, 2.5.8): выступает над панелью, полоска остаётся на месте */
+  top: -0.65rem;
+  left: 50%;
+  translate: -50% 0;
+  display: grid;
+  place-items: center;
+  width: 5rem;
+  height: 1.75rem;
+  padding-top: 0.65rem;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.grip {
+  width: 2.5rem;
+  height: 0.25rem;
+  border-radius: 2px;
+  background: var(--color-line-strong);
+}
+
+.tabs {
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4) 0;
+  border-bottom: 1px solid var(--color-line-strong);
+}
+
+.tab {
+  min-height: 2.3rem;
+  padding: 0 var(--space-1);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--color-ink-muted);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tab[aria-selected='true'] {
+  color: var(--color-ink);
+  border-bottom-color: var(--color-accent);
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  /* Строки по содержимому: иначе блоки с overflow: hidden сжимаются в прокручиваемой панели */
+  grid-auto-rows: max-content;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4) var(--space-6);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.body p {
+  margin: 0;
+}
+
+.routeCard,
+.placeCard {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-line-strong);
+  background: rgb(242 232 213 / 0.6);
+}
+
+.placeCard > * {
+  justify-self: start;
+}
+
+.routeCard :where(a[data-main-action]),
+.placeCard :where(a[data-main-action]) {
+  justify-self: stretch;
+  width: 100%;
+  min-width: 0;
+}
+
+.placeCard > .placeHead {
+  justify-self: stretch;
+}
+
+.cardTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--color-ink-muted);
+}
+
+.more {
+  font-weight: 700;
+  min-height: var(--touch-min);
+  display: inline-flex;
+  align-items: center;
+}
+
+.block {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.blockTitle {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.counts {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.counts li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.placeList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--color-line-strong);
+}
+
+.placeList li + li {
+  border-top: 1px solid var(--color-line);
+}
+
+.placeHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  border: 0;
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.years {
+  display: flex;
+  border: 1px solid var(--color-ink);
+  border-radius: var(--radius-control);
+  overflow: hidden;
+  justify-self: start;
+}
+
+.year {
+  min-height: var(--touch-min);
+  min-width: 3.5rem;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-left: 1px solid var(--color-ink);
+  background: transparent;
+  color: var(--color-ink);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.year:first-child {
+  border-left: 0;
+}
+
+.year[aria-pressed='true'] {
+  background: var(--color-ink);
+  color: var(--color-surface);
+}
+
+.events {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--color-line-strong);
+}
+
+.event {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+}
+
+.event + .event {
+  border-top: 1px solid var(--color-line);
+}
+
+.eventText {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.eventLinks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+@media (min-width: 64rem) {
+  .hub {
+    inset: 0 0 0 var(--rail-width);
+  }
+
+  .search {
+    top: var(--space-3);
+    left: var(--space-3);
+    right: auto;
+    width: 26rem;
+  }
+
+  .sheet,
+  .sheet[data-open] {
+    top: calc(var(--touch-min) + 2 * var(--space-3));
+    left: var(--space-3);
+    right: auto;
+    bottom: var(--space-3);
+    width: 26rem;
+    height: auto;
+    max-height: none;
+    border: 1px solid var(--color-ink);
+    box-shadow: var(--shadow-panel);
+  }
+
+  /* На ноутбуке панель не сворачивается: места хватает */
+  .handle {
+    display: none;
+  }
+}

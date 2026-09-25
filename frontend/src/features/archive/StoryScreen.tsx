@@ -1,18 +1,22 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router'
-import { ApiError } from '../../api/client.ts'
+import { useLocation, useParams } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
 import { ShareButton } from '../../app/ShareButton.tsx'
 import { useRole } from '../../app/RoleContext.tsx'
-import { useApi } from '../../app/services.tsx'
 import type { ArchiveStory } from '../../contract/schemas.ts'
+import { storyYears } from '../../domain/archive.ts'
+import { isNotFound } from '../../functions/core/errors.ts'
+import { paths } from '../../functions/core/paths.ts'
+import { can } from '../../functions/core/permissions.ts'
 import {
   REVIEW_CHECKS,
   isAwaitingReview,
-  reviewBlocker,
-  type ReviewCheckId,
-} from '../../domain/archive.ts'
+  storyState,
+  useMyStories,
+  useReview,
+  useStory,
+  wasSent,
+} from '../../functions/stories/index.ts'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Button } from '../../ui/Button.tsx'
 import { Card } from '../../ui/Card.tsx'
@@ -22,49 +26,13 @@ import { Notice } from '../../ui/Notice.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { StatePill } from '../../ui/StatePill.tsx'
 import s from './archive.module.css'
-import type { StorySentState } from './NewStoryScreen.tsx'
-import { qk, storyState, useCanVerify } from './stories.ts'
-
-const isNotFound = (e: unknown) => e instanceof ApiError && e.status === 404
-
-const wasSent = (state: unknown) => (state as Partial<StorySentState> | null)?.sent === true
+import { StoryImages } from './StoryImages.tsx'
 
 /** Чек-лист и решение проверяющего — как экран «Проверка источника» на макете. */
 function ReviewPanel({ story }: { story: ArchiveStory }) {
-  const api = useApi()
-  const queryClient = useQueryClient()
   const { role } = useRole()
-  const [checks, setChecks] = useState<ReviewCheckId[]>([])
-  const [note, setNote] = useState('')
-  const [blocker, setBlocker] = useState<string>()
-  const [busy, setBusy] = useState(false)
-  const [saved, setSaved] = useState(false)
-
-  const toggle = (id: ReviewCheckId) =>
-    setChecks((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
-
-  const decide = async (decision: 'verified' | 'clarify') => {
-    const problem = reviewBlocker(decision, { source: story.sourceText, checks, note })
-    setBlocker(problem)
-    setSaved(false)
-    if (problem) return
-    setBusy(true)
-    try {
-      const updated = await api.reviewStory({
-        id: story.id,
-        body: { decision, reviewer: role?.short ?? 'Проверяющий', note: note.trim() },
-      })
-      queryClient.setQueryData(qk.story(story.id), updated)
-      queryClient.setQueryData<ArchiveStory[]>(qk.stories, (old) =>
-        old?.map((x) => (x.id === updated.id ? updated : x)),
-      )
-      setSaved(true)
-    } catch {
-      setBlocker('Не удалось сохранить решение. Проверьте связь и попробуйте ещё раз.')
-    } finally {
-      setBusy(false)
-    }
-  }
+  const review = useReview(story, role?.short ?? 'Проверяющий')
+  const { checks, note, saved, blocker, busy } = review
 
   return (
     <Card as="section" aria-labelledby="review-title">
@@ -76,7 +44,7 @@ function ReviewPanel({ story }: { story: ArchiveStory }) {
             <input
               type="checkbox"
               checked={checks.includes(c.id)}
-              onChange={() => toggle(c.id)}
+              onChange={() => review.toggle(c.id)}
               data-testid={`review-check-${c.id}`}
             />
             <span>{c.label}</span>
@@ -87,7 +55,7 @@ function ReviewPanel({ story }: { story: ArchiveStory }) {
         label="Комментарий автору"
         hint="Что уточнить или на чём основано решение"
         value={note}
-        onChange={setNote}
+        onChange={review.setNote}
         rows={3}
         testID="review-note"
       />
@@ -103,14 +71,14 @@ function ReviewPanel({ story }: { story: ArchiveStory }) {
       )}
       <div className={s.actions}>
         <BigButton
-          onClick={() => void decide('verified')}
+          onClick={() => review.decide('verified')}
           disabled={busy}
           icon="check"
           testID="review-verify"
         >
           Подтвердить
         </BigButton>
-        <Button onClick={() => void decide('clarify')} disabled={busy} testID="review-clarify">
+        <Button onClick={() => review.decide('clarify')} disabled={busy} testID="review-clarify">
           Нужно уточнение
         </Button>
       </div>
@@ -119,9 +87,14 @@ function ReviewPanel({ story }: { story: ArchiveStory }) {
 }
 
 function StoryCard({ story, sent }: { story: ArchiveStory; sent: boolean }) {
-  const canVerify = useCanVerify()
+  const { role } = useRole()
+  const canVerify = can(role?.id, 'story.verify')
   const state = storyState(story)
   const reviewable = canVerify && isAwaitingReview(story)
+  const mine = useMyStories()
+  // Фото добавляет автор; к истории «Нужно уточнение» — и семья (краевед просит фото письма)
+  const canAddImages = mine.includes(story.id) || story.status === 'clarify'
+  const years = storyYears(story)
   return (
     <>
       {sent && (
@@ -138,6 +111,7 @@ function StoryCard({ story, sent }: { story: ArchiveStory; sent: boolean }) {
           Рассказ
         </h2>
         <p className={s.meta}>
+          {years && <span className={s.yearInline}>{years} · </span>}
           {story.place} · {story.author}
         </p>
         <p className={s.body} data-testid="story-body-text">
@@ -155,6 +129,7 @@ function StoryCard({ story, sent }: { story: ArchiveStory; sent: boolean }) {
           {story.reviewNote}
         </Notice>
       )}
+      <StoryImages storyId={story.id} canAdd={canAddImages} />
       {story.status === 'verified' && story.verifiedBy && !story.reviewNote && (
         <p className={s.meta} data-testid="story-verified-by">
           Проверил: {story.verifiedBy}
@@ -170,36 +145,31 @@ function StoryCard({ story, sent }: { story: ArchiveStory; sent: boolean }) {
       {reviewable ? (
         <ReviewPanel story={story} />
       ) : (
-        <BigButton to="/archive/new" icon="story" testID="story-tell-own">
+        <BigButton to={paths.newStory()} icon="story" testID="story-tell-own">
           Рассказать свою историю
         </BigButton>
       )}
-      <p>
-        <Link to="/archive">Все истории</Link>
-      </p>
     </>
   )
 }
 
 export function StoryScreen() {
-  const api = useApi()
   const { storyId = '' } = useParams()
   const location = useLocation()
-  const story = useQuery({
-    queryKey: qk.story(storyId),
-    queryFn: () => api.getStory({ id: storyId }),
-    retry: (count, e) => !isNotFound(e) && count < 1,
-  })
+  const story = useStory(storyId)
   const notFound = story.isError && isNotFound(story.error)
   return (
     <Screen
       title={notFound ? 'История не найдена' : (story.data?.title ?? 'История')}
+      back={
+        <BackLink to={paths.archive()} testID="back-to-stories">
+          К историям
+        </BackLink>
+      }
       testID="screen-story"
     >
       {notFound ? (
-        <p data-testid="story-not-found">
-          Такой истории нет. <Link to="/archive">Все истории</Link>
-        </p>
+        <p data-testid="story-not-found">Такой истории нет. Вернитесь к списку историй.</p>
       ) : (
         <QueryState query={story} what="историю">
           {(data) => <StoryCard story={data} sent={wasSent(location.state)} />}

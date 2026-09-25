@@ -7,7 +7,7 @@ import { env } from '../config/env.ts'
 import { tokens } from '../theme/tokens.ts'
 import { Icon, type IconName } from '../ui/Icon.tsx'
 import s from './map.module.css'
-import { buildMapStyle } from './style.ts'
+import { buildMapStyle, gridLayer } from './style.ts'
 import { tileSources } from './tiles.ts'
 
 export interface MapMarker {
@@ -38,6 +38,15 @@ export interface MapViewProps {
   onMarkerSelect?: (id: string) => void
   /** Подобрать масштаб так, чтобы все метки и маршрут поместились в кадр. */
   fitToContent?: boolean
+  /** Выбранная метка: оранжевое кольцо, камера плавно подлетает к ней. */
+  selectedId?: string
+  /**
+   * inline — карта в потоке экрана (на ноутбуке — справа от панели);
+   * fill — на всё место родителя (карта-хаб «Карта», ADR 0012).
+   */
+  variant?: 'inline' | 'fill'
+  /** Отступы кадра при подгонке, px: шторка и поиск не закрывают метки. */
+  fitPadding?: { top: number; right: number; bottom: number; left: number }
   testID: string
 }
 
@@ -56,6 +65,9 @@ export function MapView({
   route,
   onMarkerSelect,
   fitToContent = false,
+  selectedId,
+  variant = 'inline',
+  fitPadding,
   testID,
 }: MapViewProps) {
   const container = useRef<HTMLElement>(null)
@@ -83,7 +95,16 @@ export function MapView({
           attributionControl: { compact: false },
           cooperativeGestures: false,
         })
-        instance.on('load', () => !disposed && setMap(instance ?? null))
+        instance.on('load', () => {
+          if (disposed || !instance) return
+          setMap(instance)
+          const grid = gridLayer()
+          instance.addSource('grid', grid.source)
+          instance.addLayer(
+            grid.layer,
+            instance.getLayer(grid.beforeId) ? grid.beforeId : undefined,
+          )
+        })
       })
       .catch(() => !disposed && setFailed(true))
     return () => {
@@ -128,24 +149,27 @@ export function MapView({
       return
     }
     map.addSource(ROUTE_SOURCE, { type: 'geojson', data })
-    // «След танка» из макета: светлая подложка и поверх — широкий оранжевый пунктир, как траки.
+    // Маршрут — георгиевская лента (ADR 0012): чёрный край, оранжевая лента, чёрная осевая.
     map.addLayer({
       id: 'route-halo',
       type: 'line',
       source: ROUTE_SOURCE,
       layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: { 'line-color': tokens.color.map.routeHalo, 'line-width': 12, 'line-opacity': 0.75 },
+      paint: { 'line-color': tokens.color.map.routeHalo, 'line-width': 11 },
     })
     map.addLayer({
       id: 'route-track',
       type: 'line',
       source: ROUTE_SOURCE,
-      layout: { 'line-cap': 'butt', 'line-join': 'round' },
-      paint: {
-        'line-color': tokens.color.map.route,
-        'line-width': 8,
-        'line-dasharray': [0.4, 0.65],
-      },
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: { 'line-color': tokens.color.map.route, 'line-width': 7 },
+    })
+    map.addLayer({
+      id: 'route-center',
+      type: 'line',
+      source: ROUTE_SOURCE,
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: { 'line-color': tokens.color.map.routeHalo, 'line-width': 1.8 },
     })
   }, [map, route])
 
@@ -160,9 +184,22 @@ export function MapView({
         [Math.min(...lons), Math.min(...lats)],
         [Math.max(...lons), Math.max(...lats)],
       ],
-      { padding: 48, animate: false, maxZoom: 16 },
+      { padding: fitPadding ?? 48, animate: false, maxZoom: 16 },
     )
-  }, [map, markers, route, fitToContent])
+  }, [map, markers, route, fitToContent, fitPadding])
+
+  useEffect(() => {
+    if (!map || !selectedId) return
+    const m = markers.find((x) => x.id === selectedId)
+    if (!m) return
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    map.easeTo({
+      center: [m.lon, m.lat],
+      zoom: Math.max(map.getZoom(), 13),
+      duration: reduce ? 0 : 600,
+      ...(fitPadding ? { padding: fitPadding } : {}),
+    })
+  }, [map, selectedId, markers, fitPadding])
 
   if (failed) {
     return (
@@ -173,7 +210,10 @@ export function MapView({
   }
 
   return (
-    <div className={s.frame} data-map-frame>
+    <div
+      className={variant === 'fill' ? s.frameFill : s.frame}
+      data-map-frame={variant === 'fill' ? undefined : ''}
+    >
       <section
         ref={container}
         className={s.map}
@@ -204,7 +244,9 @@ export function MapView({
               }
               style={{ color: marker.color }}
               aria-label={marker.label}
+              aria-pressed={selectedId === undefined ? undefined : selectedId === marker.id}
               title={marker.label}
+              data-selected={selectedId === marker.id || undefined}
               data-testid={`marker-${marker.id}`}
               onClick={() => onMarkerSelect?.(marker.id)}
             >

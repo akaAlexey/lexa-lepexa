@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router'
-import type { AppNotification, Subscription } from '../contract/schemas.ts'
+import { paths } from '../functions/core/paths.ts'
+import { useNearbyAlerts } from '../functions/nearbyAlerts/index.ts'
 import { Icon } from '../ui/Icon.tsx'
 import s from './layout.module.css'
-import { SUBSCRIPTION_KEY, useServices } from './services.tsx'
 
 /**
  * Уведомления внутри приложения — основной канал на демо (не зависит от разрешений браузера).
@@ -11,27 +11,7 @@ import { SUBSCRIPTION_KEY, useServices } from './services.tsx'
  * На экране одно уведомление — самое свежее; остальные — счётчиком, чтобы не закрывать экран.
  */
 export function Toaster() {
-  const { api, platform, own } = useServices()
-  const [items, setItems] = useState<AppNotification[]>([])
-
-  useEffect(
-    () =>
-      api.onNotification((n) => {
-        // Автор находки не получает уведомление о ней самой
-        if (own.active()) return
-        setItems((prev) => [n, ...prev].slice(0, 10))
-        platform.notify.show({ title: n.title, body: n.body, url: `/last-battle/${n.siteId}` })
-      }),
-    [api, platform, own],
-  )
-
-  // Подписка на находки рядом переживает перезагрузку: восстанавливаем её при старте.
-  useEffect(() => {
-    const saved = platform.storage.get<Subscription>(SUBSCRIPTION_KEY)
-    if (saved) void api.subscribe({ body: saved }).catch(() => undefined)
-  }, [api, platform])
-
-  const dismiss = (id: string) => setItems((prev) => prev.filter((i) => i.id !== id))
+  const { items, dismiss } = useNearbyAlerts()
   const [current, ...rest] = items
   const toastRef = useRef<HTMLDivElement>(null)
 
@@ -60,12 +40,12 @@ export function Toaster() {
     if (!current) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && toastRef.current?.contains(document.activeElement)) {
-        setItems((prev) => prev.filter((i) => i.id !== current.id))
+        dismiss(current.id)
       }
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [current])
+  }, [current, dismiss])
 
   return (
     <div className={s.toasts}>
@@ -88,7 +68,7 @@ export function Toaster() {
             <p>{current.body}</p>
             <div className={s.toastActions}>
               <Link
-                to={`/last-battle/${current.siteId}`}
+                to={paths.site(current.siteId)}
                 className={s.toastAction}
                 onClick={() => dismiss(current.id)}
               >

@@ -65,10 +65,17 @@ export interface StorageService {
   clear(): void
 }
 
+export interface ImageService {
+  /** Уменьшить фото до `maxSide` px по большей стороне и вернуть data: URL (JPEG). */
+  prepare(file: Blob, maxSide?: number): Promise<string>
+}
+
 export interface Platform {
   geo: GeoService
   notify: NotifyService
   storage: StorageService
   share: ShareService
   ar: ArService
+  /** Фото к историям. Нет в тестовых подменах — тогда фото читается без уменьшения. */
+  images?: ImageService
 }

@@ -1,116 +1,50 @@
-import { useQueryClient } from '@tanstack/react-query'
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import { useNavigate } from 'react-router'
-import { useServices } from '../../app/services.tsx'
-import { region } from '../../config/region.ts'
-import type { LatLon, NewLastBattleSite } from '../../contract/schemas.ts'
-import { validateNewSite, type SiteErrors } from '../../domain/lastBattle.ts'
+import { paths } from '../../functions/core/paths.ts'
+import {
+  useNewPlaceForm,
+  type NewPlaceContext,
+  type NewPlaceProblem,
+  type SiteCreatedState,
+} from '../../functions/places/index.ts'
+import { useCurrentPosition } from '../../functions/whereAmI/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Button } from '../../ui/Button.tsx'
 import { TextField } from '../../ui/Field.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import s from './lastBattle.module.css'
 
-/** Шаблон экспедиции отряда «Высота»: три десантника 9-й бригады, октябрь 1941 (из кейса). */
-const EXPEDITION_TEMPLATE = {
-  fightersCount: '3',
-  unit: '9-я вдбр, 5-й ВДК',
-  dateText: 'октябрь 1941',
-  source: 'Полевой отчёт отряда «Высота»',
+const PROBLEM_TEXT: Record<NewPlaceProblem, string> = {
+  locate: 'Не удалось определить координаты. Введите их вручную.',
+  publish: 'Не удалось опубликовать место. Проверьте связь и попробуйте ещё раз.',
 }
 
-/** Состояние, передаваемое карточке нового места через навигацию. */
-export interface SiteCreatedState {
-  notifiedCount: number
-}
-
-const toNumber = (value: string) => (value.trim() === '' ? NaN : Number(value.replace(',', '.')))
-
-function NewSiteForm({ initial }: { initial: LatLon | null }) {
-  const { api, platform, own } = useServices()
-  const queryClient = useQueryClient()
+function NewSiteForm({ initial }: { initial: NewPlaceContext }) {
   const navigate = useNavigate()
-  const form = useRef<HTMLDivElement>(null)
-
-  const [placeName, setPlaceName] = useState('')
-  const [fightersCount, setFightersCount] = useState(EXPEDITION_TEMPLATE.fightersCount)
-  const [unit, setUnit] = useState(EXPEDITION_TEMPLATE.unit)
-  const [dateText, setDateText] = useState(EXPEDITION_TEMPLATE.dateText)
-  const [source, setSource] = useState(EXPEDITION_TEMPLATE.source)
-  const [circumstances, setCircumstances] = useState('')
-  const [lat, setLat] = useState(initial ? String(initial.lat) : '')
-  const [lon, setLon] = useState(initial ? String(initial.lon) : '')
-  const [errors, setErrors] = useState<SiteErrors>({})
-  const [busy, setBusy] = useState(false)
-  const [problem, setProblem] = useState<string | null>(null)
-
-  const fillMyPosition = async () => {
-    setProblem(null)
-    try {
-      const p = await platform.geo.getPosition()
-      setLat(String(p.lat))
-      setLon(String(p.lon))
-    } catch {
-      setProblem('Не удалось определить координаты. Введите их вручную.')
-    }
-  }
-
-  const publish = async () => {
-    const count = toNumber(fightersCount)
-    const input: NewLastBattleSite = {
-      lat: toNumber(lat),
-      lon: toNumber(lon),
-      placeName: placeName.trim(),
-      fightersCount: count,
-      // Имена бойцов на месте находки не известны — их установит проверка по архивам.
-      fighters:
-        Number.isInteger(count) && count > 0 && count <= 1000
-          ? Array.from({ length: count }, () => ({}))
-          : [],
-      unit: unit.trim(),
-      dateText: dateText.trim(),
-      circumstances: circumstances.trim(),
-      // Полевой отчёт — наблюдение самих поисковиков на месте, а не архивный документ.
-      sources: [{ kind: 'eyewitness', title: source.trim() }],
-      teamId: region.demo.commanderTeamId,
-    }
-    const found = validateNewSite(input)
-    setErrors(found)
-    setProblem(null)
-    if (Object.keys(found).length > 0) {
-      requestAnimationFrame(() =>
-        form.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus(),
-      )
-      return
-    }
-    setBusy(true)
-    try {
-      const { site, notifiedCount } = await own.run(() => api.createSite({ body: input }))
-      queryClient.setQueryData(['sites', site.id], site)
-      void queryClient.invalidateQueries({ queryKey: ['sites'], exact: true })
-      const state: SiteCreatedState = { notifiedCount }
-      void navigate(`/last-battle/${site.id}`, { state })
-    } catch {
-      setProblem('Не удалось опубликовать место. Проверьте связь и попробуйте ещё раз.')
-      setBusy(false)
-    }
-  }
+  const formRef = useRef<HTMLFormElement>(null)
+  const form = useNewPlaceForm(initial, ({ site, notifiedCount }) => {
+    const state: SiteCreatedState = { notifiedCount }
+    void navigate(paths.site(site.id), { state })
+  })
+  const { values, errors } = form
 
   return (
-    <div className={s.form} ref={form}>
+    // Кнопки формы — type="button": Enter в поле ничего не отправляет, как и раньше.
+    <form className={s.form} ref={formRef} onSubmit={form.submit} noValidate>
       <TextField
         label="Место"
         hint="Овраг, опушка, ближайшая деревня"
-        value={placeName}
-        onChange={setPlaceName}
+        value={values.placeName}
+        onChange={(v) => form.set('placeName', v)}
         error={errors.placeName}
         testID="site-place"
       />
       <fieldset className={s.coords}>
         <legend>Координаты места</legend>
         <div className={s.actions}>
-          <Button onClick={() => void fillMyPosition()} icon="pin" testID="site-my-position">
+          <Button onClick={() => void form.fillMyPosition()} icon="pin" testID="site-my-position">
             Мои координаты
           </Button>
         </div>
@@ -120,8 +54,8 @@ function NewSiteForm({ initial }: { initial: LatLon | null }) {
             type="number"
             inputMode="decimal"
             step="any"
-            value={lat}
-            onChange={setLat}
+            value={values.lat}
+            onChange={(v) => form.set('lat', v)}
             error={errors.coords}
             testID="site-lat"
           />
@@ -130,8 +64,8 @@ function NewSiteForm({ initial }: { initial: LatLon | null }) {
             type="number"
             inputMode="decimal"
             step="any"
-            value={lon}
-            onChange={setLon}
+            value={values.lon}
+            onChange={(v) => form.set('lon', v)}
             testID="site-lon"
           />
         </div>
@@ -142,73 +76,72 @@ function NewSiteForm({ initial }: { initial: LatLon | null }) {
         inputMode="numeric"
         min={1}
         step={1}
-        value={fightersCount}
-        onChange={setFightersCount}
+        value={values.fightersCount}
+        onChange={(v) => form.set('fightersCount', v)}
         error={errors.fightersCount}
         testID="site-fighters-count"
       />
       <TextField
         label="Часть"
         hint="Как в источнике или «Неизвестно»"
-        value={unit}
-        onChange={setUnit}
+        value={values.unit}
+        onChange={(v) => form.set('unit', v)}
         error={errors.unit}
         testID="site-unit"
       />
       <TextField
         label="Когда"
         hint="Датировка как в источнике"
-        value={dateText}
-        onChange={setDateText}
+        value={values.dateText}
+        onChange={(v) => form.set('dateText', v)}
         error={errors.dateText}
         testID="site-date-text"
       />
       <TextField
         label="Источник"
-        value={source}
-        onChange={setSource}
+        value={values.source}
+        onChange={(v) => form.set('source', v)}
         error={errors.sources}
         testID="site-source"
       />
       <TextField
         label="Обстоятельства"
         hint="Что нашли, кто указал место — необязательно"
-        value={circumstances}
-        onChange={setCircumstances}
+        value={values.circumstances}
+        onChange={(v) => form.set('circumstances', v)}
         testID="site-circumstances"
       />
       <p>После публикации место получит статус «Обнаружено место (требуется проверка)».</p>
-      {problem && (
+      {form.problem && (
         <Notice tone="error" testID="site-problem">
-          {problem}
+          {PROBLEM_TEXT[form.problem]}
         </Notice>
       )}
-      <BigButton onClick={() => void publish()} disabled={busy} icon="flag" testID="site-publish">
+      <BigButton
+        onClick={() => formRef.current?.requestSubmit()}
+        disabled={form.sending}
+        icon="flag"
+        testID="site-publish"
+      >
         Опубликовать
       </BigButton>
-    </div>
+    </form>
   )
 }
 
 export function NewSiteScreen() {
-  const { platform } = useServices()
   // Форма появляется, когда известны координаты устройства (или стало ясно, что их нет).
-  const [position, setPosition] = useState<LatLon | null | undefined>(undefined)
-  useEffect(() => {
-    let active = true
-    platform.geo.getPosition().then(
-      (p) => active && setPosition(p),
-      () => active && setPosition(null),
-    )
-    return () => {
-      active = false
-    }
-  }, [platform])
+  const position = useCurrentPosition()
 
   return (
     <Screen
       title="Отметить место гибели"
       lead="Шаблон экспедиции уже заполнен — добавьте описание места и проверьте координаты"
+      back={
+        <BackLink to={paths.lastBattle()} testID="back-link">
+          К местам поиска
+        </BackLink>
+      }
       testID="screen-new-site"
     >
       {position === undefined ? (
