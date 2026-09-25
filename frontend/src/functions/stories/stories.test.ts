@@ -15,7 +15,9 @@ import {
 describe('истории: список и карточка', () => {
   it('список — все истории, новые первыми', async () => {
     const list = await listStories(createTestDeps())
-    expect(list.map((x) => x.id)).toEqual(['ST02', 'ST03', 'ST01'])
+    const dates = list.map((x) => x.createdAt)
+    expect([...dates].sort().reverse()).toEqual(dates)
+    expect(list.map((x) => x.id)).toEqual(expect.arrayContaining(['ST01', 'ST02', 'ST03']))
   })
 
   it('история по id', async () => {
@@ -32,8 +34,15 @@ describe('истории: список и карточка', () => {
 describe('истории: очередь, проверенные, мои', () => {
   it('очередь проверки — ожидающие и на уточнении; проверенные — отдельно', async () => {
     const list = await listStories(createTestDeps())
-    expect(awaitingReview(list).map((x) => x.id)).toEqual(['ST02', 'ST03'])
-    expect(publishedStories(list).map((x) => x.id)).toEqual(['ST01'])
+    const awaiting = awaitingReview(list)
+    const published = publishedStories(list)
+    expect(awaiting.map((x) => x.id)).toEqual(expect.arrayContaining(['ST02', 'ST03']))
+    expect(awaiting.every((x) => x.status === 'pending' || x.status === 'clarify')).toBe(true)
+    expect(published.map((x) => x.id)).toContain('ST01')
+    expect(published.every((x) => x.status === 'verified')).toBe(true)
+    expect(awaiting.length + published.length).toBe(
+      list.filter((x) => x.status !== 'rejected').length,
+    )
   })
 
   it('«Мои истории» — только отправленные с устройства; пустая память — пусто', async () => {

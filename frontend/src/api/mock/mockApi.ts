@@ -51,15 +51,15 @@ const MUTABLE = [
 ] as const
 
 /** Меняется вместе с фикстурами: снимок старой демо-базы после выкладки не подхватываем. */
-export const MOCK_DB_VERSION = 1
+export const MOCK_DB_VERSION = 2
 
 type StoredSubscription = Required<Pick<Subscription, 'radiusKm'>> & LatLon
 
 function createDb() {
   return structuredClone({
     graves: jury.graves,
-    battles: jury.battles,
-    teams: jury.teams,
+    battles: [...jury.battles, ...seed.extraBattles],
+    teams: [...jury.teams, ...seed.extraTeams],
     routes: seed.routes,
     requests: seed.requests,
     fundraisers: seed.fundraisers,

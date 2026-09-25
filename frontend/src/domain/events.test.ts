@@ -5,11 +5,13 @@ import * as seed from '../api/fixtures/seed.ts'
 import type { VolunteerRequest } from '../contract/schemas.ts'
 import { ageLabel, buildFeed, filterFeed, volunteersNeeded } from './events.ts'
 
+// Логика ленты — на исходном наборе прототипа: полный список наполнения меняется со временем
+const proto = seed.prototype
 const feed = () =>
   buildFeed({
-    requests: seed.requests,
-    trips: seed.trips,
-    fundraisers: seed.fundraisers,
+    requests: proto.requests,
+    trips: proto.trips,
+    fundraisers: proto.fundraisers,
     teams: jury.teams,
   })
 
@@ -40,8 +42,8 @@ describe('лента «Мероприятия»', () => {
   })
 
   it('без даты публикации — в конце ленты', () => {
-    const trips = seed.trips.map(({ createdAt: _omit, ...t }) => t)
-    const items = buildFeed({ requests: seed.requests, trips, fundraisers: [], teams: [] })
+    const trips = proto.trips.map(({ createdAt: _omit, ...t }) => t)
+    const items = buildFeed({ requests: proto.requests, trips, fundraisers: [], teams: [] })
     expect(items.map((i) => i.id)).toEqual(['R01', 'W01', 'W02'])
   })
 

@@ -34,11 +34,12 @@ describe('новая заявка командира (user story 2)', () => {
 
   it('без места — ошибка рядом с полем, заявка не уходит', async () => {
     const { router, api } = renderApp('/search/requests/new', { role: 'commander' })
+    const before = (await api.listRequests()).length
     await userEvent.clear(await screen.findByTestId('request-place'))
     await userEvent.click(screen.getByTestId('request-publish'))
     expect(await screen.findByText('Укажите место сбора')).toBeInTheDocument()
     expect(screen.getByTestId('request-place')).toHaveAttribute('aria-invalid', 'true')
     expect(router.state.location.pathname).toBe('/search/requests/new')
-    expect(await api.listRequests()).toHaveLength(1)
+    expect(await api.listRequests()).toHaveLength(before)
   })
 })

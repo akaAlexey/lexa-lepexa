@@ -42,9 +42,12 @@ describe('«Истории»: народный архив', () => {
   })
 
   it('краевед: очередь проверки, без всех пунктов чек-листа подтвердить нельзя', async () => {
-    renderApp('/archive', { role: 'verifier' })
+    const { api } = renderApp('/archive', { role: 'verifier' })
     const next = await screen.findByTestId('archive-review-next')
-    expect(next).toHaveTextContent('Проверить истории · 2')
+    const awaiting = (await api.listStories()).filter(
+      (x) => x.status === 'pending' || x.status === 'clarify',
+    ).length
+    expect(next).toHaveTextContent(`Проверить истории · ${awaiting}`)
     await userEvent.click(next)
 
     await userEvent.click(await screen.findByTestId('review-verify'))

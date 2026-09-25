@@ -34,7 +34,9 @@ describe('выезды: загрузка', () => {
   it('список выездов и карточка по id', async () => {
     const deps = createTestDeps()
     const list = await listTrips(deps)
-    expect(list.map((t) => t.id)).toEqual(['W01', 'W02'])
+    const dates = list.map((t) => t.date)
+    expect([...dates].sort()).toEqual(dates)
+    expect(list.slice(0, 2).map((t) => t.id)).toEqual(['W01', 'W02'])
     expect((await getTrip(deps, 'W01')).title).toBe('Раскопки у д. Семенково')
   })
 

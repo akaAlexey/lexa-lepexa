@@ -14,6 +14,7 @@ import type {
   Trip,
   VolunteerRequest,
 } from '../../contract/schemas.ts'
+import * as orel from './orel.ts'
 
 const demoText: Source = {
   kind: 'demo',
@@ -175,7 +176,7 @@ export const routes: Route[] = [
   },
 ]
 
-export const fundraisers: Fundraiser[] = [
+const base_fundraisers: Fundraiser[] = [
   {
     id: 'F01',
     teamId: 'T01',
@@ -238,7 +239,7 @@ export const fundraisers: Fundraiser[] = [
   },
 ]
 
-export const requests: VolunteerRequest[] = [
+const base_requests: VolunteerRequest[] = [
   {
     id: 'R01',
     teamId: 'T01',
@@ -272,7 +273,7 @@ const checklist = [
   },
 ]
 
-export const trips: Trip[] = [
+const base_trips: Trip[] = [
   {
     id: 'W01',
     teamId: 'T01',
@@ -312,7 +313,7 @@ export const trips: Trip[] = [
 ]
 
 /** Коллективные заявки: одна ждёт решения командира, чтобы показать сценарий «принять / уточнить». */
-export const groupApplications: GroupApplication[] = [
+const base_groupApplications: GroupApplication[] = [
   {
     id: 'G01',
     tripId: 'W01',
@@ -328,7 +329,7 @@ export const groupApplications: GroupApplication[] = [
 ]
 
 /** Истории людей: подтверждённая, ожидающая проверки и возвращённая на уточнение. */
-export const stories: ArchiveStory[] = [
+const base_stories: ArchiveStory[] = [
   {
     id: 'ST01',
     title: 'Памятник морякам-тихоокеанцам',
@@ -415,7 +416,7 @@ export const livePhotos: LivePhoto[] = [
   },
 ]
 
-export const sites: LastBattleSite[] = [
+const base_sites: LastBattleSite[] = [
   {
     id: 'S01',
     lat: 52.74,
@@ -478,3 +479,26 @@ export const demoSubscribers: LatLon[] = [
   { lat: 53.28, lon: 36.57 },
   { lat: 52.75, lon: 35.83 },
 ]
+
+/* Наполнение по Орлу и области (реальные события с источниками + демо-записи) — ./orel.ts */
+export const fundraisers: Fundraiser[] = [...base_fundraisers, ...orel.fundraisers]
+export const requests: VolunteerRequest[] = [...base_requests, ...orel.requests]
+export const trips: Trip[] = [...base_trips, ...orel.trips]
+export const groupApplications: GroupApplication[] = [
+  ...base_groupApplications,
+  ...orel.groupApplications,
+]
+export const stories: ArchiveStory[] = [...base_stories, ...orel.stories]
+export const sites: LastBattleSite[] = [...base_sites, ...orel.sites]
+/** Небольшой исходный набор прототипа: на нём проверяется чистая логика (лента, фильтры). */
+export const prototype = {
+  fundraisers: base_fundraisers,
+  requests: base_requests,
+  trips: base_trips,
+  groupApplications: base_groupApplications,
+  stories: base_stories,
+  sites: base_sites,
+}
+/** Добавляются к данным жюри (jury.generated.json). */
+export const extraBattles = orel.battles
+export const extraTeams = orel.teams
