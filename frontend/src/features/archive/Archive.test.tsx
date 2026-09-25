@@ -4,12 +4,16 @@ import { describe, expect, it } from 'vitest'
 import { renderApp } from '../../test/renderApp.tsx'
 
 describe('«Истории»: народный архив', () => {
-  it('гость видит только проверенные истории и главную кнопку «Рассказать историю»', async () => {
+  it('гость видит проверенные истории без предложения рассказать свою', async () => {
     renderApp('/archive', { role: 'family' })
     const published = await screen.findByRole('list', { name: 'Проверенные истории' })
     expect(within(published).getByText('Памятник морякам-тихоокеанцам')).toBeInTheDocument()
     expect(screen.queryByTestId('story-ST02')).not.toBeInTheDocument()
-    expect(screen.getByTestId('archive-new')).toHaveAttribute('href', '/archive/new')
+    expect(screen.queryByTestId('archive-new')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('archive-prompt')).not.toBeInTheDocument()
+    expect(
+      within(screen.getByTestId('site-footer')).queryByText('Есть история?'),
+    ).not.toBeInTheDocument()
   })
 
   it('семья рассказывает историю — она ждёт проверки и видна автору в «Моих историях»', async () => {
@@ -50,6 +54,7 @@ describe('«Истории»: народный архив', () => {
     await userEvent.click(await screen.findByTestId('review-verify'))
     expect(await screen.findByTestId('review-blocker')).toHaveTextContent('Отметьте все пункты')
 
+    await userEvent.type(screen.getByTestId('review-author'), 'Ирина Иванова')
     for (const id of ['datePlace', 'source', 'archive'])
       await userEvent.click(screen.getByTestId(`review-check-${id}`))
     await userEvent.click(screen.getByTestId('review-verify'))
@@ -62,9 +67,11 @@ describe('«Истории»: народный архив', () => {
     await userEvent.click(await screen.findByTestId('review-clarify'))
     expect(await screen.findByTestId('review-blocker')).toHaveTextContent('что нужно уточнить')
     await userEvent.type(screen.getByTestId('review-note'), 'Нужен номер полевой почты')
+    await userEvent.type(screen.getByTestId('review-author'), 'Ирина Иванова')
     await userEvent.click(screen.getByTestId('review-clarify'))
     expect(await screen.findByTestId('review-saved')).toBeInTheDocument()
     expect(screen.getByTestId('story-review-note')).toHaveTextContent('Нужен номер полевой почты')
+    expect(screen.getByTestId('story-review-note')).toHaveTextContent('Ирина Иванова')
   })
 
   it('волонтёр историю не проверяет', async () => {

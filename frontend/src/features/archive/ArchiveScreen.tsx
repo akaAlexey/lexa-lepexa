@@ -12,7 +12,6 @@ import {
   storyState,
   useMyStories,
   useStories,
-  useStoryPrompt,
 } from '../../functions/stories/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
@@ -58,7 +57,6 @@ export function ArchiveScreen() {
   const { role } = useRole()
   const canVerify = can(role?.id, 'story.verify')
   const mine = useMyStories()
-  const prompt = useStoryPrompt()
   return (
     <Screen
       title="Книга памяти"
@@ -94,38 +92,6 @@ export function ArchiveScreen() {
                 </span>
                 <Icon name="chevron" size={1.1} className={s.chronicleArrow} />
               </Link>
-              {/* Главное действие не-краеведа — «Рассказать историю»: в предложении или, после
-                  его закрытия, одной кнопкой (правило проекта: одна большая кнопка на экран) */}
-              {!canVerify && prompt.shown && (
-                <aside
-                  className={s.prompt}
-                  aria-labelledby="story-prompt-title"
-                  data-testid="archive-prompt"
-                >
-                  <button
-                    type="button"
-                    className={s.promptClose}
-                    onClick={prompt.close}
-                    data-testid="archive-prompt-close"
-                  >
-                    <Icon name="close" size={1.1} label="Закрыть предложение" />
-                  </button>
-                  <p id="story-prompt-title" className={s.promptTitle}>
-                    Есть история о войне?
-                  </p>
-                  <p className={s.promptText}>
-                    Расскажите о родных или о месте — краевед проверит и опубликует.
-                  </p>
-                  <BigButton to={paths.newStory()} icon="story" testID="archive-new">
-                    Рассказать историю
-                  </BigButton>
-                </aside>
-              )}
-              {!canVerify && !prompt.shown && (
-                <BigButton to={paths.newStory()} icon="story" testID="archive-new">
-                  Рассказать историю
-                </BigButton>
-              )}
               {canVerify ? (
                 <section aria-labelledby="archive-queue">
                   <h2 id="archive-queue">Ждут проверки</h2>

@@ -1,3 +1,4 @@
+import { useAccount } from '../../functions/account/useAccount.ts'
 import { useLocation, useParams } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
 import { ShareButton } from '../../app/ShareButton.tsx'
@@ -21,7 +22,7 @@ import { BigButton } from '../../ui/BigButton.tsx'
 import { Button } from '../../ui/Button.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
-import { TextAreaField } from '../../ui/Field.tsx'
+import { TextAreaField, TextField } from '../../ui/Field.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { StatePill } from '../../ui/StatePill.tsx'
@@ -30,8 +31,8 @@ import { StoryImages } from './StoryImages.tsx'
 
 /** Чек-лист и решение проверяющего — как экран «Проверка источника» на макете. */
 function ReviewPanel({ story }: { story: ArchiveStory }) {
-  const { role } = useRole()
-  const review = useReview(story, role?.short ?? 'Проверяющий')
+  const { account } = useAccount()
+  const review = useReview(story, account?.name ?? '')
   const { checks, note, saved, blocker, busy } = review
 
   return (
@@ -51,6 +52,15 @@ function ReviewPanel({ story }: { story: ArchiveStory }) {
           </label>
         ))}
       </fieldset>
+      <TextField
+        label="Ваше имя"
+        hint="Подпись будет видна рядом с комментарием"
+        value={review.reviewer}
+        onChange={review.setReviewer}
+        maxLength={80}
+        autoComplete="name"
+        testID="review-author"
+      />
       <TextAreaField
         label="Комментарий автору"
         hint="Что уточнить или на чём основано решение"
