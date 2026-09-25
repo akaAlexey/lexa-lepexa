@@ -13,8 +13,7 @@ test.describe('История 3: место гибели и уведомлени
     // Волонтёр подписан на поиск рядом (демо-геопозиция — Орёл)
     const volunteer = await context.newPage()
     await startAs(volunteer, 'volunteer')
-    await volunteer.getByTestId('tab-map').click()
-    await volunteer.getByTestId('hub-last-battle').click()
+    await volunteer.getByTestId('tab-map').click() // места поиска и подписка — в шторке карты
     await volunteer.getByTestId('last-battle-subscribe').click()
     await expect(volunteer.getByTestId('subscribe-done')).toContainText('в радиусе 20 км')
 
@@ -58,7 +57,6 @@ test.describe('История 3: место гибели и уведомлени
   }, testInfo) => {
     await startAs(page, 'volunteer')
     await page.getByTestId('tab-map').click()
-    await page.getByTestId('hub-last-battle').click()
     await expect(page.getByTestId('marker-site-S01')).toHaveAttribute(
       'aria-label',
       /требуется проверка/,
@@ -72,7 +70,9 @@ test.describe('История 3: место гибели и уведомлени
       /Останки подняты/,
     )
 
+    // метка открывает карточку места в шторке, из неё — страница места
     await page.getByTestId('marker-site-S01').click()
+    await page.getByTestId('hub-card-open').click()
     await expect(page).toHaveURL(/\/last-battle\/S01$/)
     await expect(page.getByTestId('site-fighters')).toHaveText('Красноармеец Иванов И.И.')
     await expect(page.getByTestId('site-sources')).toContainText('Книга Памяти')

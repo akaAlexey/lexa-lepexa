@@ -46,10 +46,30 @@ export async function useDemoDate(page: Page) {
 
 type Role = 'family' | 'volunteer' | 'commander' | 'verifier'
 
-/** Старт сценария: выбор роли на стартовом экране — первое нажатие. */
+/** Старт сценария: выбор роли (/roles) — первое нажатие; дальше открываются «Мероприятия». */
 export async function startAs(page: Page, role: Role) {
-  await page.goto('/')
+  await page.goto('/roles')
   await page.getByTestId(`role-${role}`).click()
+}
+
+/**
+ * «Тропа» из раздела «Карта» — переходом внутри приложения, без перезагрузки страницы:
+ * домашний экран всех ролей — «Мероприятия», а сценарии без сети требуют уже загруженного приложения.
+ */
+export async function openTrail(page: Page) {
+  await page.getByTestId('tab-map').click()
+  await page.getByRole('link', { name: 'Маршрут и задания для ребёнка' }).click()
+  await expect(page).toHaveURL(/\/trail$/)
+}
+
+/** Вход на этом устройстве до загрузки страницы: «Живое фото» открывается только после входа. */
+export async function signInOnDevice(page: Page) {
+  await page.addInitScript(() =>
+    localStorage.setItem(
+      'tropa:account',
+      JSON.stringify({ login: '+7 ··· ···-45-67', since: '2026-09-25T09:00:00Z' }),
+    ),
+  )
 }
 
 /** Нет горизонтальной прокрутки: вёрстка помещается в ширину экрана. */

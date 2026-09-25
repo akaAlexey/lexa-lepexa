@@ -1,23 +1,22 @@
-import { Link, useParams } from 'react-router'
+import { useCallback, useState } from 'react'
+import { Link, useLocation, useParams } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
 import { ShareButton } from '../../app/ShareButton.tsx'
 import type { Trip } from '../../contract/schemas.ts'
 import { formatDayRu } from '../../domain/format.ts'
 import { isNotFound } from '../../functions/core/errors.ts'
 import { paths } from '../../functions/core/paths.ts'
-import {
-  freeSpots,
-  spotsText,
-  useChecklist,
-  useRegisterTrip,
-  useTrip,
-} from '../../functions/trips/index.ts'
+import { moscowTime, useSignups, type SignupTarget } from '../../functions/signup/index.ts'
+import { freeSpots, spotsText, useChecklist, useTrip } from '../../functions/trips/index.ts'
+import { isGroupSentState } from '../../functions/groupApplications/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
+import { SignupDialog } from '../events/SignupDialog.tsx'
+import { GroupList } from './GroupList.tsx'
 import s from './weekends.module.css'
 
 export function TripScreen() {
@@ -37,8 +36,8 @@ export function TripScreen() {
       >
         <p>Такого выезда нет или его уже убрали из расписания.</p>
         <p>
-          <Link to={paths.weekends()} className={s.tripLink}>
-            К списку выездов
+          <Link to={paths.events('trip')} className={s.tripLink}>
+            Все выезды в ленте
           </Link>
         </p>
       </Screen>
@@ -65,9 +64,17 @@ export function TripScreen() {
 }
 
 function TripDetails({ trip }: { trip: Trip }) {
-  const register = useRegisterTrip(trip.id)
+  const location = useLocation()
+  const { isSignedUp } = useSignups()
+  const target: SignupTarget = { kind: 'trip', trip }
+  const registered = isSignedUp(target)
   const full = freeSpots(trip) === 0
-  const registered = register.isSuccess
+  // Запись — только через окно с условиями (решение команды 25.09)
+  const [signingUp, setSigningUp] = useState(false)
+  // Стабильный обработчик: диалог держит фокус и не перезапускает эффект на каждом рендере
+  const closeSignup = useCallback(() => setSigningUp(false), [])
+  const starts = moscowTime(trip.startsAt)
+  const ends = moscowTime(trip.endsAt)
 
   return (
     <Screen
@@ -79,6 +86,11 @@ function TripDetails({ trip }: { trip: Trip }) {
       }
       testID="screen-trip"
     >
+      {isGroupSentState(location.state) && (
+        <Notice tone="success" testID="group-sent">
+          Заявка группы отправлена. Командир отряда рассмотрит её и уточнит подготовку.
+        </Notice>
+      )}
       <Card as="section" aria-labelledby="trip-about">
         <h2 id="trip-about" className="visually-hidden">
           О выезде
@@ -88,10 +100,25 @@ function TripDetails({ trip }: { trip: Trip }) {
             <dt>Дата</dt>
             <dd data-testid="trip-date">{formatDayRu(trip.date)}</dd>
           </div>
+          {starts && (
+            <div>
+              <dt>Время</dt>
+              <dd data-testid="trip-time">
+                {starts}
+                {ends && `–${ends}`} по Москве
+              </dd>
+            </div>
+          )}
           <div>
             <dt>Место</dt>
             <dd>{trip.place}</dd>
           </div>
+          {trip.meetingPoint && (
+            <div>
+              <dt>Сбор</dt>
+              <dd>{trip.meetingPoint}</dd>
+            </div>
+          )}
         </dl>
         <p className={s.spots} data-testid="trip-spots" aria-live="polite">
           {spotsText(trip)}
@@ -100,8 +127,8 @@ function TripDetails({ trip }: { trip: Trip }) {
       </Card>
 
       <BigButton
-        onClick={() => register.mutate()}
-        disabled={registered || full || register.isPending}
+        onClick={() => setSigningUp(true)}
+        disabled={registered || full}
         icon="calendar"
         testID="trip-register"
       >
@@ -109,17 +136,14 @@ function TripDetails({ trip }: { trip: Trip }) {
       </BigButton>
       {registered && (
         <Notice tone="success" testID="trip-registered">
-          Вы записаны на выезд {formatDayRu(trip.date)}. Соберите вещи по чек-листу ниже.
+          Вы записаны на выезд {formatDayRu(trip.date)}
+          {starts && `, сбор в ${starts}`}. Соберите вещи по чек-листу ниже.
         </Notice>
       )}
       {!registered && full && (
         <Notice testID="trip-full">
-          Свободных мест на этот выезд нет. <Link to={paths.weekends()}>Выберите другую дату</Link>
-        </Notice>
-      )}
-      {register.isError && (
-        <Notice tone="error" testID="trip-register-error">
-          Не удалось записаться: {register.error.message}. Попробуйте ещё раз.
+          Свободных мест на этот выезд нет.{' '}
+          <Link to={paths.events('trip')}>Выберите другую дату</Link>
         </Notice>
       )}
 
@@ -129,12 +153,14 @@ function TripDetails({ trip }: { trip: Trip }) {
         </Link>
       </p>
 
+      <GroupList trip={trip} />
       <Checklist trip={trip} />
       <ShareButton
         title={`Выезд с поисковиками: ${trip.title}`}
         text={`${formatDayRu(trip.date)} — «Выходные с поисковиком»`}
         testID="trip-share"
       />
+      {signingUp && <SignupDialog target={target} onClose={closeSignup} />}
     </Screen>
   )
 }

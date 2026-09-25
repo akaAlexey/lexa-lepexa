@@ -152,14 +152,3 @@
 }
 
 /* «Ближайший выезд»: подпись и дата в две строки, шрифт помельче — читается на узком экране */
-.nearTitle {
-  display: block;
-  font-size: 0.95rem;
-}
-
-.nearDate {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 400;
-  opacity: 0.92;
-}

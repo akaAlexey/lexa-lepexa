@@ -220,7 +220,7 @@ function RolePanel() {
           'Роль не выбрана: выберите, чтобы на экранах была ваша главная кнопка.'
         )}
       </p>
-      <BigButton to={paths.home()} icon="family" testID="other-role-switch">
+      <BigButton to={paths.roles()} icon="family" testID="other-role-switch">
         {role ? 'Сменить роль' : 'Выбрать роль'}
       </BigButton>
     </>
@@ -381,7 +381,7 @@ function AccountPanel() {
           </>
         )}
         {' · '}
-        <Link to={paths.home()}>Выбрать роль без входа</Link>
+        <Link to={paths.roles()}>Выбрать роль без входа</Link>
       </p>
     </form>
   )

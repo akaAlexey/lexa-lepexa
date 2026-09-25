@@ -402,16 +402,3 @@
   color: var(--color-ink-muted);
   font-size: 0.9rem;
 }
-
-.promptAction {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: var(--touch-min);
-  padding: 0 var(--space-4);
-  border-radius: var(--radius-control);
-  background: var(--color-accent);
-  color: #fff;
-  font-weight: 700;
-  text-decoration: none;
-}

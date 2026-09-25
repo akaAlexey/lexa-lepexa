@@ -14,7 +14,7 @@ export function NotFoundScreen() {
         Открыть карту
       </BigButton>
       <p>
-        <Link to={paths.home()}>Выбрать роль заново</Link>
+        <Link to={paths.roles()}>Выбрать роль заново</Link>
       </p>
     </Screen>
   )

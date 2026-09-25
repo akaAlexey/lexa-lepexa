@@ -94,10 +94,11 @@ export function ArchiveScreen() {
                 </span>
                 <Icon name="chevron" size={1.1} className={s.chronicleArrow} />
               </Link>
+              {/* Главное действие не-краеведа — «Рассказать историю»: в предложении или, после
+                  его закрытия, одной кнопкой (правило проекта: одна большая кнопка на экран) */}
               {!canVerify && prompt.shown && (
                 <aside
                   className={s.prompt}
-                  role="dialog"
                   aria-labelledby="story-prompt-title"
                   data-testid="archive-prompt"
                 >
@@ -115,10 +116,15 @@ export function ArchiveScreen() {
                   <p className={s.promptText}>
                     Расскажите о родных или о месте — краевед проверит и опубликует.
                   </p>
-                  <Link to={paths.newStory()} className={s.promptAction} data-testid="archive-new">
-                    <Icon name="story" size={1.1} /> Рассказать историю
-                  </Link>
+                  <BigButton to={paths.newStory()} icon="story" testID="archive-new">
+                    Рассказать историю
+                  </BigButton>
                 </aside>
+              )}
+              {!canVerify && !prompt.shown && (
+                <BigButton to={paths.newStory()} icon="story" testID="archive-new">
+                  Рассказать историю
+                </BigButton>
               )}
               {canVerify ? (
                 <section aria-labelledby="archive-queue">

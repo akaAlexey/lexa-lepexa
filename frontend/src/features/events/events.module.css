@@ -227,40 +227,13 @@
 }
 
 .weekHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  width: 100%;
-  padding: var(--space-3) var(--space-4) var(--space-2);
-  border: 0;
-  border-bottom: 3px double var(--color-ink);
-  background: transparent;
-  color: var(--color-ink);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.weekHeadText {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0 var(--space-3);
-}
-
-.weekArrow {
   display: grid;
-  place-items: center;
-  flex: none;
-  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4) var(--space-2);
+  border-bottom: 3px double var(--color-ink);
 }
 
-.weekArrow[data-open] {
-  transform: rotate(180deg);
-}
-
-/* Свёрнуто по умолчанию: плавное раскрытие по высоте */
+/* Свёрнуто по умолчанию: плавное раскрытие по высоте (из PR #17) */
 .weekBody {
   display: grid;
   grid-template-rows: 0fr;
@@ -276,12 +249,65 @@
   overflow: hidden;
 }
 
-.weekHead h2 {
+.weekTitle {
   margin: 0;
+}
+
+/* Заголовок — кнопка «свернуть/развернуть» во всю ширину: большая зона нажатия */
+.weekToggle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0 var(--space-3);
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
   font-size: 1.3rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  text-align: left;
+  cursor: pointer;
+}
+
+.weekHint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-ink-muted);
+}
+
+.weekHint svg {
+  transition: transform 0.2s ease;
+}
+
+.weekToggle[aria-expanded='true'] .weekHint svg {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weekHint svg,
+  .weekBody {
+    transition: none;
+  }
+}
+
+.weekMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
 }
 
 .weekItem {
@@ -297,20 +323,96 @@
   margin-top: var(--space-1);
 }
 
-.weekFoot {
+/* Окно записи: условия списком «название — значение», согласие родителя отдельной рамкой */
+.terms {
+  display: grid;
+  gap: var(--space-2);
   margin: 0;
-  padding: var(--space-2) var(--space-4);
 }
 
-.more {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 var(--space-4);
+.terms > div {
+  display: grid;
+  grid-template-columns: minmax(7rem, auto) 1fr;
+  gap: var(--space-1) var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-line);
 }
 
-.more a {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--touch-min);
+.terms dt {
+  color: var(--color-ink-muted);
+}
+
+.terms dd {
+  margin: 0;
   font-weight: 700;
+}
+
+.bring {
+  margin: 0;
+  padding-left: 1.2em;
+  font-weight: 400;
+}
+
+.termsNote {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: 0.9rem;
+}
+
+.signupForm {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.consent {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-3);
+  border: 2px solid var(--color-olive);
+  border-radius: var(--radius-control);
+}
+
+.consent legend {
+  padding: 0 var(--space-1);
+  font-weight: 700;
+}
+
+.consentNote {
+  margin: 0;
+}
+
+.agree {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-height: var(--touch-min);
+  cursor: pointer;
+}
+
+.agree input {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: 0;
+  accent-color: var(--color-olive);
+  cursor: pointer;
+}
+
+@media (max-width: 22.5rem) {
+  .terms > div {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* «Ближайший выезд»: название и дата двумя строками */
+.nearTitle {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.nearDate {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 400;
 }

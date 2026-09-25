@@ -2,6 +2,7 @@ import { expect } from '@playwright/test'
 import {
   expectNoA11yViolations,
   expectNoHorizontalScroll,
+  signInOnDevice,
   startAs,
   test,
   useDemoDate,
@@ -23,23 +24,20 @@ test('краевед подтверждает место по «Книге Па�
   await expectNoA11yViolations(page)
 })
 
-test('«Поисковикам»: целевые сборы и карта потребностей — по ширине, WCAG AA, одна главная кнопка', async ({
+test('целевые сборы из кейса — в ленте «Мероприятий»: по ширине, WCAG AA, одна главная кнопка', async ({
   page,
 }) => {
   await useDemoDate(page)
   await startAs(page, 'volunteer')
-  await page.goto('/search')
-  await expect(page.getByTestId('fundraiser-F03')).toContainText('Поднять бойца')
-  await expectNoA11yViolations(page)
-  await page.getByTestId('needs-view-map').click()
-  await expect(page.getByTestId('needs-map')).toBeVisible()
-  await page
-    .getByRole('button', { name: /Поднять бойца/ })
-    .last()
-    .click()
-  await expect(page.getByTestId('fundraiser-F03')).toBeVisible()
+  await page.getByTestId('events-filter-fund').click()
+  const raise = page.getByTestId('feed-fund-F03')
+  await expect(raise).toContainText('Поднять бойца')
+  await expect(page.getByTestId('feed-fund-F02')).toContainText('Экипировать отряд')
   await expect(page.locator('[data-main-action]')).toHaveCount(1)
   await expectNoHorizontalScroll(page)
+  await expectNoA11yViolations(page)
+  await raise.getByTestId('donate-F03').click()
+  await expect(page.getByTestId('donate-dialog-F03')).toContainText('деньги не списываются')
   await expectNoA11yViolations(page)
 })
 
@@ -57,6 +55,7 @@ test('«Оживить своё фото»: снимок, согласие → �
   page,
 }) => {
   await useDemoDate(page)
+  await signInOnDevice(page)
   await startAs(page, 'family')
   await page.goto('/live/new')
   // 1×1 PNG — настоящая картинка, чтобы браузер уменьшил её через canvas

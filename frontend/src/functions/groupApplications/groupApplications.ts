@@ -51,6 +51,14 @@ export function visibleApplications(
   return list.filter((a) => all || mine.includes(a.id))
 }
 
+/** Сколько заявок групп ждут решения командира на каждом выезде: id выезда → число (нулей нет). */
+export function pendingByTrip(list: readonly GroupApplication[]): ReadonlyMap<string, number> {
+  const counts = new Map<string, number>()
+  for (const a of list)
+    if (a.status === 'pending') counts.set(a.tripId, (counts.get(a.tripId) ?? 0) + 1)
+  return counts
+}
+
 /** Тон значка состояния заявки (совпадает с `StatePill`): ждёт, нужно действие, готово. */
 export type GroupTone = 'wait' | 'action' | 'done'
 
@@ -77,3 +85,14 @@ export const replaceApplication = (
   list: readonly GroupApplication[] | undefined,
   updated: GroupApplication,
 ): GroupApplication[] | undefined => list?.map((a) => (a.id === updated.id ? updated : a))
+
+/** Состояние перехода после подачи: карточка выезда показывает «Заявка группы отправлена». */
+export interface GroupSentState {
+  groupSent: string
+}
+
+export const groupSentState = (groupSent: string): GroupSentState => ({ groupSent })
+
+export function isGroupSentState(state: unknown): state is GroupSentState {
+  return typeof (state as Partial<GroupSentState> | null)?.groupSent === 'string'
+}

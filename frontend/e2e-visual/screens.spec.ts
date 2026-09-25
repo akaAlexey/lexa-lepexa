@@ -7,14 +7,11 @@ import { expect, test } from '@playwright/test'
  * растягивает окно, карта перестраивается, и метки съезжают.
  */
 const SCREENS: [role: string, url: string][] = [
-  ['', '/'],
+  ['', '/roles'],
   ['family', '/trail'],
   ['family', '/trail/park-3km/point/okop'],
   ['family', '/trail/park-3km/finish'],
-  ['volunteer', '/search'],
-  ['commander', '/search'],
   ['commander', '/search/requests/new'],
-  ['volunteer', '/weekends'],
   ['volunteer', '/weekends/W01'],
   ['commander', '/weekends/W01'],
   ['family', '/weekends/W01/group'],

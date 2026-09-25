@@ -95,9 +95,10 @@ describe('«Последний бой» по ролям', () => {
     expect(platform.storage.get('subscription')).toMatchObject({ radiusKm: 20 })
   })
 
-  it('метка места ведёт на его карточку со своим адресом', async () => {
+  it('метка места на карте открывает карточку, из неё — страница места со своим адресом', async () => {
     const { router } = renderApp('/last-battle', { role: 'volunteer' })
     await userEvent.click(await screen.findByTestId('marker-site-S02'))
+    await userEvent.click(await screen.findByTestId('hub-card-open'))
     expect(router.state.location.pathname).toBe('/last-battle/S02')
   })
 

@@ -14,16 +14,21 @@ interface RenderOptions {
   role?: RoleId
   /** Значения в хранилище до старта (например, прогресс квеста). */
   stored?: Record<string, unknown>
+  /** Пользователь уже вошёл на этом устройстве («Живое фото» — только после входа). */
+  signedIn?: boolean
   platform?: Partial<Platform>
 }
 
 /** Рендер всего приложения на нужном URL с mock-API без задержек и хранилищем в памяти. */
 export function renderApp(
   url = '/',
-  { role, stored = {}, platform: overrides = {} }: RenderOptions = {},
+  { role, stored = {}, signedIn = false, platform: overrides = {} }: RenderOptions = {},
 ) {
   const storage = createWebStorage(undefined)
-  for (const [key, value] of Object.entries({ ...stored, ...(role ? { role } : {}) }))
+  const account = signedIn
+    ? { account: { login: '+7 ··· ···-45-67', since: '2026-09-25T09:00:00Z' } }
+    : {}
+  for (const [key, value] of Object.entries({ ...stored, ...account, ...(role ? { role } : {}) }))
     storage.set(key, value)
   const api = createMockApi({ latencyMs: 0, channelName: null })
   const platform: Platform = {

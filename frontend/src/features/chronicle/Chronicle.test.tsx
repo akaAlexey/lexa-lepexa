@@ -71,7 +71,7 @@ describe('«Поделиться»', () => {
     expect(await screen.findByTestId('story-share')).toBeInTheDocument()
     await router.navigate('/archive/ST02')
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Землянка у оврага (демо)' }),
+      await screen.findByRole('heading', { level: 1, name: 'Землянка у оврага' }),
     ).toBeInTheDocument()
     expect(await screen.findByText('Ожидает проверки')).toBeInTheDocument()
     expect(screen.queryByTestId('story-share')).not.toBeInTheDocument()

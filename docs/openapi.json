@@ -240,7 +240,7 @@
     "/requests/{id}/join": {
       "post": {
         "operationId": "joinRequest",
-        "summary": "«Стать частью команды»",
+        "summary": "Записаться в заявку отряда (после окна с условиями; до 18+ — с согласием родителя)",
         "responses": {
           "200": {
             "description": "OK",
@@ -265,7 +265,17 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupRequest"
+              }
+            }
+          }
+        }
       }
     },
     "/fundraisers": {
@@ -443,7 +453,7 @@
     "/trips/{id}/register": {
       "post": {
         "operationId": "registerTrip",
-        "summary": "Записаться на выезд",
+        "summary": "Записаться на выезд (после окна с условиями; до 18+ — с согласием родителя)",
         "responses": {
           "200": {
             "description": "OK",
@@ -468,7 +478,17 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupRequest"
+              }
+            }
+          }
+        }
       }
     },
     "/group-applications": {
@@ -1438,6 +1458,31 @@
             "minimum": 10,
             "maximum": 99
           },
+          "startsAt": {
+            "description": "Начало — время сбора участников",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "endsAt": {
+            "description": "Окончание",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "meetingPoint": {
+            "description": "Место сбора участников",
+            "type": "string",
+            "minLength": 1
+          },
+          "bring": {
+            "description": "Что взять с собой",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
           "fundraiserId": {
             "type": "string",
             "minLength": 1
@@ -1850,12 +1895,30 @@
             "minimum": 10,
             "maximum": 99
           },
+          "startsAt": {
+            "description": "Начало — время сбора участников",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "endsAt": {
+            "description": "Окончание",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "meetingPoint": {
+            "description": "Место сбора участников",
+            "type": "string",
+            "minLength": 1
+          },
           "checklist": {
             "minItems": 1,
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ChecklistItem"
-            }
+            },
+            "description": "Чек-лист новичка — он же «что взять с собой»"
           },
           "createdAt": {
             "description": "Когда опубликовано: лента «Мероприятия» идёт по этой дате, новые сверху",
@@ -1883,6 +1946,70 @@
         ],
         "additionalProperties": false,
         "description": "Выезд «Выходные с поисковиком»"
+      },
+      "ParentConsent": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 120,
+            "description": "ФИО родителя или законного представителя"
+          },
+          "phone": {
+            "type": "string",
+            "pattern": "^\\+7\\d{10}$",
+            "description": "Телефон родителя для связи, +7XXXXXXXXXX"
+          },
+          "agreedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "description": "Когда родитель дал согласие"
+          }
+        },
+        "required": [
+          "fullName",
+          "phone",
+          "agreedAt"
+        ],
+        "additionalProperties": false,
+        "description": "Согласие родителя или законного представителя на участие несовершеннолетнего (или без подтверждённых 18+)"
+      },
+      "SignupRequest": {
+        "type": "object",
+        "properties": {
+          "termsAccepted": {
+            "type": "boolean",
+            "enum": [
+              true
+            ],
+            "description": "Человек прочитал условия: время, место сбора, возраст"
+          },
+          "adultVerified": {
+            "type": "boolean",
+            "description": "Возраст 18+ подтверждён в профиле"
+          },
+          "age": {
+            "description": "Возраст участника, если известен из профиля: сервер сверяет его с minAge",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 120
+          },
+          "parentConsent": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ParentConsent"
+              }
+            ]
+          }
+        },
+        "required": [
+          "termsAccepted",
+          "adultVerified"
+        ],
+        "additionalProperties": false,
+        "description": "Запись на заявку отряда или выезд после окна с условиями. Без подтверждённого возраста 18+ — только с согласием родителя"
       },
       "GroupApplicationStatus": {
         "type": "string",

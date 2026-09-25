@@ -119,6 +119,27 @@ export const memory = {
   checklist: perId((tripId) => memorySlot<string[]>(`checklist:${tripId}`, [], stringList)),
   /** Заявки отрядов, в которые пользователь записался. */
   joinedRequests: memorySlot<string[]>('search.joinedRequests', []),
+  /** Выезды, на которые пользователь записался с этого устройства. */
+  registeredTrips: memorySlot<string[]>('trips.registered', [], stringList),
+  /**
+   * Возраст из профиля для записи на выезды: пишет профиль (подтверждение 18+), читает запись.
+   * По умолчанию возраст не подтверждён — нужна подпись родителя.
+   */
+  ageStatus: memorySlot<{ adultVerified: boolean; age?: number }>(
+    'profile.age',
+    { adultVerified: false },
+    (raw) => {
+      const v = raw as { adultVerified?: unknown; age?: unknown } | null
+      if (typeof v?.adultVerified !== 'boolean') return undefined
+      return typeof v.age === 'number'
+        ? { adultVerified: v.adultVerified, age: v.age }
+        : { adultVerified: v.adultVerified }
+    },
+  ),
+  /** «Новости недели» раскрыты или свёрнуты (по умолчанию — решение команды). */
+  weekNewsOpen: memorySlot<boolean>('events.weekNewsOpen', false, (raw) =>
+    typeof raw === 'boolean' ? raw : undefined,
+  ),
   /** Заявки групп, поданные с этого устройства. */
   myGroups: memorySlot<string[]>('groups:mine', []),
   /** Истории, отправленные с этого устройства. */
