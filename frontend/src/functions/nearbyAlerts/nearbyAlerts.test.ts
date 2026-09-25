@@ -19,7 +19,7 @@ const site = (lat: number, lon: number): NewLastBattleSite => ({
 
 describe('подписка на находки рядом', () => {
   it('подписка на 20 км от текущей позиции запоминается на устройстве под прежним ключом', async () => {
-    const requestPermission = vi.fn(async () => 'granted' as const)
+    const requestPermission = vi.fn<NotifyService['requestPermission']>(async () => 'granted')
     const deps = createTestDeps({
       position: { lat: 52.97, lon: 36.07 },
       platform: {
