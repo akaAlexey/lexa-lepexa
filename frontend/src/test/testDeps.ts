@@ -37,7 +37,10 @@ export function createTestDeps({
     },
     storage,
     share: { share: async () => 'copied' },
-    ar: { trackImage: () => Promise.reject(new Error('Камеры нет в тестовой среде')) },
+    ar: {
+      openCamera: () => Promise.reject(new Error('Камеры нет в тестовой среде')),
+      trackImage: () => Promise.reject(new Error('Камеры нет в тестовой среде')),
+    },
     ...overrides,
   }
   const services = createServices(createMockApi({ latencyMs: 0, channelName: null }), platform)

@@ -230,3 +230,17 @@
   margin: 0;
   overflow-wrap: anywhere;
 }
+
+.cameraPanel {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.cameraPreview {
+  display: block;
+  width: 100%;
+  max-height: 70dvh;
+  border-radius: var(--radius-card);
+  background: #000;
+  object-fit: cover;
+}

@@ -1,6 +1,7 @@
 import { act, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import type { ArService } from '../../platform/types.ts'
 import { renderApp } from '../../test/renderApp.tsx'
 
 const login = async (email = 'anna@example.com') => {
@@ -99,5 +100,23 @@ describe('Другое, профиль и личные функции', () => {
     expect(screen.queryByTestId('last-battle-site-S01')).not.toBeInTheDocument()
     await userEvent.click(screen.getByTestId('last-battle-site-S02'))
     expect(router.state.location.pathname).toBe('/last-battle/S02')
+  })
+  it('AR запрашивает камеру по кнопке и показывает превью после разрешения', async () => {
+    const stop = vi.fn<() => void>()
+    const openCamera = vi.fn<ArService['openCamera']>(async () => ({ stop }))
+    renderApp('/other?section=ar', {
+      signedIn: true,
+      platform: {
+        ar: {
+          openCamera,
+          trackImage: () => Promise.reject(new Error('не используется')),
+        },
+      },
+    })
+
+    expect(screen.getByTestId('ar-camera')).not.toBeVisible()
+    await userEvent.click(screen.getByTestId('ar-camera-enable'))
+    expect(openCamera).toHaveBeenCalledTimes(1)
+    expect(screen.getByTestId('ar-camera')).toBeVisible()
   })
 })
