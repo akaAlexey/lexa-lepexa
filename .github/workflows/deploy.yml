@@ -32,9 +32,12 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      # Свой домен: в Settings → Pages указать домен, затем переменную репозитория SITE_BASE=/ .
+      # Без переменной сайт остаётся на https://team-shpilit.github.io/lexa-lepexa/.
       - name: Build
-        run: npm run build -- --base=/lexa-lepexa/
+        run: npm run build -- --base=${{ vars.SITE_BASE || '/lexa-lepexa/' }}
         env:
+          VITE_SITE_URL: ${{ vars.SITE_URL || 'https://marshrutypobedy.ru' }}
           # Живой бэкенд — только когда задана переменная репозитория API_URL
           # (Settings → Secrets and variables → Actions → Variables). Без неё — демо-данные в браузере:
           # бесплатный туннель меняет адрес и падает, а жюри не должно увидеть пустой сайт.
@@ -49,7 +52,8 @@ jobs:
       - name: Smoke check of the build
         run: |
           test -f dist/index.html
-          grep -q '/lexa-lepexa/assets/' dist/index.html
+          grep -q '${{ vars.SITE_BASE || '/lexa-lepexa/' }}assets/' dist/index.html
+          test -f dist/manifest.webmanifest
 
       - uses: actions/upload-pages-artifact@v3
         with:

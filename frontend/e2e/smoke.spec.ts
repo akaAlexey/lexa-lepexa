@@ -26,13 +26,25 @@ test('прямые ссылки открывают экраны, разделы 
   await expect(page.getByTestId('status-found_needs_check')).toBeVisible()
   await snap(page, testInfo, '03-last-battle')
 
-  await page.getByTestId('tab-search').click()
-  await expect(page.getByTestId('found-counter')).toContainText('Найдено бойцов за месяц')
-  await expect(page.getByTestId('team-T01')).toContainText('Высота')
+  // Четыре раздела ADR 0012: подписи видны всегда, «Последний бой» — внутри «Карты»
+  await expect(page.getByTestId('tab-map')).toHaveAttribute('aria-current', 'page')
+  await page.getByTestId('tab-events').click()
+  await expect(page.getByTestId('week-news')).toContainText('Новости недели')
+  await expect(page.getByTestId('request-card-R01')).toContainText('Высота')
+  await expect(page.getByTestId('feed-trip-W01')).toContainText('3 октября, суббота')
   await expectNoA11yViolations(page)
-  await snap(page, testInfo, '04-search')
+  await snap(page, testInfo, '04-events')
 
-  await page.getByTestId('tab-weekends').click()
-  await expect(page.getByTestId('trip-W01')).toContainText('3 октября, суббота')
-  await snap(page, testInfo, '05-weekends')
+  await page.getByTestId('events-search-hq').click()
+  await expect(page.getByTestId('found-counter')).toContainText('Найдено бойцов за месяц')
+  await expect(page.getByTestId('tab-events')).toHaveAttribute('aria-current', 'page')
+
+  await page.getByTestId('tab-map').click()
+  await expect(page.getByTestId('hub-map')).toHaveAttribute('data-ready', 'true')
+  await snap(page, testInfo, '05-map')
+
+  await page.getByTestId('tab-stories').click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Книга памяти' })).toBeVisible()
+  await page.getByTestId('tab-other').click()
+  await expect(page.getByTestId('other-account')).toContainText('Вход')
 })

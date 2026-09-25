@@ -19,6 +19,7 @@ import { Button } from '../../ui/Button.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Icon } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import s from './trail.module.css'
 
@@ -107,6 +108,11 @@ export function TrailScreen() {
     <Screen
       title="Тропа"
       lead="Семейный маршрут по местам боёв с заданиями для ребёнка"
+      back={
+        <BackLink to={paths.map()} testID="back-link">
+          К карте
+        </BackLink>
+      }
       testID="screen-trail"
     >
       <QueryState query={routes} what="маршруты">

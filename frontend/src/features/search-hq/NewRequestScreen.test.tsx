@@ -7,12 +7,12 @@ import { renderApp } from '../../test/renderApp.tsx'
 describe('новая заявка командира (user story 2)', () => {
   useDemoClock()
 
-  it('форма заполнена заранее: отряд «Высота», дата «завтра», землекопы, место', async () => {
+  it('форма заполнена заранее: отряд «Высота», дата «завтра», возраст 16+, место', async () => {
     renderApp('/search/requests/new', { role: 'commander' })
     expect(await screen.findByTestId('request-team')).toHaveTextContent('Высота')
     expect(screen.getByTestId('date-tomorrow')).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByTestId('request-date-label')).toHaveTextContent('3 октября, суббота')
-    expect(screen.getByTestId('request-role')).toHaveValue('digger')
+    expect(screen.getByTestId('age-16')).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByTestId('request-place')).not.toHaveValue('')
   })
 
@@ -22,11 +22,13 @@ describe('новая заявка командира (user story 2)', () => {
     expect(screen.getByTestId('count-10')).toHaveAttribute('aria-pressed', 'true')
     await userEvent.click(screen.getByTestId('request-publish'))
 
-    expect(router.state.location.pathname).toBe('/search')
+    // После публикации — в ленту «Мероприятия», новая заявка первой среди заявок (ADR 0012)
+    expect(router.state.location.pathname).toBe('/events')
     expect(await screen.findByTestId('request-published')).toHaveTextContent('Заявка опубликована')
     const [first] = await screen.findAllByTestId(/^request-card-/)
     expect(first).toHaveTextContent('Высота')
-    expect(first).toHaveTextContent('Требуется: 10 землекопов')
+    expect(first).toHaveTextContent('Требуются волонтёры: 10')
+    expect(first).toHaveTextContent('16+')
     expect(first).toHaveTextContent('3 октября, суббота')
   })
 
@@ -54,7 +56,7 @@ describe('«Поисковикам» по ролям', () => {
     renderApp('/search', { role: 'volunteer' })
     const card = await screen.findByTestId('request-card-R01')
     expect(card).toHaveTextContent('Вахта Памяти (Орловская обл.)')
-    expect(card).toHaveTextContent('Требуется: 5 землекопов')
+    expect(card).toHaveTextContent('Требуются волонтёры: 5 · 16+')
     expect(card).toHaveTextContent(/Собрано: 15\s000 из 50\s000 ₽/)
     await userEvent.click(screen.getByTestId('search-join'))
     expect(await screen.findByTestId('request-joined-R01')).toHaveTextContent('Вы в команде')

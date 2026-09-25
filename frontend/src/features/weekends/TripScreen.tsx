@@ -16,6 +16,7 @@ import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import s from './weekends.module.css'
 
@@ -25,7 +26,15 @@ export function TripScreen() {
 
   if (trip.isError && isNotFound(trip.error)) {
     return (
-      <Screen title="Выезд не найден" testID="screen-trip-not-found">
+      <Screen
+        title="Выезд не найден"
+        back={
+          <BackLink to={paths.events()} testID="back-link">
+            К мероприятиям
+          </BackLink>
+        }
+        testID="screen-trip-not-found"
+      >
         <p>Такого выезда нет или его уже убрали из расписания.</p>
         <p>
           <Link to={paths.weekends()} className={s.tripLink}>
@@ -37,7 +46,15 @@ export function TripScreen() {
   }
   if (!trip.data) {
     return (
-      <Screen title="Выезд" testID="screen-trip">
+      <Screen
+        title="Выезд"
+        back={
+          <BackLink to={paths.events()} testID="back-link">
+            К мероприятиям
+          </BackLink>
+        }
+        testID="screen-trip"
+      >
         <QueryState query={trip} what="выезд">
           {() => null}
         </QueryState>
@@ -53,7 +70,15 @@ function TripDetails({ trip }: { trip: Trip }) {
   const registered = register.isSuccess
 
   return (
-    <Screen title={trip.title} testID="screen-trip">
+    <Screen
+      title={trip.title}
+      back={
+        <BackLink to={paths.events()} testID="back-link">
+          К мероприятиям
+        </BackLink>
+      }
+      testID="screen-trip"
+    >
       <Card as="section" aria-labelledby="trip-about">
         <h2 id="trip-about" className="visually-hidden">
           О выезде

@@ -6,6 +6,7 @@ import {
   notesToCheckNear,
   reviewBlocker,
   reviewNote,
+  storyYears,
   validateStory,
   type ArchiveNote,
 } from './archive.ts'
@@ -91,5 +92,13 @@ describe('истории людей: проверка', () => {
         author: 'Внук',
       }),
     ).toEqual({})
+  })
+
+  it('годы истории для «Книги памяти»: один год, промежуток или ничего', () => {
+    expect(storyYears({ title: 'Землянка', story: 'зимой 1942 года стояли бойцы' })).toBe('1942')
+    expect(storyYears({ title: 'Письмо 1943', story: 'ушёл на фронт в 1941 году' })).toBe(
+      '1941–1943',
+    )
+    expect(storyYears({ title: 'Памятник', story: 'Поставлен в 1975 году' })).toBeUndefined()
   })
 })

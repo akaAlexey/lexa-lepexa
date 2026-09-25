@@ -1,3 +1,7 @@
+/*
+ * Оболочка «Стол и газета» (ADR 0012). Телефон: страница на газете, стол полосками по краям,
+ * меню из четырёх разделов снизу. Ноутбук: узкая тёмная панель слева.
+ */
 .shell {
   min-height: 100dvh;
   padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + var(--toast-space, 0px));
@@ -17,214 +21,220 @@
   top: var(--space-2);
 }
 
-/* Телефон: шапка сверху и нижняя панель разделов живут отдельно — обёртка не создаёт блок. */
-.rail {
-  display: contents;
+/* Газетный лист: картинка газеты поверх стола, стол виден в прозрачной рамке по краям */
+.page {
+  min-height: calc(100dvh - var(--nav-height) - env(safe-area-inset-bottom));
+  border-left: var(--edge) solid transparent;
+  border-right: var(--edge) solid transparent;
+  background:
+    url('../theme/textures/newsprint.jpg') center / cover padding-box,
+    linear-gradient(#ede2c6, #e6d8b6) padding-box,
+    #3b2210 url('../theme/textures/desk.jpg') center / cover border-box;
+  box-shadow:
+    inset 8px 0 9px -7px rgb(0 0 0 / 0.6),
+    inset -8px 0 9px -7px rgb(0 0 0 / 0.6);
 }
 
-.header {
+/* Карта-хаб: без газеты и шапки, карта на всё место */
+.shell[data-full-bleed] {
+  padding-bottom: 0;
+}
+
+.shell[data-full-bleed] .page {
+  border: 0;
+  background: var(--color-map-land);
+  box-shadow: none;
+}
+
+/* Шапка-«выходные данные» газеты: издание и регион слева, вход справа */
+.masthead {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-3);
-  background: var(--color-surface);
-  color: var(--color-ink);
-  border-bottom: 1px solid var(--color-line);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: inherit;
-  text-decoration: none;
-  min-height: var(--touch-min);
-  white-space: nowrap;
-}
-
-.brandText {
-  font-family: var(--font-heading);
-  font-size: 1.05rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
+  gap: 0 var(--space-3);
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.brandSub {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 400;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--color-ink-muted);
+.mastTitle {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--space-2);
+  min-height: var(--touch-min);
+  color: var(--color-ink);
+  font-weight: 700;
+  text-decoration: none;
 }
 
-/* Роль — пилюля, как кнопка аккаунта на макете */
-.roleLink {
+.mastRegion {
+  font-weight: 400;
+}
+
+.mastDemo {
+  padding: 0 0.4rem;
+  border: 1px dashed var(--color-sepia);
+  color: var(--color-ink-muted);
+  font-weight: 400;
+  text-transform: none;
+}
+
+/* Телефон: шапка в одну строку — регион и роль видны в «Другом» */
+@media (max-width: 30rem) {
+  .mastRegion,
+  .accountRole {
+    display: none;
+  }
+
+  .masthead {
+    flex-wrap: nowrap;
+    padding: 0 var(--space-3);
+  }
+}
+
+.account {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
   min-height: var(--touch-min);
   padding: 0 var(--space-2);
-  border: 2px solid var(--color-olive);
-  border-radius: var(--radius-pill);
   color: var(--color-olive);
   font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
 }
 
+.account:hover span:first-of-type {
+  text-decoration: underline;
+}
+
+.accountRole {
+  color: var(--color-ink-muted);
+  font-weight: 400;
+}
+
+/* Меню разделов: тёмная полоса снизу, подписи видны всегда */
 .nav {
   position: fixed;
   inset: auto 0 0 0;
   z-index: 10;
   background: var(--color-rail);
+  border-top: 1px solid #000;
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+.brand {
+  display: none;
 }
 
 .navList {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .navLink {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.15rem;
+  gap: 0.1rem;
   min-height: var(--nav-height);
-  padding: var(--space-1) 0.15rem;
+  padding: var(--space-1) 0.1rem;
   color: var(--color-rail-text);
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   line-height: 1.15;
-  /* «Поисковикам» на 360 px переносится с дефисом, а не упирается в край */
   hyphens: auto;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
   text-align: center;
-  border-top: 0.25rem solid transparent;
 }
 
-/* Активный раздел — не только цветом: жирный текст и полоса */
+/* Активный раздел — не только цветом: полоса сверху и жирный текст */
 .navLink[aria-current='page'] {
   color: var(--color-accent-on-dark);
-  border-top-color: var(--color-accent-on-dark);
   font-weight: 700;
+}
+
+.navLink[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 25%;
+  right: 25%;
+  height: 3px;
+  background: var(--color-accent-on-dark);
+}
+
+.main {
+  display: block;
 }
 
 .main:focus {
   outline: none;
 }
 
-/* Ноутбук: плавающая тёмная панель разделов слева. В rem — при масштабе 200 % включается мобильная раскладка. */
+/* Ноутбук: панель разделов слева во всю высоту. В rem — при масштабе 200 % включается мобильная раскладка. */
 @media (min-width: 64rem) {
   .shell {
     display: grid;
-    grid-template-columns: calc(var(--rail-width) + var(--float-gap)) minmax(0, 1fr);
+    grid-template-columns: var(--rail-width) minmax(0, 1fr);
     align-items: start;
     padding-bottom: var(--toast-space, 0px);
   }
 
-  .rail {
-    position: sticky;
-    top: var(--float-gap);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-    width: var(--rail-width);
-    height: calc(100dvh - 2 * var(--float-gap));
-    margin: var(--float-gap) 0 0 var(--float-gap);
-    padding: var(--space-3) 0;
-    overflow-y: auto;
-    border-radius: var(--radius-card);
-    background: var(--color-rail);
-    box-shadow: var(--shadow-panel);
-  }
-
-  .header {
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: var(--space-2);
-    padding: 0 var(--space-2);
-    background: transparent;
-    color: var(--color-surface);
-    border-bottom: 0;
-  }
-
-  .brand {
-    flex-direction: column;
-    gap: var(--space-1);
-    white-space: normal;
-    text-align: center;
-  }
-
-  .brandText {
-    font-size: 0.85rem;
-    line-height: 1.15;
-  }
-
-  .brandSub {
-    margin-top: 0.15rem;
-    color: var(--color-rail-text);
-  }
-
-  /* В узкой панели — только «Демо» */
-  .brandRegion {
-    display: none;
-  }
-
-  .roleLink {
-    flex-direction: column;
-    gap: 0.1rem;
-    min-height: 3.5rem;
-    width: calc(var(--rail-width) - 1rem);
-    padding: var(--space-1);
-    border-color: var(--color-rail-text);
-    border-radius: var(--radius-control);
-    color: var(--color-rail-text);
-    font-size: 0.9rem;
-    white-space: normal;
-    text-align: center;
-  }
-
-  .roleLink[aria-current='page'] {
-    border-color: var(--color-accent-on-dark);
-    color: var(--color-accent-on-dark);
+  .page {
+    min-height: 100dvh;
   }
 
   .nav {
-    position: static;
-    flex: 1;
-    padding-bottom: 0;
-    background: transparent;
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    height: 100dvh;
+    padding: var(--space-3) 0;
+    overflow-y: auto;
+    border-top: 0;
+    border-right: 1px solid #000;
+  }
+
+  .brand {
+    display: grid;
+    place-items: center;
+    min-height: var(--touch-min);
   }
 
   .navList {
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
-    height: 100%;
-    padding: 0 var(--space-2);
   }
 
   .navLink {
-    min-height: 4.25rem;
-    padding: var(--space-2) var(--space-1);
-    border-top: 0;
-    border-left: 0.25rem solid transparent;
-    border-radius: var(--radius-control);
+    min-height: 4rem;
+    font-size: 0.8rem;
   }
 
-  .navLink[aria-current='page'] {
-    background: var(--color-rail-active);
-    border-left-color: var(--color-accent-on-dark);
+  .navLink[aria-current='page']::before {
+    top: 20%;
+    bottom: 20%;
+    left: 0;
+    right: auto;
+    width: 3px;
+    height: auto;
   }
 }
 

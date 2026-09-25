@@ -13,6 +13,8 @@ export {
   isPublishedState,
   publishedState,
   publishRequest,
+  DEFAULT_MIN_AGE,
+  REQUEST_AGES,
   REQUEST_COUNTS,
   requestDates,
   requestForm,

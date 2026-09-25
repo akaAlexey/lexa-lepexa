@@ -20,6 +20,7 @@ import { Icon } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { SITE_STATUS_META } from '../../ui/siteStatus.ts'
 import { StatusBadge } from '../../ui/StatusBadge.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import s from './lastBattle.module.css'
 
@@ -146,6 +147,11 @@ export function LastBattleScreen() {
     <Screen
       title="Последний бой"
       lead="Места гибели бойцов, которые ещё предстоит проверить и увековечить"
+      back={
+        <BackLink to={paths.map()} testID="back-link">
+          К карте
+        </BackLink>
+      }
       testID="screen-last-battle"
     >
       {can(role?.id, 'place.create') ? (

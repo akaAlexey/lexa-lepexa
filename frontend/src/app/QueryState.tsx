@@ -1,5 +1,7 @@
 import type { Loadable } from '../functions/core/query.ts'
 import type { ReactNode } from 'react'
+import { Button } from '../ui/Button.tsx'
+import { Notice } from '../ui/Notice.tsx'
 
 /** Единые состояния загрузки и ошибки: крупно, по-русски, с повтором. */
 export function QueryState<T>({
@@ -12,20 +14,20 @@ export function QueryState<T>({
   what: string
 }) {
   if (query.isPending) {
-    return (
-      <p role="status" data-testid="loading">
-        Загружаем {what}…
-      </p>
-    )
+    return <Notice testID="loading">Загружаем {what}…</Notice>
   }
   if (query.isError) {
     return (
-      <div role="alert" data-testid="error">
+      <Notice tone="error" testID="error">
         <p>Не удалось загрузить {what}. Проверьте связь и попробуйте ещё раз.</p>
-        <button type="button" onClick={() => void query.refetch()} style={{ minHeight: '3rem' }}>
-          Повторить
-        </button>
-      </div>
+        <Button
+          onClick={() => void query.refetch()}
+          disabled={query.isFetching}
+          testID="query-retry"
+        >
+          {query.isFetching ? 'Повторяем…' : 'Повторить'}
+        </Button>
+      </Notice>
     )
   }
   return <>{children(query.data)}</>

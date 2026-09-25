@@ -5,6 +5,7 @@ import { sentState, useTellStory } from '../../functions/stories/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { TextAreaField, TextField } from '../../ui/Field.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import s from './archive.module.css'
 
@@ -18,6 +19,11 @@ export function NewStoryScreen() {
     <Screen
       title="Рассказать историю"
       lead="О человеке или месте. Краевед проверит факты, и история появится у всех"
+      back={
+        <BackLink to={paths.archive()} testID="back-link">
+          К историям
+        </BackLink>
+      }
       testID="screen-new-story"
     >
       <form ref={formRef} className={s.form} onSubmit={form.submit} noValidate>
