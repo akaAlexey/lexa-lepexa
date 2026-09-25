@@ -76,3 +76,7 @@ export const paths = {
   privacy: () => patterns.privacy,
   terms: () => patterns.terms,
 } as const satisfies Record<ScreenId, (...ids: string[]) => string>
+
+/** Карточка бойца семейного архива (A7) или её правка; `new` — форма нового бойца. */
+export const familyFighter = (id: string, edit = false) =>
+  otherSection('archive', `fighter=${seg(id)}${edit ? '&edit=1' : ''}`)
