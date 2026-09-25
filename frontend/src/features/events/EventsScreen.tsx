@@ -168,7 +168,24 @@ export function EventsScreen() {
         ))}
         {feed.status === 'ready' && shown.length === 0 && (
           <li className={s.empty} data-testid="events-empty">
-            Ничего не нашли. Попробуйте другое слово или покажите все мероприятия.
+            {query || filter !== 'all' ? (
+              <>
+                Ничего не нашли. Попробуйте другое слово или{' '}
+                <button
+                  type="button"
+                  className={s.retry}
+                  onClick={() => {
+                    setQuery('')
+                    setFilter('all')
+                  }}
+                >
+                  покажите все мероприятия
+                </button>
+                .
+              </>
+            ) : (
+              'Мероприятий пока нет. Загляните позже.'
+            )}
           </li>
         )}
       </ul>

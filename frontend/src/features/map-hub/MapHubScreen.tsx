@@ -105,6 +105,7 @@ export function MapHubScreen() {
   const selectedKey = params.get('place') ?? undefined
   const selected = hub.places.find((p) => p.key === selectedKey)
   const [sheetOpen, setSheetOpen] = useState(true)
+  const [viewportHeight, setViewportHeight] = useState(() => window.innerHeight)
   const h1 = useRef<HTMLHeadingElement>(null)
 
   useEffect(() => {
@@ -112,6 +113,12 @@ export function MapHubScreen() {
     document
       .querySelector<HTMLInputElement>('[data-testid="hub-search"]')
       ?.focus({ preventScroll: true })
+  }, [])
+
+  useEffect(() => {
+    const updateHeight = () => setViewportHeight(window.innerHeight)
+    window.addEventListener('resize', updateHeight)
+    return () => window.removeEventListener('resize', updateHeight)
   }, [])
 
   const update = (next: Record<string, string | undefined>, replace = true) => {
@@ -154,10 +161,10 @@ export function MapHubScreen() {
         : {
             top: 90,
             right: 32,
-            bottom: sheetOpen ? Math.round(window.innerHeight * 0.45) + 40 : 110,
+            bottom: sheetOpen ? Math.round(viewportHeight * 0.45) + 40 : 110,
             left: 32,
           },
-    [wide, sheetOpen],
+    [wide, sheetOpen, viewportHeight],
   )
 
   return (
@@ -296,7 +303,7 @@ function SearchBox({ places, onPick }: { places: Place[]; onPick: (p: Place) => 
                 <span>
                   <span className={s.resultTitle}>{p.title}</span>
                   <span className={s.resultHint}>
-                    {PLACE_KIND_LABEL[p.kind]} · {p.subtitle}
+                    {PLACE_KIND_LABEL[p.kind]} · {p.subtitle} {p.demo && <DemoBadge />}
                   </span>
                 </span>
               </button>

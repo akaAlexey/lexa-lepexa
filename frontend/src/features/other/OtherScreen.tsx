@@ -222,7 +222,6 @@ function AccountPanel() {
   const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
   const [show, setShow] = useState(false)
-  const [remember, setRemember] = useState(true)
   const [errors, setErrors] = useState<FieldErrors>({})
 
   if (account) {
@@ -289,10 +288,6 @@ function AccountPanel() {
           {show ? 'Скрыть' : 'Показать'}
         </button>
       </div>
-      <label className={s.check}>
-        <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
-        Запомнить меня
-      </label>
       <BigButton onClick={() => submit()} icon="user" testID="signin-submit">
         Войти
       </BigButton>
