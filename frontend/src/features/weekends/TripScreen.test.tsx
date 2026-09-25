@@ -5,7 +5,7 @@ import { renderApp } from '../../test/renderApp.tsx'
 
 describe('выезд «Выходные с поисковиком»', () => {
   it('карточка выезда как в прототипе и чек-лист новичка', async () => {
-    renderApp('/weekends/W01', { role: 'volunteer' })
+    renderApp('/weekends/W01', { role: 'volunteer', signedIn: true })
     expect(
       await screen.findByRole('heading', { level: 1, name: /Раскопки у д. Семенково/ }),
     ).toBeInTheDocument()
@@ -15,7 +15,7 @@ describe('выезд «Выходные с поисковиком»', () => {
   })
 
   it('отметки чек-листа сохраняются на устройстве', async () => {
-    const { platform } = renderApp('/weekends/W01', { role: 'volunteer' })
+    const { platform } = renderApp('/weekends/W01', { role: 'volunteer', signedIn: true })
     await userEvent.click(await screen.findByRole('checkbox', { name: 'Лопата' }))
     await userEvent.click(screen.getByRole('checkbox', { name: 'Перчатки' }))
     expect(screen.getByTestId('checklist-progress')).toHaveTextContent('Готово 2 из 4')
@@ -23,7 +23,7 @@ describe('выезд «Выходные с поисковиком»', () => {
   })
 
   it('«Записаться на выезд» сразу не записывает — сначала окно с условиями', async () => {
-    const { api } = renderApp('/weekends/W01', { role: 'volunteer' })
+    const { api } = renderApp('/weekends/W01', { role: 'volunteer', signedIn: true })
     expect(await screen.findByTestId('trip-spots')).toHaveTextContent('Свободно мест: 7 из 12')
     await userEvent.click(screen.getByTestId('trip-register'))
     expect(await screen.findByTestId('signup-dialog')).toBeInTheDocument()
@@ -31,7 +31,7 @@ describe('выезд «Выходные с поисковиком»', () => {
   })
 
   it('все пункты отмечены — «Вы готовы к выезду»', async () => {
-    renderApp('/weekends/W01', { role: 'volunteer' })
+    renderApp('/weekends/W01', { role: 'volunteer', signedIn: true })
     for (const box of await screen.findAllByRole('checkbox')) await userEvent.click(box)
     expect(screen.getByTestId('checklist-progress')).toHaveTextContent('Готово 4 из 4')
     expect(screen.getByTestId('checklist-ready')).toHaveTextContent('Вы готовы к выезду')
@@ -45,5 +45,14 @@ describe('выезд «Выходные с поисковиком»', () => {
     await userEvent.click(screen.getByRole('link', { name: 'Все выезды в ленте' }))
     expect(await screen.findByTestId('feed-trip-W01')).toBeInTheDocument()
     expect(router.state.location.search).toBe('?show=trip')
+  })
+
+  it('гость видит вход вместо кнопки записи', async () => {
+    renderApp('/weekends/W01', { role: 'volunteer' })
+    expect(await screen.findByTestId('trip-signin')).toHaveAttribute(
+      'href',
+      '/other?section=account&next=%2Fweekends%2FW01',
+    )
+    expect(screen.queryByTestId('trip-register')).not.toBeInTheDocument()
   })
 })
