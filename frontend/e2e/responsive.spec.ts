@@ -34,6 +34,15 @@ test.describe('Адаптив и доступность каждого экра�
     })
   }
 
+  for (const { url, main } of SCREENS.filter((screen) =>
+    ['/map', '/search', '/archive', '/last-battle', '/events'].includes(screen.url),
+  )) {
+    test(`${url}: главное действие видно сразу`, async ({ page }) => {
+      await page.goto(url)
+      await expect(page.getByTestId(main)).toBeInViewport()
+    })
+  }
+
   test('масштаб 200 %: ноутбук 1366 px превращается в 683 px — вёрстка не ломается', async ({
     page,
   }, testInfo) => {
@@ -74,7 +83,15 @@ test.describe('Адаптив и доступность каждого экра�
       } as typeof getContext
     })
     await page.goto('/map')
-    await expect(page.getByTestId('hub-map-fallback')).toBeVisible({ timeout: 15_000 })
+    const fallback = page.getByTestId('hub-map-fallback')
+    await expect(fallback).toBeVisible({ timeout: 15_000 })
+    const [fallbackBox, searchBox] = await Promise.all([
+      fallback.boundingBox(),
+      page.getByTestId('hub-search').boundingBox(),
+    ])
+    expect(fallbackBox).not.toBeNull()
+    expect(searchBox).not.toBeNull()
+    expect(fallbackBox!.y).toBeGreaterThanOrEqual(searchBox!.y + searchBox!.height)
     await expect(page.getByTestId('hub-route-start')).toBeVisible()
     await expectNoA11yViolations(page)
   })
@@ -88,5 +105,40 @@ test.describe('Адаптив и доступность каждого экра�
     await page.getByTestId('role-verifier').click()
     await page.goto('/events')
     await expect(page.getByTestId('events-archive')).toHaveText('Проверить истории')
+  })
+
+  test('волонтёр может записаться, командир может открыть создание заявки', async ({ page }) => {
+    await page.goto('/events')
+    await expect(page.getByTestId('search-join')).toHaveText('Стать частью команды')
+    await page.goto('/')
+    await page.getByTestId('role-commander').click()
+    await page.goto('/events')
+    await expect(page.getByTestId('search-create-request')).toHaveAttribute(
+      'href',
+      '/search/requests/new',
+    )
+  })
+
+  test('переход ставит видимый фокус на заголовок, поиск карты имеет имя', async ({ page }) => {
+    await page.goto('/events')
+    const heading = page.getByRole('heading', { level: 1, name: 'Мероприятия' })
+    await expect(heading).toBeFocused()
+    expect(await heading.evaluate((element) => getComputedStyle(element).outlineStyle)).not.toBe(
+      'none',
+    )
+    await page.goto('/map')
+    await expect(page.getByRole('searchbox', { name: 'Поиск по карте' })).toBeFocused()
+  })
+
+  test('вымышленные новости помечены рядом с каждым пунктом', async ({ page }) => {
+    await page.goto('/events')
+    const news = page.getByTestId('week-news')
+    await expect(news.getByRole('heading', { name: /Новости недели.*Демо-данные/ })).toBeVisible()
+    const items = news.locator('[class*="weekItem"]')
+    const count = await items.count()
+    expect(count).toBeGreaterThan(0)
+    for (let index = 0; index < count; index++) {
+      await expect(items.nth(index).getByText('Демо-данные')).toBeVisible()
+    }
   })
 })
