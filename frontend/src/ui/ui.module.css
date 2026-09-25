@@ -324,7 +324,10 @@
   color: var(--color-surface);
   font-weight: 700;
   text-decoration: none;
-  box-shadow: var(--shadow-float);
+  /* Кольцо «бумаги» вокруг: прилипшая кнопка не режет строки текста под собой */
+  box-shadow:
+    0 0 0 0.5rem color-mix(in srgb, var(--color-paper) 94%, transparent),
+    var(--shadow-float);
 }
 
 .back:hover {
