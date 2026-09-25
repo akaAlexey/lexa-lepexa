@@ -33,6 +33,13 @@ const postedAt = isoDateTime
   .optional()
   .describe('Когда опубликовано: лента «Мероприятия» идёт по этой дате, новые сверху')
 
+/** Условия участия: показываются в окне записи до подтверждения (спринт v3.2). Необязательны: старые данные без них. */
+const schedule = {
+  startsAt: isoDateTime.optional().describe('Начало — время сбора участников'),
+  endsAt: isoDateTime.optional().describe('Окончание'),
+  meetingPoint: z.string().min(1).optional().describe('Место сбора участников'),
+}
+
 export const LatLon = entity('LatLon', 'Координаты WGS84', z.object({ lat, lon }))
 
 export const SourceKind = entity(
@@ -180,6 +187,8 @@ export const VolunteerRequest = entity(
     roles: z.array(z.object({ role: VolunteerRole, count: z.number().int().positive() })).min(1),
     joined: z.number().int().nonnegative(),
     minAge,
+    ...schedule,
+    bring: z.array(z.string().min(1)).optional().describe('Что взять с собой'),
     fundraiserId: id.optional(),
     lat: lat.optional().describe('Где нужны люди — для карты потребностей'),
     lon: lon.optional(),
@@ -262,10 +271,56 @@ export const Trip = entity(
     spotsTotal: z.number().int().positive(),
     spotsTaken: z.number().int().nonnegative(),
     minAge,
-    checklist: z.array(ChecklistItem).min(1),
+    ...schedule,
+    checklist: z
+      .array(ChecklistItem)
+      .min(1)
+      .describe('Чек-лист новичка — он же «что взять с собой»'),
     createdAt: postedAt,
     demo,
   }),
+)
+
+export const ParentConsent = entity(
+  'ParentConsent',
+  'Согласие родителя или законного представителя на участие несовершеннолетнего (или без подтверждённых 18+)',
+  z.object({
+    fullName: z
+      .string()
+      .trim()
+      .min(5)
+      .max(120)
+      .describe('ФИО родителя или законного представителя'),
+    phone: z
+      .string()
+      .regex(/^\+7\d{10}$/)
+      .describe('Телефон родителя для связи, +7XXXXXXXXXX'),
+    agreedAt: isoDateTime.describe('Когда родитель дал согласие'),
+  }),
+)
+
+export const SignupRequest = entity(
+  'SignupRequest',
+  'Запись на заявку отряда или выезд после окна с условиями. Без подтверждённого возраста 18+ — только с согласием родителя',
+  z
+    .object({
+      termsAccepted: z
+        .literal(true)
+        .describe('Человек прочитал условия: время, место сбора, возраст'),
+      adultVerified: z.boolean().describe('Возраст 18+ подтверждён в профиле'),
+      age: z
+        .number()
+        .int()
+        .min(1)
+        .max(120)
+        .optional()
+        .describe('Возраст участника, если известен из профиля: сервер сверяет его с minAge'),
+      parentConsent: ParentConsent.optional(),
+    })
+    .refine((v) => v.adultVerified || v.parentConsent !== undefined, {
+      message: 'Без подтверждённого возраста 18+ нужно согласие родителя',
+      path: ['parentConsent'],
+    }),
 )
 
 export const GroupApplicationStatus = entity(
@@ -498,6 +553,8 @@ export type VolunteerRequest = z.infer<typeof VolunteerRequest>
 export type NewVolunteerRequest = z.infer<typeof NewVolunteerRequest>
 export type Fundraiser = z.infer<typeof Fundraiser>
 export type Trip = z.infer<typeof Trip>
+export type ParentConsent = z.infer<typeof ParentConsent>
+export type SignupRequest = z.infer<typeof SignupRequest>
 export type GroupApplicationStatus = z.infer<typeof GroupApplicationStatus>
 export type GroupApplication = z.infer<typeof GroupApplication>
 export type NewGroupApplication = z.infer<typeof NewGroupApplication>

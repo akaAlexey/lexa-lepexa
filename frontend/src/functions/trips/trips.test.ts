@@ -44,23 +44,49 @@ describe('выезды: загрузка', () => {
   })
 })
 
+const ADULT = { termsAccepted: true, adultVerified: true, age: 30 } as const
+
 describe('запись на выезд', () => {
   it('занимает одно место и возвращает обновлённый выезд', async () => {
     const deps = createTestDeps()
-    const updated = await registerTrip(deps, 'W01')
+    const updated = await registerTrip(deps, 'W01', ADULT)
     expect(spotsText(updated)).toBe('Свободно мест: 6 из 12')
     expect((await getTrip(deps, 'W01')).spotsTaken).toBe(6)
   })
 
   it('мест нет — ошибка с текстом для экрана', async () => {
     const deps = createTestDeps()
-    for (let i = 0; i < 7; i++) await registerTrip(deps, 'W01')
-    await expect(registerTrip(deps, 'W01')).rejects.toThrow('Мест нет')
+    for (let i = 0; i < 7; i++) await registerTrip(deps, 'W01', ADULT)
+    await expect(registerTrip(deps, 'W01', ADULT)).rejects.toThrow('Мест нет')
   })
 
   it('нет такого выезда — 404', async () => {
-    const error = await registerTrip(createTestDeps(), 'NOPE').catch((e: unknown) => e)
+    const error = await registerTrip(createTestDeps(), 'NOPE', ADULT).catch((e: unknown) => e)
     expect(isNotFound(error)).toBe(true)
+  })
+
+  it('без подтверждённых 18+ и без согласия родителя — 422, место не занято', async () => {
+    const deps = createTestDeps()
+    const error = await registerTrip(deps, 'W01', {
+      termsAccepted: true,
+      adultVerified: false,
+    }).catch((e: unknown) => e)
+    expect(error).toMatchObject({ status: 422 })
+    expect((await getTrip(deps, 'W01')).spotsTaken).toBe(5)
+  })
+
+  it('возраст младше минимального — 409 с понятным текстом', async () => {
+    const error = await registerTrip(createTestDeps(), 'W01', {
+      ...ADULT,
+      adultVerified: false,
+      age: 12,
+      parentConsent: {
+        fullName: 'Иванова Мария Петровна',
+        phone: '+79001234567',
+        agreedAt: '2026-10-01T10:00:00Z',
+      },
+    }).catch((e: unknown) => e)
+    expect(error).toMatchObject({ status: 409, message: 'Участвовать можно с 14 лет' })
   })
 })
 

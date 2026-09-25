@@ -78,14 +78,6 @@
   font-weight: 400;
 }
 
-.mastDemo {
-  padding: 0 0.4rem;
-  border: 1px dashed var(--color-sepia);
-  color: var(--color-ink-muted);
-  font-weight: 400;
-  text-transform: none;
-}
-
 /* Телефон: шапка в одну строку — регион и роль видны в «Другом» */
 @media (max-width: 30rem) {
   .mastRegion,

@@ -11,7 +11,6 @@ export const qk = {
   graves: ['graves'],
   battles: ['battles'],
   teams: ['teams'],
-  stats: ['stats'],
   requests: ['requests'],
   fundraisers: ['fundraisers'],
   trips: ['trips'],

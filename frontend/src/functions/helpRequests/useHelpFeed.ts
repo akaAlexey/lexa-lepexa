@@ -3,13 +3,6 @@ import type { Team, VolunteerRequest } from '../../contract/schemas.ts'
 import type { Loadable } from '../core/query.ts'
 import { qk } from '../core/queryKeys.ts'
 import { useDeps } from '../core/useDeps.ts'
-import type { SearchStats } from './helpRequests.ts'
-
-/** Счётчик «Найдено бойцов за месяц». */
-export function useSearchStats(): Loadable<SearchStats> {
-  const { api } = useDeps()
-  return useQuery({ queryKey: qk.stats, queryFn: api.getSearchStats })
-}
 
 /** Заявки отрядов — свежие первыми. */
 export function useRequests(): Loadable<VolunteerRequest[]> {

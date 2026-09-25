@@ -3,17 +3,15 @@ import { expectNoA11yViolations, expectNoHorizontalScroll, test, useDemoDate } f
 
 /** Каждый экран P0 и его главное действие (одна большая красная кнопка). */
 const SCREENS = [
-  { url: '/', main: 'role-family' },
+  { url: '/roles', main: 'role-family' },
   { url: '/trail', main: 'trail-start' },
   { url: '/trail/park-3km/point/rubezh', main: 'task-option-0' },
-  { url: '/search', main: 'search-join' },
-  { url: '/weekends', main: 'weekends-register' },
   { url: '/weekends/W01', main: 'trip-register' },
   { url: '/last-battle', main: 'last-battle-subscribe' },
   { url: '/last-battle/S01', main: 'site-help' },
   // Разделы дизайна «Стол и газета» (ADR 0012)
   { url: '/map', main: 'hub-route-start' },
-  { url: '/events', main: 'search-join' },
+  { url: '/events', main: 'events-nearest-trip' },
   { url: '/archive', main: 'archive-new' },
   { url: '/other?section=account', main: 'signin-submit' },
 ] as const
@@ -21,7 +19,7 @@ const SCREENS = [
 test.describe('Адаптив и доступность каждого экрана', () => {
   test.beforeEach(async ({ page }) => {
     await useDemoDate(page)
-    await page.goto('/')
+    await page.goto('/roles')
     await page.getByTestId('role-volunteer').click()
   })
 
@@ -80,13 +78,17 @@ test.describe('Адаптив и доступность каждого экра�
   })
 
   test('главное действие мероприятий зависит от роли', async ({ page }) => {
-    await page.goto('/')
+    // ADR 0013: роль выбирается на /roles, после выбора — «Мероприятия»
+    await page.goto('/roles')
     await page.getByTestId('role-family').click()
-    await page.goto('/events')
-    await expect(page.getByTestId('search-join')).toHaveText('Посмотреть выезды')
-    await page.goto('/')
+    await expect(page).toHaveURL(/\/events$/)
+    await expect(page.getByTestId('events-nearest-trip')).toContainText('Ближайший выезд')
+    await expect(page.getByTestId('search-join')).toHaveCount(0)
+    await page.goto('/roles')
     await page.getByTestId('role-verifier').click()
-    await page.goto('/events')
     await expect(page.getByTestId('events-archive')).toHaveText('Проверить истории')
+    await page.goto('/roles')
+    await page.getByTestId('role-commander').click()
+    await expect(page.getByTestId('search-create-request')).toHaveText('Набрать волонтёров')
   })
 })
