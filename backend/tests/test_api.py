@@ -76,7 +76,11 @@ async def test_server_registration_login_and_logout(api):
 
     await api.post("/auth/logout")
     assert (await api.get("/auth/me")).status_code == 401
-    assert (await api.post("/auth/login", json={"login": "anna@example.com", "password": "wrong-password"})).status_code == 401
+    wrong = await api.post(
+        "/auth/login",
+        json={"login": "anna@example.com", "password": "wrong-password"},
+    )
+    assert wrong.status_code == 401
 
     logged_in = await api.post(
         "/auth/login",
