@@ -1,5 +1,5 @@
 import { endpoints, notificationStream, type EndpointName } from '../../contract/endpoints.ts'
-import { ApiError, ContractError, type ApiClient, type EndpointMethods } from '../client.ts'
+import { ApiError, ContractError, type ApiClient, type AuthAccount, type EndpointMethods } from '../client.ts'
 
 interface LiveOptions {
   /** Абсолютный (https://…/api/v1) или относительный (/api/v1 — тот же домен) адрес API. */
@@ -22,6 +22,7 @@ async function serverMessage(res: Response): Promise<string | undefined> {
     if (detail && typeof detail === 'object' && 'message' in detail) {
       return String((detail as { message: unknown }).message)
     }
+    if (typeof detail === 'string') return detail
     if (Array.isArray(detail) && detail[0] && typeof detail[0] === 'object' && 'msg' in detail[0]) {
       return String((detail[0] as { msg: unknown }).msg)
     }
@@ -46,6 +47,7 @@ export function createLiveApi({
     const init: RequestInit = {
       method: e.method,
       headers: { Accept: 'application/json', ...identity },
+      credentials: 'include',
     }
     if ('body' in e && e.body) {
       init.body = JSON.stringify(e.body.parse(args.body))
@@ -70,6 +72,40 @@ export function createLiveApi({
     return parsed.data
   }
 
+  const authRequest = async (
+    path: string,
+    init: RequestInit = {},
+  ): Promise<Response> => {
+    let res: Response
+    try {
+      res = await fetchImpl(root + path, {
+        ...init,
+        credentials: 'include',
+        headers: { Accept: 'application/json', ...init.headers },
+      })
+    } catch {
+      throw new ApiError('Нет связи с сервером. Проверьте интернет и попробуйте ещё раз', 0)
+    }
+    if (!res.ok) {
+      const message = await serverMessage(res)
+      throw new ApiError(message ?? `HTTP ${res.status}`, res.status)
+    }
+    return res
+  }
+
+  const parseAccount = (value: unknown): AuthAccount => {
+    if (!value || typeof value !== 'object') throw new ContractError('/auth', 'ожидался объект аккаунта')
+    const x = value as Record<string, unknown>
+    if (
+      typeof x.id !== 'string' ||
+      typeof x.login !== 'string' ||
+      typeof x.since !== 'string' ||
+      (x.name !== undefined && typeof x.name !== 'string')
+    )
+      throw new ContractError('/auth', 'неверный формат аккаунта')
+    return { id: x.id, login: x.login, since: x.since, ...(x.name ? { name: x.name } : {}) }
+  }
+
   const methods = Object.fromEntries(
     (Object.keys(endpoints) as EndpointName[]).map((name) => [
       name,
@@ -79,11 +115,49 @@ export function createLiveApi({
 
   return {
     ...methods,
+    auth: {
+      async login(input) {
+        const res = await authRequest('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(input),
+        })
+        return parseAccount(await res.json())
+      },
+      async register(input) {
+        const res = await authRequest('/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(input),
+        })
+        return parseAccount(await res.json())
+      },
+      async me() {
+        let res: Response
+        try {
+          res = await fetchImpl(root + '/auth/me', {
+            headers: { Accept: 'application/json' },
+            credentials: 'include',
+          })
+        } catch {
+          throw new ApiError('Нет связи с сервером. Проверьте интернет и попробуйте ещё раз', 0)
+        }
+        if (res.status === 401) return null
+        if (!res.ok) {
+          const message = await serverMessage(res)
+          throw new ApiError(message ?? `HTTP ${res.status}`, res.status)
+        }
+        return parseAccount(await res.json())
+      },
+      async logout() {
+        await authRequest('/auth/logout', { method: 'POST' })
+      },
+    },
     onNotification(listener) {
       if (!EventSourceImpl) return () => undefined
       // EventSource не умеет заголовки — ключ пользователя идёт параметром.
       const query = userKey ? `?user=${encodeURIComponent(userKey)}` : ''
-      const source = new EventSourceImpl(root + notificationStream.path + query)
+      const source = new EventSourceImpl(root + notificationStream.path + query, { withCredentials: true })
       source.onmessage = (msg: MessageEvent<string>) => {
         let data: unknown
         try {
