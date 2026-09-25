@@ -34,13 +34,14 @@ test.describe('История 2: заявка на 10 волонтёров на 
     await snap(page, testInfo, 'story2-03-published')
   })
 
-  test('заявку видит волонтёр в ленте и может стать частью команды', async ({ page }) => {
+  test('заявку видит волонтёр в ленте и записывается из её карточки', async ({ page }) => {
     await startAs(page, 'volunteer')
     const card = page.getByTestId('request-card-R01')
     await expect(card).toContainText('Вахта Памяти (Орловская обл.)')
     await expect(card).toContainText(/Собрано: 15\s000 из 50\s000 ₽/)
     await expect(page.getByTestId('week-news')).toContainText('Новости недели')
-    await page.getByTestId('search-join').click()
+    await expect(page.getByTestId('search-join')).toHaveCount(0)
+    await card.getByTestId('request-join-R01').click()
     await expect(page.getByTestId('request-joined-R01')).toContainText('Вы в команде')
   })
 

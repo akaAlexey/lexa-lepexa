@@ -47,7 +47,7 @@ export function SearchScreen() {
   const fundraisers = useFundraisers()
   const trips = useTrips()
   const [view, setView] = useState<'list' | 'map'>('list')
-  const { joined, joining, failed: joinFailed, next: target, join } = useJoinRequest(requests.data)
+  const { joined, joining, failed: joinFailed, join } = useJoinRequest()
 
   const [donateTo, setDonateTo] = useState<Fundraiser>()
   const closeDonate = useCallback(() => setDonateTo(undefined), [])
@@ -99,16 +99,7 @@ export function SearchScreen() {
         <BigButton to={paths.newRequest()} icon="flag" testID="search-create-request">
           Набрать волонтёров
         </BigButton>
-      ) : (
-        <BigButton
-          onClick={() => target && void join(target.id)}
-          disabled={!target || joining !== undefined}
-          icon="shovel"
-          testID="search-join"
-        >
-          {requests.data && !target ? 'Вы в команде' : 'Стать частью команды'}
-        </BigButton>
-      )}
+      ) : null}
       {joinFailed && (
         <Notice tone="error">Не удалось записаться. Проверьте связь и попробуйте ещё раз.</Notice>
       )}

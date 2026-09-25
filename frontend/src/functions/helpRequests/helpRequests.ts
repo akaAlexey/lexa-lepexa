@@ -1,7 +1,6 @@
 import type { ApiClient } from '../../api/index.ts'
 import { region } from '../../config/region.ts'
 import type { Team, VolunteerRequest } from '../../contract/schemas.ts'
-import { todayIso } from '../../domain/dates.ts'
 import { progressPercent } from '../../domain/fundraising.ts'
 import type { Deps } from '../core/deps.ts'
 import { memory, readMemory, updateMemory } from '../core/deviceMemory.ts'
@@ -15,7 +14,7 @@ export function joinedRequests({ platform }: Pick<Deps, 'platform'>): string[] {
 }
 
 /**
- * «Стать частью команды»: записаться в заявку и запомнить запись на устройстве.
+ * Записаться в заявку отряда и запомнить запись на устройстве.
  * Возвращает новый список записей; при ошибке сети память не меняется.
  */
 export async function joinRequest(
@@ -27,26 +26,6 @@ export async function joinRequest(
     ...prev.filter((j) => j !== id),
     id,
   ])
-}
-
-/** Ближайшая по дате заявка, в которую ещё не записались (в демо — R01). Прошедшие не предлагаются. */
-export function nearestOpen(
-  requests: readonly VolunteerRequest[],
-  joined: readonly string[],
-  today: string,
-): VolunteerRequest | undefined {
-  return requests
-    .filter((r) => !joined.includes(r.id) && r.date >= today)
-    .sort((a, b) => a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt))[0]
-}
-
-/** Ближайшая открытая заявка на сегодня по Москве — цель главной кнопки волонтёра. */
-export function nextToJoin(
-  deps: Pick<Deps, 'now'>,
-  requests: readonly VolunteerRequest[],
-  joined: readonly string[],
-): VolunteerRequest | undefined {
-  return nearestOpen(requests, joined, todayIso(deps.now()))
 }
 
 /** Отряды, которым не хватает на экспедиции (дефицит бюджета), в прежнем порядке. */

@@ -13,7 +13,7 @@ const SCREENS = [
   { url: '/last-battle/S01', main: 'site-help' },
   // Разделы дизайна «Стол и газета» (ADR 0012)
   { url: '/map', main: 'hub-route-start' },
-  { url: '/events', main: 'search-join' },
+  { url: '/events', main: 'events-nearest-trip' },
   { url: '/archive', main: 'archive-new' },
   { url: '/other?section=account', main: 'signin-submit' },
 ] as const

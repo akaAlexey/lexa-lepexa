@@ -4,8 +4,6 @@ export {
   commanderTeam,
   joinedRequests,
   joinRequest,
-  nearestOpen,
-  nextToJoin,
   teamsShortOfBudget,
   type SearchStats,
 } from './helpRequests.ts'

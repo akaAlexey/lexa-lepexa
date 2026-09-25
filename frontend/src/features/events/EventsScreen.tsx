@@ -3,10 +3,13 @@ import { Link, useLocation } from 'react-router'
 import { useRole } from '../../app/RoleContext.tsx'
 import type { Fundraiser } from '../../contract/schemas.ts'
 import { EVENT_FILTERS, filterFeed, type EventFilter, type FeedItem } from '../../domain/events.ts'
+import { formatDayRu } from '../../domain/format.ts'
 import { paths } from '../../functions/core/paths.ts'
 import { can } from '../../functions/core/permissions.ts'
-import { useEventsFeed } from '../../functions/events/useEvents.ts'
+import { useDeps } from '../../functions/core/useDeps.ts'
+import { useEventsFeed, type FeedState } from '../../functions/events/useEvents.ts'
 import { isPublishedState, useJoinRequest } from '../../functions/helpRequests/index.ts'
+import { nearestTrip } from '../../functions/trips/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Icon } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
@@ -26,13 +29,7 @@ export function EventsScreen() {
   const { role } = useRole()
   const location = useLocation()
   const feed = useEventsFeed()
-  const {
-    joined,
-    joining,
-    failed,
-    next: target,
-    join,
-  } = useJoinRequest(feed.status === 'ready' ? feed.requests : undefined)
+  const { joined, joining, failed, join } = useJoinRequest()
   const [filter, setFilter] = useState<EventFilter>('all')
   const [query, setQuery] = useState('')
   const [donateTo, setDonateTo] = useState<Fundraiser>()
@@ -51,15 +48,12 @@ export function EventsScreen() {
     <BigButton to={paths.newRequest()} icon="flag" testID="search-create-request">
       Набрать волонтёров
     </BigButton>
-  ) : (
-    <BigButton
-      onClick={() => target && void join(target.id)}
-      disabled={!target || joining !== undefined}
-      icon="shovel"
-      testID="search-join"
-    >
-      {feed.status === 'ready' && !target ? 'Вы в команде' : 'Стать частью команды'}
+  ) : can(role?.id, 'story.verify') ? (
+    <BigButton to={paths.archive()} icon="book" testID="events-archive">
+      Проверить истории
     </BigButton>
+  ) : (
+    <NearestTripButton feed={feed} />
   )
 
   return (
@@ -154,5 +148,27 @@ export function EventsScreen() {
       </ul>
       {donateTo && <DonateDialog fundraiser={donateTo} onClose={closeDonate} />}
     </Screen>
+  )
+}
+
+/**
+ * Главная кнопка волонтёра и гостя: ближайший выезд открывается карточкой с условиями.
+ * Записывает только сама карточка — после того как человек прочитал условия (решение команды 25.09).
+ */
+function NearestTripButton({ feed }: { feed: FeedState }) {
+  const { now } = useDeps()
+  if (feed.status === 'pending')
+    return (
+      <BigButton onClick={() => undefined} disabled icon="calendar" testID="events-nearest-trip">
+        Загружаем выезды…
+      </BigButton>
+    )
+  if (feed.status === 'error') return null
+  const trip = nearestTrip(feed.trips, now())
+  if (!trip) return null
+  return (
+    <BigButton to={paths.trip(trip.id)} icon="calendar" testID="events-nearest-trip">
+      Ближайший выезд — {formatDayRu(trip.date)}
+    </BigButton>
   )
 }
