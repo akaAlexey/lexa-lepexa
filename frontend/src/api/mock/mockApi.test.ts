@@ -114,3 +114,38 @@ describe('mock API: истории и коллективные заявки', ()
     expect(confirmed.status).toBe('confirmed')
   })
 })
+
+describe('mock API: демо переживает перезагрузку', () => {
+  const memoryStorage = () => {
+    let saved: unknown
+    return {
+      load: () => saved,
+      save: (s: unknown) => {
+        saved = structuredClone(s)
+      },
+      clear: () => {
+        saved = undefined
+      },
+    }
+  }
+
+  it('созданное место видно новой вкладке с тем же хранилищем, сброс его убирает', async () => {
+    const storage = memoryStorage()
+    const first = createMockApi({ latencyMs: 0, channelName: null, storage })
+    const { site } = await first.createSite({ body: newSite(53.05, 36.1) })
+
+    const afterReload = createMockApi({ latencyMs: 0, channelName: null, storage })
+    expect((await afterReload.getSite({ id: site.id })).placeName).toBe('Опушка (демо)')
+
+    afterReload.reset()
+    const fresh = createMockApi({ latencyMs: 0, channelName: null, storage })
+    await expect(fresh.getSite({ id: site.id })).rejects.toThrow('не найден')
+  })
+
+  it('снимок другой версии фикстур не подхватывается', async () => {
+    const storage = memoryStorage()
+    storage.save({ v: -1, data: { sites: [] } })
+    const api = createMockApi({ latencyMs: 0, channelName: null, storage })
+    expect((await api.listSites()).length).toBeGreaterThan(0)
+  })
+})

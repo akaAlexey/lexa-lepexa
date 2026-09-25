@@ -9,8 +9,12 @@ export interface FormState<V> {
   sending: boolean
   /** Отправка не удалась (сеть, сервер) — показать ошибку и дать повторить. */
   failed: boolean
-  /** Обработчик `onSubmit` у `<form>`. После неудачной проверки фокус — на первое поле с ошибкой. */
-  submit(event: FormEvent<HTMLFormElement>): void
+  /**
+   * Обработчик `onSubmit` у `<form>`. После неудачной проверки фокус — на первое поле с ошибкой.
+   * `hold` — проверить и показать ошибки полей, но не отправлять (например, нет согласия).
+   * Возвращает true, если поля в порядке.
+   */
+  submit(event: FormEvent<HTMLFormElement>, options?: { hold?: boolean }): boolean
 }
 
 /**
@@ -34,7 +38,7 @@ export function useForm<V, Req, Ctx>(
     if (attempt > 0) formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
   }, [attempt])
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = (event: FormEvent<HTMLFormElement>, options?: { hold?: boolean }) => {
     event.preventDefault()
     formRef.current = event.currentTarget
     const check = checkForm(spec, values, ctx)
@@ -42,14 +46,16 @@ export function useForm<V, Req, Ctx>(
     if (!check.ok) {
       setErrors(check.errors)
       setAttempt((a) => a + 1)
-      return
+      return false
     }
     setErrors({})
+    if (options?.hold) return true
     setSending(true)
     send(check.request).catch(() => {
       setFailed(true)
       setSending(false)
     })
+    return true
   }
 
   return {

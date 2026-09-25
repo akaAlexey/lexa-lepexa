@@ -1,0 +1,1219 @@
+<title>Тропа памяти</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400&family=Oswald:wght@500;600&family=PT+Mono&display=swap">
+<style>
+  /* Токены приложения (frontend/src/theme/tokens.ts). Одна светлая тема, как в приложении. */
+  :root{
+    color-scheme: light;
+    --paper:#F2E8D5; --surface:#FBF6EC; --card:#EFE4CC; --panel:rgb(251 246 236 / .78);
+    --ink:#2B2A26; --muted:#5E574B;
+    --line:#D8CBAE; --line-strong:#C9B994; --rule:rgb(43 42 38 / .28);
+    --olive:#4B5320; --olive-muted:#A7A882; --sepia:#8B6B45; --grey-mark:#9A9484;
+    --accent:#B4531A; --accent-light:#E8A15A; --accent-on-dark:#F2C08E; --accent-text:#8E3F12;
+    --rail:#2B2A26; --rail-text:#CFC4A8;
+    --danger:#A33227; --done:#3F6B3B; --land:#EFE4CC;
+    --map-red:#C8261C; --map-orange:#EE7F1B;
+    --font-body:'PT Sans','Noto Sans',system-ui,sans-serif;
+    --font-head:'Oswald','PT Sans','Arial Narrow',sans-serif;
+    --font-mono:'PT Mono','Courier New',monospace;
+    --paper-texture:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .42 0 0 0 0 .29 0 0 0 0 .12 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    --r:3px;
+    --nav-h:56px; --rail-w:84px;
+    --edge:max(1vw,8px);
+    --sheet-h:40vh;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  /* Полосы прокрутки скрыты, листать можно как обычно */
+  *{scrollbar-width:none;-ms-overflow-style:none}
+  *::-webkit-scrollbar{display:none;width:0;height:0}
+  html,body{height:100%}
+  body{margin:0;overflow:hidden;background:#3b2210 url("assets/desk.jpg") center/cover;color:var(--ink);
+    font-family:var(--font-body);font-size:14px;line-height:1.45;-webkit-text-size-adjust:100%}
+  button,input,textarea,select{font:inherit;color:inherit}
+  button{background:none;border:0;padding:0;cursor:pointer}
+  a{color:var(--olive)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  [hidden]{display:none!important}
+  /* Полосы прокрутки скрыты, прокрутка колесом, пальцем и клавиатурой работает */
+  *{scrollbar-width:none;-ms-overflow-style:none}
+  *::-webkit-scrollbar{display:none;width:0;height:0}
+  svg.i{width:18px;height:18px;flex:none}
+  .sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+  /* ================= Навигация: 4 раздела, подписи всегда видны ================= */
+  .nav{position:fixed;z-index:20;left:0;right:0;bottom:0;height:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));
+    padding-bottom:env(safe-area-inset-bottom,0px);background:var(--rail);display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #000}
+  .nav .brand{display:none}
+  .nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--rail-text);font-size:11px;position:relative}
+  .nav button svg{width:20px;height:20px}
+  .nav button[aria-current="page"]{color:var(--accent-on-dark)}
+  .nav button[aria-current="page"]::before{content:"";position:absolute;top:0;left:30%;right:30%;height:2px;background:var(--accent-on-dark)}
+
+  /* ================= Виды ================= */
+  .view{position:fixed;z-index:1;left:0;right:0;top:0;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px))}
+  /* Страницы: газетная бумага, по краям видна полоска стола */
+  .view-page{overflow:auto;overscroll-behavior:contain;
+    border-left:var(--edge) solid transparent;border-right:var(--edge) solid transparent;
+    background:url("assets/newsprint.jpg") center/cover padding-box, linear-gradient(#EDE2C6,#E6D8B6) padding-box, #3b2210 url("assets/desk.jpg") center/cover border-box;
+    box-shadow:inset 8px 0 9px -7px rgb(0 0 0 / .6), inset -8px 0 9px -7px rgb(0 0 0 / .6)}
+  .page{max-width:1000px;margin:0 auto;padding:14px 12px 28px}
+
+  /* ================= Общие элементы ================= */
+  .kick{font-family:var(--font-mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:0 14px;border-radius:var(--r);
+    font-weight:700;font-size:13px;border:1px solid var(--ink);background:transparent;white-space:nowrap}
+  .btn:hover{background:rgb(43 42 38 / .06)}
+  .btn-main{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn-main:hover{background:#9f4815}
+  .btn[disabled]{opacity:.45;cursor:not-allowed}
+  .btn-sm{min-height:30px;padding:0 10px;font-size:12px}
+  .link{font-size:13px;font-weight:700;color:var(--olive);text-decoration:underline;text-underline-offset:2px}
+  .tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:1px 6px;border:1px solid currentColor;border-radius:2px;white-space:nowrap}
+  .tag svg{width:12px;height:12px}
+  .tag-done{color:var(--done)} .tag-wait{color:var(--sepia)} .tag-act{color:var(--accent-text)} .tag-ink{color:var(--ink)}
+  .demo{display:inline-block;font-size:11px;color:var(--muted);border:1px dashed var(--sepia);padding:0 6px;border-radius:2px}
+  .fld{display:grid;gap:3px;margin-bottom:10px}
+  .fld>span{font-size:12px;font-weight:700}
+  .fld small{font-size:11px;color:var(--muted)}
+  .fld input,.fld textarea{width:100%;padding:8px 9px;border:1px solid var(--sepia);border-radius:2px;background:rgb(255 252 244 / .9);font-size:14px}
+  .fld textarea{min-height:110px;resize:vertical}
+  .fld [aria-invalid="true"]{border-color:var(--danger);box-shadow:0 0 0 1px var(--danger)}
+  .fld .err{font-size:12px;color:var(--danger);font-weight:700}
+  .pw{position:relative}
+  .pw input{padding-right:84px}
+  .pw button{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:var(--olive);padding:4px 6px}
+  .bar{display:block;height:6px;background:rgb(43 42 38 / .12);border-radius:1px;overflow:hidden}
+  .bar i{display:block;height:6px;max-width:100%;background:var(--accent)}
+  .note-ok,.note-warn,.note-wait{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border:1px solid;border-radius:2px;font-size:13px}
+  .note-ok{border-color:var(--done);color:#2f4a2c;background:rgb(63 107 59 / .08)}
+  .note-warn{border-color:var(--accent);color:var(--accent-text);background:rgb(180 83 26 / .07)}
+  .note-wait{border-color:var(--sepia);color:#5a4327;background:rgb(139 107 69 / .08)}
+  .back{position:sticky;top:8px;z-index:3;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px 0 9px;margin-bottom:12px;
+    font-size:13px;font-weight:700;color:var(--surface);background:var(--ink);border:1px solid var(--ink);border-radius:var(--r);box-shadow:0 2px 6px rgb(0 0 0 / .25)}
+  .back:hover{background:#000}
+  .back svg{width:16px;height:16px}
+  .page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;border-bottom:3px double var(--ink);padding-bottom:6px;margin-bottom:12px}
+  .page-head h1{font-family:var(--font-head);font-weight:600;font-size:28px;line-height:1;letter-spacing:.04em;text-transform:uppercase;margin:0}
+  .page-head p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+
+  /* ================= КАРТА (сплошная, спутник) ================= */
+  .view-map{background:#DCD2AB}
+  #map{position:absolute;inset:0;background-color:#DCD2AB;background-image:var(--paper-texture)}
+  .maplibregl-map{position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent}
+  .maplibregl-canvas{position:absolute;left:0;top:0}
+  .maplibregl-canvas-container.maplibregl-interactive{cursor:grab;user-select:none;-webkit-user-select:none}
+  .maplibregl-canvas-container.maplibregl-interactive:active{cursor:grabbing}
+  .maplibregl-canvas-container.maplibregl-touch-zoom-rotate,.maplibregl-canvas-container.maplibregl-touch-zoom-rotate .maplibregl-canvas{touch-action:pan-x pan-y}
+  .maplibregl-canvas-container.maplibregl-touch-drag-pan,.maplibregl-canvas-container.maplibregl-touch-drag-pan .maplibregl-canvas{touch-action:pinch-zoom}
+  .maplibregl-canvas-container.maplibregl-touch-zoom-rotate.maplibregl-touch-drag-pan,.maplibregl-canvas-container.maplibregl-touch-zoom-rotate.maplibregl-touch-drag-pan .maplibregl-canvas{touch-action:none}
+  .maplibregl-marker{position:absolute;top:0;left:0;will-change:transform}
+  .maplibregl-canary{background-color:salmon}
+  .paper-veil{position:absolute;inset:0;pointer-events:none;background-image:var(--paper-texture);mix-blend-mode:multiply}
+  .smap{position:absolute;left:0;top:0}
+
+  .mk{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;border:2px solid #F6EDD2;
+    background:var(--c,var(--map-red));color:#FFF4DC;box-shadow:0 1px 3px rgb(51 41 26 / .55)}
+  .mk svg{width:17px;height:17px}
+  .mk-hq{--c:var(--sepia)} .mk-grave{--c:var(--olive)}
+  .mk.is-muted{--c:#8E876C;color:#F1E7C8}
+  .mk.is-sel{box-shadow:0 0 0 2px #F6EDD2,0 0 0 5px var(--map-orange),0 2px 6px rgb(51 41 26 / .5)}
+  .zone{position:relative;width:100px;height:100px;pointer-events:none}
+  .zone .ring{position:absolute;inset:0;border-radius:50%;border:2.5px solid var(--map-red);background:rgb(200 38 28 / .16)}
+  .zone .ring::after{content:"";position:absolute;inset:8px;border-radius:50%;border:1.5px dashed var(--map-red)}
+  .zone .dot{position:absolute;left:50%;top:50%;width:36px;height:36px;margin:-18px 0 0 -18px;border-radius:50%;pointer-events:auto;display:grid;place-items:center}
+  .zone .dot::before{content:"";width:14px;height:14px;border-radius:50%;background:var(--map-red);border:2px solid #F6EDD2}
+  .zone.is-muted{opacity:.55}
+  .zone.is-sel .dot::before{box-shadow:0 0 0 3px var(--map-orange)}
+  .off{display:none!important}
+  .map-label{pointer-events:none;color:#33291A;text-shadow:0 0 3px #E6DCB8,0 0 3px #E6DCB8,0 0 5px #E6DCB8}
+  .map-label.city{font-family:var(--font-head);font-weight:600;font-size:17px;letter-spacing:.06em;text-transform:uppercase}
+  .map-label.village{font-weight:700;font-size:12px}
+
+  .top{position:absolute;z-index:5;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top,0px))}
+  .search{position:relative}
+  .search-box{display:flex;align-items:center;gap:8px;height:40px;padding:0 10px;background:var(--surface);border:1px solid var(--line-strong);
+    border-radius:var(--r);box-shadow:0 1px 6px rgb(0 0 0 / .3)}
+  .search-box svg{color:var(--muted)}
+  .search-box input{flex:1;min-width:0;border:0;background:transparent;font-size:14px;outline:0}
+  .search-box input::placeholder{color:#7A7263}
+  .search-box:focus-within{border-color:var(--accent)}
+  .results{position:absolute;left:0;right:0;top:44px;background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--r);
+    box-shadow:0 4px 14px rgb(0 0 0 / .3);max-height:50vh;overflow:auto}
+  .res{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}
+  .res:last-child{border-bottom:0}
+  .res:hover,.res.is-hl{background:var(--card)}
+  .res .ic,.pl .ic{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:var(--surface);background:var(--c,var(--olive))}
+  .res .ic svg,.pl .ic svg{width:13px;height:13px}
+  .res b{display:block;font-size:13px;line-height:1.2}
+  .res small{display:block;color:var(--muted);font-size:11px}
+  .res-empty{padding:10px;color:var(--muted);font-size:13px}
+
+  .attrib{position:absolute;z-index:3;right:4px;bottom:calc(var(--sheet-h) + 4px);max-width:calc(100% - 8px);font-size:10px;line-height:1.3;
+    color:var(--muted);background:rgb(251 246 236 / .85);padding:1px 6px;text-align:right}
+  .attrib a{color:var(--muted)}
+  .attrib .warn{color:var(--accent-text);font-weight:700}
+
+  .sheet{position:absolute;z-index:4;left:0;right:0;bottom:0;height:var(--sheet-h);display:flex;flex-direction:column;
+    background:var(--surface);background-image:var(--paper-texture);border-top:1px solid var(--line-strong);border-radius:6px 6px 0 0;
+    box-shadow:0 -4px 16px rgb(0 0 0 / .3)}
+  .grab{flex:none;height:18px;width:100%;display:grid;place-items:center;touch-action:none;cursor:grab}
+  .grab::before{content:"";width:36px;height:4px;border-radius:2px;background:var(--line-strong)}
+  .tabs{flex:none;display:flex;border-bottom:1px solid var(--line-strong);padding:0 12px}
+  .tabs button{height:34px;padding:0 12px;font-weight:700;font-size:13px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+  .sheet-body{flex:1;min-height:0;overflow:auto;padding:10px 12px 16px;overscroll-behavior:contain}
+  .seg{display:flex;border:1px solid var(--line-strong);border-radius:var(--r);overflow:hidden;width:max-content;max-width:100%;flex-wrap:wrap}
+  .seg button{height:28px;padding:0 12px;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;border-right:1px solid var(--line-strong);color:var(--muted);background:rgb(255 252 244 / .6)}
+  .seg button:last-child{border-right:0}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+  #chips{margin-bottom:10px}
+  .timeline{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:var(--r)}
+  .ev{border-bottom:1px solid var(--line)}
+  .ev:last-child{border-bottom:0}
+  .ev-card{display:block;width:100%;text-align:left;padding:8px 10px 8px 12px;border-left:3px solid transparent}
+  .ev-card:hover{background:rgb(43 42 38 / .04)}
+  .ev time{display:block;font-family:var(--font-mono);font-size:11px;color:var(--muted)}
+  .ev h3{margin:0;font-size:14px;line-height:1.25}
+  .ev.is-active .ev-card{background:var(--card);border-left-color:var(--accent);cursor:default}
+  .ev.is-active time{color:var(--accent-text)}
+  .ev-text,.ev-more{margin:4px 0 0;font-size:13px;color:var(--muted)}
+  .ev-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .empty{padding:10px;color:var(--muted);font-size:13px}
+  .places{list-style:none;margin:0 0 8px;padding:0;border:1px solid var(--line);border-radius:var(--r)}
+  .places li{border-bottom:1px solid var(--line)}
+  .places li:last-child{border-bottom:0}
+  .places .grp{padding:5px 10px;background:rgb(43 42 38 / .05)}
+  .pl{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:7px 10px;border-left:3px solid transparent}
+  .pl:hover{background:rgb(43 42 38 / .04)}
+  .pl.is-sel{background:var(--card);border-left-color:var(--accent)}
+  .pl.is-route-on{background:rgb(180 83 26 / .06)}
+  .pl b{display:block;font-size:13px;line-height:1.2}
+  .pl small{display:block;color:var(--muted);font-size:11px}
+  .pl .tag{margin-top:3px}
+
+  /* ================= МЕРОПРИЯТИЯ ================= */
+  .mast{text-align:center;padding-bottom:8px;border-bottom:3px double var(--ink);margin-bottom:10px}
+  .mast-meta{display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:3px 0;
+    font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#3a3226}
+  .mast h1{font-family:var(--font-head);font-weight:600;font-size:34px;line-height:1;letter-spacing:.05em;text-transform:uppercase;margin:8px 0 2px}
+  .mast p{margin:0;font-size:13px;color:var(--muted)}
+  .filters{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;margin-bottom:12px}
+  .filters .search-box{box-shadow:none;height:36px}
+  .feed{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  .week{background:var(--panel);border:1px solid var(--ink);border-radius:2px}
+  .week-hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:6px 10px;border-bottom:1px solid var(--ink);background:rgb(43 42 38 / .06)}
+  .week-hd h2{font-family:var(--font-head);font-weight:600;font-size:15px;letter-spacing:.08em;text-transform:uppercase;margin:0}
+  .week-item{padding:8px 10px;border-bottom:1px solid var(--rule)}
+  .week-item:last-child{border-bottom:0}
+  .week-item p{margin:2px 0 0;font-size:14px;max-width:80ch}
+  .post{display:block;width:100%;text-align:left;padding:9px 11px;background:var(--panel);border:1px solid var(--rule);border-radius:2px}
+  .post:hover{border-color:var(--ink)}
+  .post-top{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+  .post b{display:block;font-size:16px;line-height:1.2;margin:4px 0 3px}
+  .post .ln{display:block;font-size:13px;color:#3a3226}
+  .post .more{display:block;margin-top:5px;font-size:12px;font-weight:700;color:var(--accent-text)}
+  .post .bar{margin:6px 0 3px;max-width:420px}
+  .age{display:inline-block;font-family:var(--font-mono);font-size:11px;font-weight:700;border:1px solid var(--ink);padding:0 4px;border-radius:2px;margin-left:2px}
+  .detail{background:var(--panel);border:1px solid var(--rule);padding:12px 14px;max-width:760px;margin:0 auto}
+  .detail h2{font-family:var(--font-head);font-weight:600;font-size:24px;line-height:1.1;margin:4px 0 6px}
+  .detail .meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));border:1px solid var(--rule);margin:10px 0}
+  .detail .meta div{padding:5px 8px;border-right:1px solid var(--rule)}
+  .detail .meta div:last-child{border-right:0}
+  .detail .meta span{display:block;font-size:11px;color:var(--muted)}
+  .detail .meta b{font-size:13px}
+  .detail p{margin:0 0 10px;max-width:65ch}
+  .detail .actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .checklist{border:1px solid var(--rule);margin:10px 0}
+  .checklist .hd{display:flex;justify-content:space-between;padding:5px 8px;border-bottom:1px solid var(--rule);font-size:12px;font-weight:700}
+  .checklist label{display:flex;gap:8px;align-items:center;padding:6px 8px;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}
+  .checklist label:last-child{border-bottom:0}
+  .checklist input{width:16px;height:16px;accent-color:var(--olive);margin:0}
+  .group-form{border:1px solid var(--rule);padding:10px;margin:10px 0;background:rgb(255 252 244 / .5)}
+  .glist{border:1px solid var(--rule);margin:10px 0}
+  .glist div{display:flex;justify-content:space-between;gap:8px;padding:6px 8px;border-bottom:1px solid var(--line);font-size:13px}
+  .glist div:last-child{border-bottom:0}
+
+  /* ================= ИСТОРИИ ================= */
+  .stories{list-style:none;margin:0;padding:0;border:1px solid var(--rule);background:var(--panel)}
+  .stories li{border-bottom:1px solid var(--rule)}
+  .stories li:last-child{border-bottom:0}
+  .st-row{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;text-align:left;padding:9px 10px}
+  .st-row:hover{background:rgb(43 42 38 / .05)}
+  .st-year{font-family:var(--font-head);font-weight:600;font-size:16px;line-height:1.05;color:var(--accent-text);font-variant-numeric:tabular-nums}
+  .st-year small{display:block;font-size:12px}
+  .st-row b{display:block;font-size:15px;line-height:1.2}
+  .st-row span.p{display:block;font-size:12px;color:var(--muted)}
+  .st-row .ph{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--muted);margin-left:6px}
+  .reader{max-width:720px;margin:0 auto;background:var(--panel);border:1px solid var(--rule);padding:14px 18px 20px}
+  .reader h1{font-family:var(--font-head);font-weight:600;font-size:28px;line-height:1.1;margin:4px 0 6px}
+  .reader .by{font-size:12px;color:var(--muted);margin:0 0 10px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .reader p.txt{font-size:16px;line-height:1.65;margin:12px 0;max-width:62ch}
+  .reader .src{font-size:12px;color:var(--muted);border-top:1px solid var(--rule);padding-top:8px;margin-top:14px}
+  .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin:12px 0}
+  .gallery figure{margin:0;position:relative;border:1px solid var(--rule);background:#e6d9ba}
+  .gallery button.open{display:block;width:100%}
+  .gallery img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;filter:sepia(.25)}
+  .gallery .rm{position:absolute;top:3px;right:3px;background:rgb(43 42 38 / .85);color:#fff;font-size:11px;font-weight:700;padding:2px 6px;border-radius:2px}
+  .upload{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px dashed var(--sepia);padding:10px;margin:8px 0;background:rgb(255 252 244 / .5)}
+  .upload input[type=file]{font-size:12px;max-width:100%}
+  .upload small{font-size:11px;color:var(--muted)}
+  .count{font-size:11px;color:var(--muted)}
+
+  /* ================= ДРУГОЕ: большая панель с выпадающим списком ================= */
+  .hub{max-width:900px;margin:0 auto;background:var(--panel);border:1px solid var(--ink);border-radius:2px;min-height:62vh;display:flex;flex-direction:column}
+  .hub-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;padding:12px 14px;border-bottom:1px solid var(--ink);background:rgb(43 42 38 / .05)}
+  .hub-hd .t{font-family:var(--font-head);font-weight:600;font-size:20px;letter-spacing:.03em}
+  .hub-hd .s{display:block;font-size:12px;color:var(--muted);font-family:var(--font-body);font-weight:400;letter-spacing:0}
+  .hub-hd svg{width:20px;height:20px}
+  .hub-list{list-style:none;margin:0;padding:0}
+  .hub-list li{border-bottom:1px solid var(--rule)}
+  .hub-row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px}
+  .hub-row:hover{background:rgb(43 42 38 / .05)}
+  .hub-row .ic{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--olive);color:var(--surface)}
+  .hub-row .ic svg{width:16px;height:16px}
+  .hub-row b{display:block;font-size:15px}
+  .hub-row span.d{display:block;font-size:12px;color:var(--muted)}
+  .hub-row .lk{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--muted)}
+  .hub-row .lk svg{width:13px;height:13px}
+  .hub-row[aria-current="true"]{background:rgb(180 83 26 / .07);box-shadow:inset 3px 0 0 var(--accent)}
+  .hub-body{padding:16px 18px 22px;flex:1}
+  .hub-body h2{font-family:var(--font-head);font-weight:600;font-size:18px;margin:0 0 6px}
+  .hub-body p{margin:0 0 10px;max-width:62ch}
+  .auth{max-width:380px}
+  .auth-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:2px 0 12px;font-size:13px}
+  .auth-row label{display:flex;align-items:center;gap:6px;cursor:pointer}
+  .auth-row input{accent-color:var(--olive);width:15px;height:15px;margin:0}
+  .auth-alt{margin-top:14px;padding-top:10px;border-top:1px solid var(--rule);font-size:13px}
+  .profile{display:flex;gap:14px;align-items:center;border:1px solid var(--rule);padding:12px;margin-bottom:12px;max-width:520px;background:rgb(255 252 244 / .5)}
+  .avatar{width:48px;height:48px;border-radius:50%;background:var(--olive);color:var(--surface);display:grid;place-items:center;font-family:var(--font-head);font-size:20px}
+  .lock-panel{border:1px dashed var(--sepia);padding:18px;text-align:center;background:rgb(255 250 235 / .45)}
+  .lock-panel svg{width:26px;height:26px;color:var(--sepia)}
+  .fam{border:1px solid var(--rule);background:rgb(255 250 235 / .5);margin-bottom:8px;padding:8px 10px}
+  .fam b{font-size:14px} .fam span{display:block;font-size:12px;color:var(--muted)}
+  .ar-row{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid var(--rule);padding:8px 0}
+  .ar-row b{display:block;font-size:14px} .ar-row span{font-size:12px;color:var(--muted)}
+  .revive{display:grid;grid-template-columns:180px 1fr;gap:14px;align-items:start}
+  .photo-box{width:180px;aspect-ratio:3/4;max-width:100%;border:1px solid rgb(60 40 16 / .45);background:#d9c9a4;display:grid;place-items:center;
+    position:relative;overflow:hidden;color:var(--muted);font-size:12px;text-align:center;padding:8px}
+  .photo-box img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:sepia(.55) contrast(1.05)}
+  .ai-plate{position:absolute;left:0;right:0;bottom:0;background:rgb(43 42 38 / .82);color:var(--surface);font-size:11px;padding:3px 6px;text-align:left}
+  .quote{font-style:italic;border-left:3px solid var(--accent);padding:4px 10px;margin:8px 0;background:rgb(255 250 235 / .45)}
+  .chk{display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;font-size:13px}
+  .chk input{width:16px;height:16px;accent-color:var(--olive);margin:0}
+  .roles{display:grid;grid-template-columns:repeat(2,1fr);border:1px solid var(--rule);margin-bottom:12px}
+  .roles label{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-bottom:1px solid var(--rule);border-right:1px solid var(--rule);cursor:pointer}
+  .roles label:nth-child(2n){border-right:0}
+  .roles input{margin-top:3px;accent-color:var(--olive)}
+  .roles b{display:block;font-size:13px} .roles span{font-size:12px;color:var(--muted)}
+
+  dialog{border:1px solid var(--ink);border-radius:var(--r);padding:0;max-width:min(380px,calc(100vw - 24px));background:var(--surface);color:var(--ink)}
+  dialog::backdrop{background:rgb(20 14 8 / .6)}
+  dialog.lightbox{max-width:min(900px,calc(100vw - 24px));background:#1c1409;border-color:#000}
+  dialog.lightbox img{display:block;max-width:100%;max-height:80vh;margin:0 auto}
+  dialog.lightbox .lb-bar{display:flex;justify-content:flex-end;padding:6px}
+  dialog.lightbox .btn{color:#fff;border-color:#fff}
+  .dlg{padding:14px 16px}
+  .dlg h2{font-family:var(--font-head);font-weight:600;font-size:19px;margin:0 0 4px}
+  .amounts{display:flex;border:1px solid var(--line-strong);margin:10px 0;width:max-content;max-width:100%}
+  .amounts button{height:30px;padding:0 10px;font-size:13px;font-weight:700;border-right:1px solid var(--line-strong)}
+  .amounts button:last-child{border-right:0}
+  .amounts button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+
+  .toast{position:fixed;z-index:30;left:50%;transform:translateX(-50%);bottom:calc(var(--nav-h) + 12px);background:var(--rail);color:var(--surface);
+    padding:8px 12px;border-radius:var(--r);box-shadow:0 4px 14px rgb(0 0 0 / .35);max-width:calc(100vw - 24px);font-size:13px}
+
+  /* ================= Телефон ================= */
+  @media (max-width:760px){
+    :root{--edge:13px}
+    .view-page{box-shadow:inset 9px 0 10px -7px rgb(0 0 0 / .7), inset -9px 0 10px -7px rgb(0 0 0 / .7)}
+    .mast h1{font-size:26px}
+    .mast-meta span:nth-child(3){display:none}
+    .filters{grid-template-columns:1fr}
+    .revive{grid-template-columns:1fr}
+    .roles{grid-template-columns:1fr}
+    .roles label{border-right:0}
+    .st-row{grid-template-columns:44px minmax(0,1fr)}
+    .st-row .tag{grid-column:2;justify-self:start}
+    .hub-body{padding:14px 12px 18px}
+    .reader{padding:12px 12px 18px}
+  }
+
+  /* ================= Ноутбук: меню слева, панель карты слева ================= */
+  @media (min-width:1024px){
+    .nav{top:0;right:auto;width:var(--rail-w);height:auto;display:flex;flex-direction:column;border-top:0;border-right:1px solid #000;padding:8px 0}
+    .nav .brand{display:grid;place-items:center;height:56px;margin-bottom:6px}
+    .nav button{height:62px;font-size:11px}
+    .nav button[aria-current="page"]::before{top:12px;bottom:12px;left:0;right:auto;width:2px;height:auto}
+    .view{left:var(--rail-w);bottom:0}
+    .top{left:10px;right:auto;width:360px;top:10px}
+    .sheet{left:10px;right:auto;width:360px;top:58px;bottom:10px;height:auto!important;border:1px solid var(--line-strong);border-radius:var(--r);
+      box-shadow:0 4px 16px rgb(0 0 0 / .35)}
+    .grab{display:none}
+    .attrib{bottom:4px}
+    .toast{left:auto;right:16px;transform:none;bottom:16px}
+    .page{padding:20px 20px 32px}
+  }
+</style>
+
+<nav class="nav" id="nav" aria-label="Разделы">
+  <div class="brand" aria-hidden="true">
+    <svg viewBox="0 0 34 34" width="34" height="34"><circle cx="17" cy="17" r="16" fill="#4B5320"/><polygon points="17,7 19.6,13.6 26.5,13.9 21.1,18.3 22.9,25 17,21.2 11.1,25 12.9,18.3 7.5,13.9 14.4,13.6" fill="#E8A15A"/></svg>
+  </div>
+  <button data-tab="map" aria-current="page"><i data-ic="map"></i>Карта</button>
+  <button data-tab="events"><i data-ic="calendar"></i>Мероприятия</button>
+  <button data-tab="stories"><i data-ic="book"></i>Истории</button>
+  <button data-tab="other"><i data-ic="menu"></i>Другое</button>
+</nav>
+
+<!-- ===== КАРТА ===== -->
+<section class="view view-map" id="view-map" aria-label="Карта">
+  <div id="map" role="region" aria-label="Карта мест боёв и памяти"></div>
+  <div class="top" id="top">
+    <div class="search">
+      <label class="search-box">
+        <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+        <input id="q" type="search" placeholder="Места боя, музеи, исторические маршруты..." autocomplete="off" aria-label="Поиск по карте">
+      </label>
+      <div class="results" id="results" role="listbox" aria-label="Результаты поиска" hidden></div>
+    </div>
+  </div>
+  <div class="attrib" id="attrib"></div>
+  <section class="sheet" id="sheet" aria-label="Места и история края">
+    <button class="grab" id="grab" aria-label="Развернуть или свернуть панель"></button>
+    <div class="tabs" role="tablist" aria-label="Содержимое панели">
+      <button role="tab" id="tab-places" aria-selected="false" aria-controls="panel-places">Места</button>
+      <button role="tab" id="tab-history" aria-selected="true" aria-controls="panel-history">История края</button>
+    </div>
+    <div class="sheet-body">
+      <div id="panel-history" role="tabpanel" aria-labelledby="tab-history">
+        <div class="seg" id="chips" role="group" aria-label="Год"></div>
+        <ol class="timeline" id="timeline"></ol>
+      </div>
+      <div id="panel-places" role="tabpanel" aria-labelledby="tab-places" hidden>
+        <ul class="places" id="places"></ul>
+        <span class="demo">Демо-данные</span>
+      </div>
+    </div>
+  </section>
+</section>
+
+<!-- ===== МЕРОПРИЯТИЯ ===== -->
+<section class="view view-page" id="view-events" aria-label="Мероприятия" hidden>
+  <div class="page" id="events"></div>
+</section>
+
+<!-- ===== ИСТОРИИ ===== -->
+<section class="view view-page" id="view-stories" aria-label="Истории" hidden>
+  <div class="page" id="stories"></div>
+</section>
+
+<!-- ===== ДРУГОЕ ===== -->
+<section class="view view-page" id="view-other" aria-label="Другое" hidden>
+  <div class="page"><div class="hub" id="hub"></div></div>
+</section>
+
+<dialog id="donate" aria-labelledby="donate-title">
+  <form class="dlg" method="dialog" id="donateForm">
+    <h2 id="donate-title">Пожертвовать</h2>
+    <p id="donateWhat" style="margin:0;font-size:13px;color:var(--muted)"></p>
+    <div class="amounts" role="group" aria-label="Сумма" id="amounts"></div>
+    <div class="note-warn" style="margin-bottom:12px">Тестовый платёж: деньги не списываются.</div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" type="button" id="donateCancel">Отмена</button>
+      <button class="btn btn-main" type="submit" id="donateOk">Пожертвовать</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="lightbox" class="lightbox" aria-label="Изображение">
+  <div class="lb-bar"><button class="btn btn-sm" type="button" id="lbClose">Закрыть</button></div>
+  <img id="lbImg" alt="">
+</dialog>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script>
+(function(){
+  'use strict';
+  function $(s,r){ return (r||document).querySelector(s); }
+  function $$(s,r){ return [].slice.call((r||document).querySelectorAll(s)); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function plural(n,a,b,c){ var m10=n%10,m100=n%100; if(m10===1&&m100!==11) return a; if(m10>=2&&m10<=4&&(m100<10||m100>=20)) return b; return c; }
+
+  /* ===== Иконки приложения (ui/Icon.tsx) ===== */
+  var P={
+    star:'M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.5L12 17.3l-5.9 3.2 1.3-6.5L2.5 9.4l6.6-.8z',
+    book:'M3 4.5C5.8 4 8.6 4.4 11 6v14c-2.4-1.5-5.2-1.9-8-1.4zM13 6c2.4-1.6 5.2-2 8-1.5v14.1c-2.8-.5-5.6-.1-8 1.4z',
+    grave:'M10 21V8l2-5.5L14 8v13zM6 21h12v1.5H6zM12 9.2l.7 1.4 1.5.2-1.1 1 .3 1.5-1.4-.7-1.4.7.3-1.5-1.1-1 1.5-.2z',
+    pin:'M12 22s-7-7.2-7-12.5a7 7 0 0114 0C19 14.8 12 22 12 22zm0-9.5l1.5.8-.3-1.7 1.2-1.2-1.7-.2L12 8.6l-.7 1.6-1.7.2 1.2 1.2-.3 1.7z',
+    route:'M5 21a2 2 0 110-4 2 2 0 010 4zm14-14a2 2 0 110-4 2 2 0 010 4zM6 16.5l1.5-1.5 1 1L7 17.5zm3-3l1.5-1.5 1 1-1.5 1.5zm3-3l1.5-1.5 1 1-1.5 1.5zm3-3L16.5 6l1 1L16 8.5z',
+    calendar:'M7 2h2v2h6V2h2v2h3v17H4V4h3zm-1 7v10h12V9zm2 2h3v3H8z',
+    user:'M12 3a4.5 4.5 0 110 9 4.5 4.5 0 010-9zM3.5 21c.8-4.6 4.3-7 8.5-7s7.7 2.4 8.5 7z',
+    map:'M3 5.2 8.2 3v15.8L3 21zM9.6 3l4.8 2.2V21l-4.8-2.2zM15.8 5.2 21 3v15.8L15.8 21z',
+    menu:'M3 5h18v2.2H3zm0 5.9h18v2.2H3zm0 5.9h18V19H3z',
+    lock:'M7 10V7.5a5 5 0 0110 0V10h1.5v11h-13V10zm2 0h6V7.5a3 3 0 00-6 0z',
+    check:'M12 2a10 10 0 110 20 10 10 0 010-20zm4.3 6.3L10.5 14l-2.8-2.8-1.4 1.4 4.2 4.2 7.2-7.1z',
+    alert:'M12 2a10 10 0 110 20 10 10 0 010-20zm-1 5v7h2V7zm0 9v2h2v-2z',
+    family:'M8 2.5a3 3 0 110 6 3 3 0 010-6zm9 4a2.5 2.5 0 110 5 2.5 2.5 0 010-5zM3 21v-6a5 5 0 0110 0v6zm11 0v-4a3 3 0 016 0v4z',
+    clock:'M12 2a10 10 0 110 20 10 10 0 010-20zm-1 4v7l5 3 1-1.7-4-2.3V6z',
+    archive:'M5 2h10l4 4v16H5zm9 1.5V7h3.5zM8 11v2h8v-2zm0 4v2h5v-2z',
+    locate:'M11 2h2v3.1A7 7 0 0118.9 11H22v2h-3.1A7 7 0 0113 18.9V22h-2v-3.1A7 7 0 015.1 13H2v-2h3.1A7 7 0 0111 5.1zm1 5a5 5 0 100 10 5 5 0 000-10zm0 2.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5z',
+    image:'M3 4h18v16H3zm2 2v9.6l4-4 3.5 3.5 2.5-2.5 4 4V6zm10 2.5a1.7 1.7 0 110 3.4 1.7 1.7 0 010-3.4z',
+    flag:'M5 2h2v20H5zm3 1h12l-3 4.5 3 4.5H8z',
+    up:'M12 7l7 7-1.5 1.5L12 10l-5.5 5.5L5 14z',
+    left:'M10 5l1.5 1.5L7 11h13v2H7l4.5 4.5L10 19l-7-7z',
+    down:'M12 17l-7-7 1.5-1.5L12 14l5.5-5.5L19 10z'
+  };
+  function svg(n,cls){ return '<svg class="'+(cls||'i')+'" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path fill-rule="evenodd" d="'+P[n]+'"/></svg>'; }
+  $$('[data-ic]').forEach(function(el){ el.outerHTML=svg(el.getAttribute('data-ic')); });
+  ['assets/newsprint.jpg','assets/desk.jpg'].forEach(function(src){ var im=new Image(); im.src=src; if(im.decode) im.decode().catch(function(){}); });
+
+  /* ===== Даты по Москве ===== */
+  var TODAY=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Moscow',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  function dt(iso){ return new Date(iso+'T12:00:00Z'); }
+  function addDays(iso,n){ var d=dt(iso); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); }
+  function dow(iso){ return dt(iso).getUTCDay(); }
+  function nextDow(iso,wd,minAhead){ var d=addDays(iso,minAhead||0); while(dow(d)!==wd) d=addDays(d,1); return d; }
+  function lastDow(iso,wd){ var d=iso; while(dow(d)!==wd) d=addDays(d,-1); return d; }
+  function F(o,iso){ return new Intl.DateTimeFormat('ru-RU',Object.assign({timeZone:'UTC'},o)).format(dt(iso)); }
+  function fmtDay(iso){ return F({day:'numeric',month:'long'},iso)+', '+F({weekday:'long'},iso); }
+  function fmtLong(iso){ return F({day:'numeric',month:'long',year:'numeric'},iso); }
+  function fmtShort(iso){ return F({day:'numeric',month:'long'},iso); }
+  function ddmm(iso){ return iso.slice(8,10)+'.'+iso.slice(5,7); }
+  var WD_IN=['В воскресенье','В понедельник','Во вторник','В среду','В четверг','В пятницу','В субботу'];
+  function rub(n){ return n.toLocaleString('ru-RU')+' ₽'; }
+
+  /* ===== Демо-данные (по frontend/src/api/fixtures/seed.ts) ===== */
+  var CHECK=[{id:'shovel',label:'Лопата'},{id:'probe',label:'Щуп'},{id:'gloves',label:'Перчатки'},{id:'pamyat',label:'Регистрация на сайте «Память народа»'}];
+  function seed(){
+    var sat1=nextDow(TODAY,6,2), sat2=addDays(sat1,7);
+    var mon=lastDow(TODAY,1), tue=addDays(mon,1); if(tue>TODAY){ mon=addDays(mon,-7); tue=addDays(mon,1); }
+    return {
+    week:[
+      {date:mon,team:'Отряд «Высота-6»',kind:'Находка',
+        text:WD_IN[1]+' '+ddmm(mon)+' поисковый отряд «Высота-6» нашёл у поляны Лужная старую пехотную лопатку, 26 гильз и шлем времён ВОВ. В событии приняли участие 13 волонтёров от 13 до 17 лет.'},
+      {date:tue,team:'Отряд «Юнармия»',kind:'Выезд',
+        text:WD_IN[2]+' '+ddmm(tue)+' состоялся выезд отряда «Юнармия» в парк «Патриот». Дети с интересом слушали истории поисковиков о найденных медальонах и учились читать военную карту.'}
+    ],
+    posts:[
+      {id:'R02',type:'vol',posted:TODAY,team:'Отряд «Высота»',title:'Раскопки у оврага',date:addDays(TODAY,1),place:'д. Семенково',age:15,joined:0,fund:null,
+        text:'Командир набирает волонтёров на завтра. Сбор в 8:00 у сельсовета, инструмент выдадут на месте.'},
+      {id:'W02',type:'trip',posted:addDays(TODAY,-2),team:'Поисковый отряд (демо)',title:'Разведка у р. Оптуха',date:sat2,place:'р. Оптуха',age:16,total:8,taken:1,
+        text:'Разведка местности перед весенней экспедицией: проверяем места, отмеченные в разделе «Последний бой».'},
+      {id:'F02',type:'fund',posted:addDays(TODAY,-3),team:'Поисковый отряд (демо)',title:'Экипировать отряд: щупы и металлоискатель',goal:40000,got:9000,
+        text:'Отряду не хватает щупов и одного металлоискателя для весенней экспедиции.'},
+      {id:'R01',type:'vol',posted:addDays(TODAY,-4),team:'Отряд «Высота»',title:'Вахта Памяти (Орловская обл.)',date:sat1,place:'Мценский р-н',age:16,joined:2,fund:'F01',
+        text:'Отряд выходит на осеннюю Вахту Памяти. Нужны волонтёры на раскопки: по архивным данным здесь в октябре 1941 года держали рубеж десантники 5-го корпуса.'},
+      {id:'F01',type:'fund',posted:addDays(TODAY,-5),team:'Отряд «Высота»',title:'Бензин на Вахту Памяти',goal:50000,got:15000,
+        text:'Деньги пойдут на бензин для двух машин, которые повезут отряд в Мценский район.'},
+      {id:'W01',type:'trip',posted:addDays(TODAY,-6),team:'Отряд «Высота»',title:'Раскопки у д. Семенково',date:sat1,place:'д. Семенково',age:14,total:12,taken:5,
+        text:'Открытый выезд для новичков и семей. Работаем рядом с опытными поисковиками: учимся работать щупом и читать землю. Подростки до 16 лет — с родителями.'}
+    ],
+    stories:[
+      {id:'ST01',title:'Памятник морякам-тихоокеанцам',place:'с. Крупышино, Кромской район',year:'1941–1943',author:'Краеведческий кружок (демо)',date:'2026-09-12',status:'verified',images:[],
+        story:'Мало кто знает, что возле села Крупышино стоит памятник подвигу моряков Тихоокеанского флота, сражавшихся за Орловскую землю.',source:'Кейс хакатона «Маршруты победы»'},
+      {id:'ST04',title:'«Нормандия — Неман» над Орловщиной',place:'Орловская область',year:'1943',author:'Краеведческий кружок (демо)',date:'2026-09-15',status:'verified',images:[],
+        story:'Летом 1943 года лётчики французского полка «Нормандия — Неман» вели бои в небе над Орловской землёй во время Орловской наступательной операции. Их подвиг здесь помнят немногие.',source:'Кейс хакатона «Маршруты победы»'},
+      {id:'ST02',title:'Землянка у оврага',place:'д. Семенково',year:'1942',author:'Семья Петровых (демо)',date:'2026-09-20',status:'pending',images:[],
+        story:'Местные жители помнят землянку у оврага за деревней, где зимой 1942 года стояли бойцы. Нужна сверка с архивом.',source:'Рассказ местного жителя (демо)'},
+      {id:'ST03',title:'Письмо с фронта',place:'Кромской район',year:'1943',author:'Внук бойца (демо)',date:'2026-09-18',status:'clarify',images:[],
+        story:'В семье хранится письмо прадеда, отправленное летом 1943 года перед наступлением на Орёл.',source:'',
+        note:'Пришлите, пожалуйста, фото письма или номер полевой почты — без источника подтвердить нельзя.'}
+    ],
+    family:[{name:'Петров Иван Сергеевич',years:'1905 — 1943',text:'Пропал без вести летом 1943 года под Орлом. Последнее письмо пришло из-под Мценска.',src:'Семейное письмо (демо)'}]
+  }; }
+  var D=seed();
+  function fresh(){ return {tab:'map',ev:{view:'list',id:null,group:false,errors:{},q:'',type:'all'},joined:{},registered:{},checks:{},groups:[],
+    st:{view:'list',id:null,errors:{},draft:{title:'',place:'',year:'',author:'',text:'',source:'',images:[]}},
+    hub:{open:true,active:null,errors:{},showPw:false},auth:null,role:'family',revive:{photo:null,consent:false,done:false},confirmReset:false}; }
+  var U=fresh();
+
+  /* ===================================================================
+     КАРТА — спутник
+     =================================================================== */
+  var C=[36.066,52.956];
+  function ll(k){ return [C[0]+k[0]/(111.32*Math.cos(C[1]*Math.PI/180)), C[1]+k[1]/110.574]; }
+  var KIND={battle:{icon:'star',c:'var(--map-red)',t:'Места боёв'},zone:{icon:'pin',c:'var(--map-red)',t:'Последний бой'},
+    hq:{icon:'book',c:'var(--sepia)',t:'Музеи'},grave:{icon:'grave',c:'var(--olive)',t:'Памятники и захоронения'}};
+  var PLACES=[
+    {id:'p3',kind:'zone',name:'Овраг у Семенково',sub:'Последний бой · октябрь 1941',km:[0.95,-1.3],status:'Требуется проверка'},
+    {id:'p1',kind:'battle',name:'Рубеж десантников',sub:'Место боя · октябрь 1941',km:[-0.25,-1.25]},
+    {id:'p2',kind:'battle',name:'Бой у переправы',sub:'Место боя · 1942',km:[-1.45,0.1]},
+    {id:'p4',kind:'hq',name:'Музей-диорама',sub:'Орловская наступательная операция',km:[1.4,1.2]},
+    {id:'p5',kind:'grave',name:'Братская могила',sub:'Захоронение · 1943',km:[-3.2,-2.4]}
+  ];
+  PLACES.forEach(function(p){ p.at=ll(p.km); });
+  var ROUTES=[{id:'r1',name:'Тропа у Оки',sub:'Семейный маршрут · 3 км · 4 точки',places:['p2','p1','p3','p4']}];
+  var EVENTS=[
+    {id:'e1',year:1941,date:'3 октября 1941',title:'Орёл оккупирован',text:'Немецкие танковые части вошли в город. Оккупация продлилась почти два года.',places:['p4']},
+    {id:'e2',year:1941,date:'Октябрь 1941',title:'Десант под Орлом',text:'5-й воздушно-десантный корпус задержал врага.',
+      more:'9-я, 10-я и 201-я бригады вели бои на подступах к Орлу и Мценску. Многие десантники погибли, места их захоронений ищут до сих пор.',places:['p1','p3']},
+    {id:'e3',year:1942,date:'1942',title:'Партизанский край',text:'В лесах области действовали партизанские отряды: разрушали мосты и дороги, вели разведку.',places:['p2']},
+    {id:'e4',year:1942,date:'1942',title:'Бои под Болховом',text:'Советские войска вели наступательные бои под Болховом, сковывая силы противника.',places:['p2']},
+    {id:'e5',year:1943,date:'12 июля 1943',title:'Операция «Кутузов»',text:'Началась Орловская наступательная операция — часть Курской битвы.',places:['p4']},
+    {id:'e6',year:1943,date:'5 августа 1943',title:'Освобождение Орла',text:'Город освобождён. В честь Орла и Белгорода в Москве прогремел первый салют.',places:['p5','p4']}
+  ];
+  var PEOPLE=[{name:'Красноармеец Иванов И. И.',sub:'9-я вдбр · место гибели — овраг у Семенково',place:'p3'}];
+  function byId(id){ for(var i=0;i<PLACES.length;i++) if(PLACES[i].id===id) return PLACES[i]; }
+  function evById(id){ for(var i=0;i<EVENTS.length;i++) if(EVENTS[i].id===id) return EVENTS[i]; }
+  function routeById(id){ for(var i=0;i<ROUTES.length;i++) if(ROUTES[i].id===id) return ROUTES[i]; }
+
+  function blobKm(cx,cy,r){ var a,k,pts=[]; for(var i=0;i<=28;i++){ a=i/28*Math.PI*2; k=r*(1+.12*Math.sin(3*a)+.07*Math.cos(5*a)); pts.push([cx+k*Math.cos(a),cy+k*.8*Math.sin(a)]); } return pts; }
+  var SK={
+    field:[[-4.6,0.4],[-1.7,0.1],[-1.4,2.9],[-4.3,3.2],[-4.6,0.4]],
+    forests:[blobKm(2.4,1.5,1.9),blobKm(-3.6,-2.2,1.6)],
+    river:[[-5.5,-3.8],[-3,-2.9],[-1.2,-2.2],[0.2,-1.9],[1.2,-2.1],[2.4,-1.4],[3.4,-0.6],[5.5,-0.1]],
+    roads:[[[-7,1.3],[-2,1.0],[1,0.8],[3.5,0.9],[7,1.3]],[[0.7,5],[0.1,1.5],[-0.6,-1.5],[-1.2,-5]]],
+    houses:[[0.62,-0.42,0.16,0.12],[0.86,-0.36,0.14,0.12],[0.68,-0.58,0.14,0.11]],
+    labels:[{t:'Орёл',c:'city',k:[2.3,2.3]},{t:'Семенково',c:'village',k:[0.75,-0.05]}]
+  };
+  /* Палитра карты по ТЗ: военная картография (олива, хаки, сепия) + детские акценты (оранжевая лента, красный) */
+  var MC={land:'#DCD2AB',residential:'#D2C69C',field:'#D0C396',wood:'#A3A474',hatch:'rgba(62,70,26,0.55)',park:'#B7B584',
+    water:'#8FA59C',waterLine:'#6E8A83',building:'#B8A57A',buildingLine:'#8B6B45',road:'#F1E7C8',roadCasing:'#7A5A33',
+    rail:'#4A3A22',boundary:'#6E4F2A',label:'#33291A',labelHalo:'#E6DCB8',grid:'rgba(110,79,42,0.30)',
+    ribbon:'#EE7F1B',ribbonBlack:'#1E1912',ribbonHalo:'#F1E7C8'};
+
+  var M={event:'e2',route:null,place:'p1',year:1941,tab:'history',more:false,sheet:'half'};
+  var host=$('#map'), viewMap=$('#view-map'), topEl=$('#top'), sheet=$('#sheet');
+  var hooks={onBg:function(){ $('#results').hidden=true; }, onChange:function(){ renderAttrib(); }};
+
+  /* Километровая сетка, как на военной топокарте */
+  function gridLines(){ var L=[]; for(var i=-25;i<=25;i++){ L.push([[i,-25],[i,25]]); L.push([[-25,i],[25,i]]); } return L; }
+
+  /* ---- Адаптер 1: MapLibre + OpenMapTiles, стиль «военная картография» ---- */
+  function createGL(){
+    if(!window.maplibregl) return null;
+    var lbl=['coalesce',['get','name:ru'],['get','name']];
+    var style={version:8,name:'tropa-military',glyphs:'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
+      sources:{omt:{type:'vector',url:'https://tiles.openfreemap.org/planet'}},
+      layers:[
+        {id:'background',type:'background',paint:{'background-color':MC.land}},
+        {id:'residential',type:'fill',source:'omt','source-layer':'landuse',filter:['in',['get','class'],['literal',['residential','suburb','neighbourhood']]],paint:{'fill-color':MC.residential,'fill-opacity':.9}},
+        {id:'farmland',type:'fill',source:'omt','source-layer':'landcover',filter:['in',['get','class'],['literal',['farmland','grass']]],paint:{'fill-color':MC.field,'fill-opacity':.6}},
+        {id:'wood',type:'fill',source:'omt','source-layer':'landcover',filter:['in',['get','class'],['literal',['wood','forest']]],paint:{'fill-color':MC.wood,'fill-opacity':.9}},
+        {id:'park',type:'fill',source:'omt','source-layer':'park',paint:{'fill-color':MC.park,'fill-opacity':.8}},
+        {id:'water',type:'fill',source:'omt','source-layer':'water',paint:{'fill-color':MC.water}},
+        {id:'waterway',type:'line',source:'omt','source-layer':'waterway',paint:{'line-color':MC.waterLine,'line-width':['interpolate',['linear'],['zoom'],8,.6,14,2.4]}},
+        {id:'building',type:'fill',source:'omt','source-layer':'building',minzoom:13,paint:{'fill-color':MC.building,'fill-outline-color':MC.buildingLine}},
+        {id:'path',type:'line',source:'omt','source-layer':'transportation',filter:['in',['get','class'],['literal',['path','track']]],minzoom:13,
+          paint:{'line-color':MC.roadCasing,'line-width':1,'line-dasharray':[2,2]}},
+        {id:'road-casing',type:'line',source:'omt','source-layer':'transportation',filter:['in',['get','class'],['literal',['motorway','trunk','primary','secondary','tertiary','minor']]],
+          layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':MC.roadCasing,'line-width':['interpolate',['linear'],['zoom'],8,1.2,12,3,16,11]}},
+        {id:'road',type:'line',source:'omt','source-layer':'transportation',filter:['in',['get','class'],['literal',['motorway','trunk','primary','secondary','tertiary','minor']]],
+          layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':MC.road,'line-width':['interpolate',['linear'],['zoom'],8,.4,12,1.6,16,8]}},
+        {id:'rail',type:'line',source:'omt','source-layer':'transportation',filter:['==',['get','class'],'rail'],paint:{'line-color':MC.rail,'line-width':1.5,'line-dasharray':[3,2]}},
+        {id:'boundary',type:'line',source:'omt','source-layer':'boundary',filter:['<=',['get','admin_level'],4],paint:{'line-color':MC.boundary,'line-width':1.5,'line-dasharray':[4,2,1,2]}},
+        {id:'place-city',type:'symbol',source:'omt','source-layer':'place',filter:['in',['get','class'],['literal',['city','town']]],
+          layout:{'text-field':lbl,'text-font':['Noto Sans Bold'],'text-transform':'uppercase','text-letter-spacing':.12,'text-size':['match',['get','class'],'city',15,13]},
+          paint:{'text-color':MC.label,'text-halo-color':MC.labelHalo,'text-halo-width':1.6}},
+        {id:'place-village',type:'symbol',source:'omt','source-layer':'place',filter:['in',['get','class'],['literal',['village','hamlet','suburb']]],
+          layout:{'text-field':lbl,'text-font':['Noto Sans Regular'],'text-size':11},
+          paint:{'text-color':MC.label,'text-halo-color':MC.labelHalo,'text-halo-width':1.4}}
+      ]};
+    var map;
+    try{ map=new maplibregl.Map({container:host,style:style,center:C,zoom:12.6,attributionControl:false,dragRotate:false,pitchWithRotate:false,touchPitch:false,maxZoom:18,minZoom:6}); }
+    catch(e){ console.warn('Карта MapLibre не запустилась:',e&&e.message); host.innerHTML=''; return null; }
+    var api={kind:'gl',ready:false,sketch:false};
+    try{ map.touchZoomRotate.disableRotation(); map.keyboard.disableRotation(); }catch(_){}
+    var veil=document.createElement('div'); veil.className='paper-veil'; map.getCanvasContainer().insertBefore(veil,map.getCanvas().nextSibling);
+    function hatch(){ var s=40,c=document.createElement('canvas'); c.width=c.height=s; var g=c.getContext('2d');
+      g.strokeStyle=MC.hatch; g.lineWidth=2.4; g.lineCap='square'; g.beginPath();
+      for(var i=-s;i<=2*s;i+=20){ g.moveTo(i,0); g.lineTo(i-s,s); } g.stroke(); return g.getImageData(0,0,s,s); }
+    function ensureHatch(){ if(!map.hasImage('hatch')) map.addImage('hatch',hatch(),{pixelRatio:2}); }
+    map.on('styleimagemissing',function(e){ if(e.id==='hatch') ensureHatch(); });
+    function marker(el,at){ new maplibregl.Marker({element:el,anchor:'center'}).setLngLat(at).addTo(map); }
+
+    var sketchDone=false;
+    function addSketch(){
+      if(sketchDone||!api.ready) return; sketchDone=true;
+      var Fe=function(k,g){ return {type:'Feature',properties:{k:k},geometry:g}; };
+      var feats=[Fe('field',{type:'Polygon',coordinates:[SK.field.map(ll)]})];
+      SK.forests.forEach(function(f){ feats.push(Fe('forest',{type:'Polygon',coordinates:[f.map(ll)]})); });
+      feats.push(Fe('river',{type:'LineString',coordinates:SK.river.map(ll)}));
+      SK.roads.forEach(function(r){ feats.push(Fe('road',{type:'LineString',coordinates:r.map(ll)})); });
+      SK.houses.forEach(function(h){ feats.push(Fe('house',{type:'Polygon',coordinates:[[[h[0],h[1]],[h[0]+h[2],h[1]],[h[0]+h[2],h[1]+h[3]],[h[0],h[1]+h[3]],[h[0],h[1]]].map(ll)]})); });
+      map.addSource('sketch',{type:'geojson',data:{type:'FeatureCollection',features:feats}});
+      var k=function(v){ return ['==',['get','k'],v]; }, b='grid';
+      map.addLayer({id:'sk-field',type:'fill',source:'sketch',filter:k('field'),paint:{'fill-color':MC.field}},b);
+      map.addLayer({id:'sk-forest',type:'fill',source:'sketch',filter:k('forest'),paint:{'fill-color':MC.wood,'fill-opacity':.9}},b);
+      map.addLayer({id:'sk-forest-h',type:'fill',source:'sketch',filter:k('forest'),paint:{'fill-pattern':'hatch'}},b);
+      map.addLayer({id:'sk-river',type:'line',source:'sketch',filter:k('river'),layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':MC.water,'line-width':['interpolate',['linear'],['zoom'],10,5,13,16,15,34]}},b);
+      map.addLayer({id:'sk-road-c',type:'line',source:'sketch',filter:k('road'),layout:{'line-cap':'round'},paint:{'line-color':MC.roadCasing,'line-width':['interpolate',['linear'],['zoom'],10,3,13,8,15,15]}},b);
+      map.addLayer({id:'sk-road',type:'line',source:'sketch',filter:k('road'),layout:{'line-cap':'round'},paint:{'line-color':MC.road,'line-width':['interpolate',['linear'],['zoom'],10,1.5,13,5,15,10]}},b);
+      map.addLayer({id:'sk-house',type:'fill',source:'sketch',filter:k('house'),paint:{'fill-color':MC.building,'fill-outline-color':MC.buildingLine}},b);
+      SK.labels.forEach(function(l){ var el=document.createElement('div'); el.className='map-label '+l.c; el.textContent=l.t; marker(el,ll(l.k)); });
+      setTimeout(function(){ try{ if(map.querySourceFeatures('sketch').length===0) hooks.onFatal('схема не отрисовалась'); }catch(_){ hooks.onFatal('схема не отрисовалась'); } },2500);
+    }
+    function setup(){
+      ensureHatch();
+      map.addLayer({id:'wood-hatch',type:'fill',source:'omt','source-layer':'landcover',filter:['in',['get','class'],['literal',['wood','forest']]],paint:{'fill-pattern':'hatch'}},'park');
+      map.addSource('grid',{type:'geojson',data:{type:'FeatureCollection',features:gridLines().map(function(l){ return {type:'Feature',properties:{},geometry:{type:'LineString',coordinates:l.map(ll)}}; })}});
+      map.addLayer({id:'grid',type:'line',source:'grid',minzoom:10.5,paint:{'line-color':MC.grid,'line-width':.8}},'place-city');
+      map.addSource('route',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+      /* Исторический маршрут — георгиевская лента: чёрный—оранжевый—чёрный—оранжевый—чёрный */
+      var L={'line-cap':'round','line-join':'round'};
+      map.addLayer({id:'route-halo',type:'line',source:'route',layout:L,paint:{'line-color':MC.ribbonHalo,'line-width':15,'line-opacity':.9}});
+      map.addLayer({id:'route-black',type:'line',source:'route',layout:L,paint:{'line-color':MC.ribbonBlack,'line-width':11}});
+      map.addLayer({id:'route-orange',type:'line',source:'route',layout:L,paint:{'line-color':MC.ribbon,'line-width':7}});
+      map.addLayer({id:'route-center',type:'line',source:'route',layout:L,paint:{'line-color':MC.ribbonBlack,'line-width':1.8}});
+      if(api.sketch) addSketch();
+      api.setRoute(M.route);
+    }
+    map.on('style.load',function(){ api.ready=true; try{ setup(); }catch(e){ console.warn('Слои карты:',e&&e.message); } hooks.onChange(); });
+
+    function fail(){ if(api.sketch) return; api.sketch=true; addSketch(); hooks.onChange(); }
+    map.on('error',function(e){
+      var m=String((e&&e.error&&(e.error.message||e.error.url))||'');
+      if((e&&e.sourceId==='omt')||/openfreemap|Failed to fetch|NetworkError|AJAXError|Load failed/i.test(m)) fail();
+    });
+    setTimeout(function(){ if(!api.ready||api.sketch) return;
+      try{ if(map.querySourceFeatures('omt',{sourceLayer:'transportation'}).length===0&&map.querySourceFeatures('omt',{sourceLayer:'water'}).length===0) fail(); }catch(_){ fail(); } },7000);
+    map.on('click',function(){ hooks.onBg(); });
+
+    api.addMarker=function(el,p){ marker(el,p.at); };
+    api.fit=function(bb,pad){ try{ map.fitBounds([ll([bb[0],bb[1]]),ll([bb[2],bb[3]])],{padding:pad,maxZoom:15,animate:false}); }catch(e){ console.warn(e&&e.message); } };
+    api.focus=function(p,pad){ try{ map.jumpTo({center:p.at,zoom:Math.max(map.getZoom(),14),padding:pad}); }catch(_){} };
+    api.setRoute=function(id){ if(!api.ready) return; var r=id&&routeById(id);
+      try{ map.getSource('route').setData({type:'FeatureCollection',features:r?[{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:r.places.map(function(x){ return byId(x).at; })}}]:[]}); }catch(_){} };
+    api.resize=function(){ try{ map.resize(); }catch(_){} };
+    api.destroy=function(){ try{ map.remove(); }catch(_){} host.innerHTML=''; host.className=''; };
+    return api;
+  }
+
+  /* ---- Адаптер 2: статичная схема (если MapLibre недоступна) ---- */
+  function createStatic(){
+    host.classList.add('static');
+    host.innerHTML='<svg class="smap" aria-hidden="true"></svg><div class="paper-veil"></div>';
+    var sv=host.firstChild, items=[], v={cx:-0.9,cy:-0.6,s:90}, route=null, api={kind:'static',ready:true,sketch:true};
+    function W(){ return host.clientWidth||viewMap.clientWidth; } function H(){ return host.clientHeight||viewMap.clientHeight; }
+    function pr(k){ return [W()/2+(k[0]-v.cx)*v.s, H()/2-(k[1]-v.cy)*v.s]; }
+    function d(pts,close){ return pts.map(function(k,i){ var p=pr(k); return (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1); }).join('')+(close?'Z':''); }
+    function draw(){
+      var w=W(),h=H(),s=v.s;
+      var o='<defs><pattern id="sh" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="10" stroke="'+MC.hatch+'" stroke-width="2.4"/></pattern></defs>';
+      o+='<rect width="'+w+'" height="'+h+'" fill="'+MC.land+'"/><path d="'+d(SK.field,1)+'" fill="'+MC.field+'"/>';
+      SK.forests.forEach(function(f){ o+='<path d="'+d(f,1)+'" fill="'+MC.wood+'"/><path d="'+d(f,1)+'" fill="url(#sh)"/>'; });
+      o+='<path d="'+d(SK.river)+'" fill="none" stroke="'+MC.water+'" stroke-width="'+Math.max(5,s*.14).toFixed(1)+'" stroke-linecap="round" stroke-linejoin="round"/>';
+      SK.roads.forEach(function(r){ o+='<path d="'+d(r)+'" fill="none" stroke="'+MC.roadCasing+'" stroke-width="'+Math.max(4,s*.08).toFixed(1)+'" stroke-linecap="round"/><path d="'+d(r)+'" fill="none" stroke="'+MC.road+'" stroke-width="'+Math.max(2,s*.05).toFixed(1)+'" stroke-linecap="round"/>'; });
+      SK.houses.forEach(function(q){ var a=pr([q[0],q[1]+q[3]]); o+='<rect x="'+a[0].toFixed(1)+'" y="'+a[1].toFixed(1)+'" width="'+(q[2]*s).toFixed(1)+'" height="'+(q[3]*s).toFixed(1)+'" fill="'+MC.building+'" stroke="'+MC.buildingLine+'" stroke-width=".8"/>'; });
+      gridLines().forEach(function(l){ o+='<path d="'+d(l)+'" fill="none" stroke="'+MC.grid+'" stroke-width=".8"/>'; });
+      if(route){ var pts=route.places.map(function(x){ return byId(x).km; }), dd=d(pts), R=' fill="none" stroke-linecap="round" stroke-linejoin="round"';
+        o+='<path d="'+dd+'"'+R+' stroke="'+MC.ribbonHalo+'" stroke-width="15" opacity=".9"/><path d="'+dd+'"'+R+' stroke="'+MC.ribbonBlack+'" stroke-width="11"/>'+
+          '<path d="'+dd+'"'+R+' stroke="'+MC.ribbon+'" stroke-width="7"/><path d="'+dd+'"'+R+' stroke="'+MC.ribbonBlack+'" stroke-width="1.8"/>'; }
+      sv.setAttribute('width',w); sv.setAttribute('height',h); sv.innerHTML=o;
+      items.forEach(place);
+    }
+    function place(it){ var p=pr(it.k); it.el.style.left=p[0]+'px'; it.el.style.top=p[1]+'px'; }
+    function add(el,k){ el.style.position='absolute'; el.style.transform='translate(-50%,-50%)'; host.appendChild(el); var it={el:el,k:k}; items.push(it); place(it); }
+    SK.labels.forEach(function(l){ var el=document.createElement('div'); el.className='map-label '+l.c; el.textContent=l.t; add(el,l.k); });
+    host.addEventListener('click',function(e){ if(e.target===sv||e.target.closest('.smap')||e.target.classList.contains('paper-veil')) hooks.onBg(); });
+    api.addMarker=function(el,p){ add(el,p.km); };
+    api.fit=function(bb,pad){ var w=W(),h=H(),bw=Math.max(bb[2]-bb[0],.6),bh=Math.max(bb[3]-bb[1],.6);
+      var aw=Math.max(60,w-pad.left-pad.right), ah=Math.max(60,h-pad.top-pad.bottom);
+      v.s=Math.max(30,Math.min(260,Math.min(aw/bw,ah/bh)));
+      v.cx=(bb[0]+bb[2])/2-((pad.left+aw/2)-w/2)/v.s; v.cy=(bb[1]+bb[3])/2+((pad.top+ah/2)-h/2)/v.s; draw(); };
+    api.focus=function(p,pad){ var w=W(),h=H(),aw=w-pad.left-pad.right,ah=h-pad.top-pad.bottom;
+      v.cx=p.km[0]-((pad.left+aw/2)-w/2)/v.s; v.cy=p.km[1]+((pad.top+ah/2)-h/2)/v.s; draw(); };
+    api.setRoute=function(id){ route=id?routeById(id):null; draw(); };
+    api.resize=draw;
+    api.destroy=function(){ host.innerHTML=''; host.className=''; };
+    draw();
+    return api;
+  }
+
+  /* ---- Метки ---- */
+  var markers={}, mapApi=null;
+  function makeMarker(p){
+    var el;
+    if(p.kind==='zone'){
+      el=document.createElement('div'); el.className='zone';
+      el.innerHTML='<span class="ring"></span><button class="dot" type="button" aria-label="'+esc(p.name)+'"></button>';
+      el.querySelector('.dot').addEventListener('click',function(e){ e.stopPropagation(); selectPlace(p.id,'map'); });
+    } else {
+      el=document.createElement('button'); el.type='button'; el.className='mk mk-'+p.kind; el.setAttribute('aria-label',p.name);
+      el.innerHTML=svg(KIND[p.kind].icon);
+      el.addEventListener('click',function(e){ e.stopPropagation(); selectPlace(p.id,'map'); });
+    }
+    return el;
+  }
+  function mountMap(api){
+    mapApi=api;
+    PLACES.forEach(function(p){ markers[p.id]=makeMarker(p); mapApi.addMarker(markers[p.id],p); });
+    mapApi.setRoute(M.route); renderMarkers(); fitAll(); renderAttrib();
+  }
+  var gl=null;
+  function toStatic(why){ if(!gl||mapApi!==gl) return; console.warn('Карта MapLibre недоступна ('+why+') — показываю статичную схему'); gl.destroy(); markers={}; mountMap(createStatic()); }
+  hooks.onFatal=toStatic;
+  document.addEventListener('securitypolicyviolation',function(e){
+    var d=e.effectiveDirective||e.violatedDirective||'';
+    if(d.indexOf('worker-src')===0||(d.indexOf('script-src')===0&&/^blob/.test(e.blockedURI||''))) setTimeout(function(){ toStatic('воркеры запрещены'); },0);
+  });
+  gl=createGL();
+  mountMap(gl||createStatic());
+  if(gl) setTimeout(function(){ if(mapApi===gl&&!gl.ready) toStatic('нет ответа'); },5000);
+
+  function focusIds(){ if(M.route) return routeById(M.route).places; if(M.event) return evById(M.event).places; return null; }
+  function renderMarkers(){
+    var ids=focusIds();
+    PLACES.forEach(function(p){ var el=markers[p.id]; if(!el) return; var inF=ids?ids.indexOf(p.id)>=0:true;
+      el.classList.toggle('is-muted',!inF); el.classList.toggle('is-on',!!ids&&inF); el.classList.toggle('is-sel',M.place===p.id); });
+  }
+
+  /* ---- Камера без анимаций ---- */
+  function wide(){ return matchMedia('(min-width:1024px)').matches; }
+  function pad(){
+    var h=viewMap.clientHeight;
+    if(wide()) return {top:24,bottom:24,left:sheet.offsetLeft+sheet.offsetWidth+30,right:40};
+    var t=topEl.offsetTop+topEl.offsetHeight+12, b=sheet.offsetHeight+14;
+    if(h-t-b<90) b=Math.max(20,h-t-90);
+    return {top:t,bottom:b,left:28,right:28};
+  }
+  function bbox(ids){ var b=[1e9,1e9,-1e9,-1e9]; ids.forEach(function(id){ var k=byId(id).km; b[0]=Math.min(b[0],k[0]); b[1]=Math.min(b[1],k[1]); b[2]=Math.max(b[2],k[0]); b[3]=Math.max(b[3],k[1]); });
+    return [b[0]-.25,b[1]-.25,b[2]+.25,b[3]+.25]; }
+  function fit(ids){ if(mapApi) mapApi.fit(bbox(ids),pad()); }
+  function fitAll(){ fit(PLACES.map(function(p){ return p.id; })); }
+
+  /* ---- Выдвижная панель (телефон) ---- */
+  function heights(){ var vh=viewMap.clientHeight, t=topEl.offsetTop+topEl.offsetHeight; return {peek:86,half:Math.round(vh*.44),full:Math.max(240,vh-t-8)}; }
+  function setSheetH(h){ document.documentElement.style.setProperty('--sheet-h',h+'px'); }
+  function setSheet(s){ M.sheet=s; if(wide()){ setSheetH(0); return; } setSheetH(heights()[s]); }
+  var grab=$('#grab'), drag=null;
+  grab.addEventListener('pointerdown',function(e){ drag={y:e.clientY,h:sheet.offsetHeight,moved:false}; try{ grab.setPointerCapture(e.pointerId); }catch(_){} });
+  grab.addEventListener('pointermove',function(e){ if(!drag) return; var dy=e.clientY-drag.y; if(Math.abs(dy)>4) drag.moved=true; var H=heights(); setSheetH(Math.max(H.peek,Math.min(H.full,drag.h-dy))); });
+  function endDrag(){ if(!drag) return; var H=heights(), h=sheet.offsetHeight;
+    if(!drag.moved) setSheet(M.sheet==='half'?'full':M.sheet==='full'?'peek':'half');
+    else { var best='peek'; ['peek','half','full'].forEach(function(k){ if(Math.abs(H[k]-h)<Math.abs(H[best]-h)) best=k; }); setSheet(best); }
+    drag=null; }
+  grab.addEventListener('pointerup',endDrag); grab.addEventListener('pointercancel',endDrag);
+  grab.addEventListener('keydown',function(e){ if(e.key==='ArrowUp'){ e.preventDefault(); setSheet(M.sheet==='peek'?'half':'full'); } if(e.key==='ArrowDown'){ e.preventDefault(); setSheet(M.sheet==='full'?'half':'peek'); } });
+
+  function setMapTab(t){ M.tab=t; $('#tab-places').setAttribute('aria-selected',String(t==='places')); $('#tab-history').setAttribute('aria-selected',String(t==='history'));
+    $('#panel-places').hidden=t!=='places'; $('#panel-history').hidden=t!=='history'; }
+  $('#tab-places').addEventListener('click',function(){ setMapTab('places'); });
+  $('#tab-history').addEventListener('click',function(){ setMapTab('history'); });
+
+  /* ---- История края ---- */
+  var YEARS=[1941,1942,1943,'all'];
+  function renderChips(){ $('#chips').innerHTML=YEARS.map(function(y){ return '<button data-year="'+y+'" aria-pressed="'+(M.year===y)+'">'+(y==='all'?'Все':y)+'</button>'; }).join(''); }
+  $('#chips').addEventListener('click',function(e){ var b=e.target.closest('[data-year]'); if(!b) return; var y=b.getAttribute('data-year'); M.year=y==='all'?'all':+y;
+    var ev=M.event&&evById(M.event); if(ev&&M.year!=='all'&&ev.year!==M.year){ M.event=null; M.more=false; } renderMap(); });
+  function renderTimeline(){
+    var list=EVENTS.filter(function(e){ return M.year==='all'||e.year===M.year; });
+    if(!list.length){ $('#timeline').innerHTML='<li class="empty">За этот год событий пока нет.</li>'; return; }
+    $('#timeline').innerHTML=list.map(function(e){
+      var n=e.places.length, on=M.event===e.id, cnt=' На карте — '+n+' '+plural(n,'место','места','мест')+' события.';
+      if(!on) return '<li class="ev"><button class="ev-card" data-ev="'+e.id+'"><time>'+esc(e.date)+'</time><h3>'+esc(e.title)+'</h3></button></li>';
+      return '<li class="ev is-active"><div class="ev-card"><time>'+esc(e.date)+'</time><h3>'+esc(e.title)+'</h3><p class="ev-text">'+esc(e.text+cnt)+'</p>'+
+        (M.more&&e.more?'<p class="ev-more">'+esc(e.more)+'</p>':'')+
+        '<div class="ev-actions"><button class="btn btn-main btn-sm" data-act="go">Пройти по местам</button>'+
+        (e.more?'<button class="btn btn-sm" data-act="more" aria-expanded="'+M.more+'">'+(M.more?'Скрыть':'Подробнее')+'</button>':'')+'</div></div></li>';
+    }).join('');
+  }
+  $('#timeline').addEventListener('click',function(e){
+    var c=e.target.closest('[data-ev]'), a=e.target.closest('[data-act]');
+    if(c){ var ev=evById(c.getAttribute('data-ev')); M.event=ev.id; M.route=null; M.place=ev.places[0]; M.more=false; if(mapApi) mapApi.setRoute(null); renderMap(); fit(ev.places); return; }
+    if(a){ var cur=evById(M.event); if(!cur) return;
+      if(a.getAttribute('data-act')==='more'){ M.more=!M.more; renderTimeline(); return; }
+      M.place=cur.places[0]; setSheet('peek'); renderMap(); fit(cur.places); }
+  });
+
+  /* ---- Места и маршруты ---- */
+  function renderPlaces(){
+    var o='<li class="grp kick">Исторические маршруты</li>'+ROUTES.map(function(r){ var sel=M.route===r.id;
+      return '<li><button class="pl'+(sel?' is-route-on':'')+'" data-route="'+r.id+'" aria-pressed="'+sel+'"><span class="ic" style="--c:var(--map-orange)">'+svg('route')+'</span><span><b>'+esc(r.name)+'</b><small>'+esc(r.sub)+'</small>'+
+        (sel?'<span class="tag tag-act">'+svg('route')+'На карте · нажмите, чтобы скрыть</span>':'')+'</span></button></li>'; }).join('');
+    o+='<li class="grp kick">Места</li>'+PLACES.map(function(p){ var k=KIND[p.kind], sel=M.place===p.id;
+      return '<li><button class="pl'+(sel?' is-sel':'')+'" data-pl="'+p.id+'" aria-current="'+sel+'"><span class="ic" style="--c:'+k.c+'">'+svg(k.icon)+'</span>'+
+        '<span><b>'+esc(p.name)+'</b><small>'+esc(p.sub)+'</small>'+(p.status?'<span class="tag tag-act">'+svg('alert')+esc(p.status)+'</span>':'')+'</span></button></li>'; }).join('');
+    $('#places').innerHTML=o;
+  }
+  $('#places').addEventListener('click',function(e){ var b=e.target.closest('[data-pl]'); if(b){ selectPlace(b.getAttribute('data-pl'),'list'); return; }
+    var r=e.target.closest('[data-route]'); if(r) selectRoute(r.getAttribute('data-route')); });
+  function selectRoute(id){ M.route=M.route===id?null:id; M.event=null; M.more=false; var r=M.route&&routeById(M.route); if(r) M.place=r.places[0];
+    if(mapApi) mapApi.setRoute(M.route); setMapTab('places'); renderMap(); if(r) fit(r.places); }
+  function selectPlace(id,from){
+    M.place=id;
+    var r=M.route&&routeById(M.route);
+    if(r&&r.places.indexOf(id)<0){ M.route=null; if(mapApi) mapApi.setRoute(null); }
+    if(from==='map'){ setMapTab('places'); if(M.sheet==='peek') setSheet('half'); }
+    renderMap();
+    if(from!=='map'&&mapApi) mapApi.focus(byId(id),pad());
+    var it=$('[data-pl="'+id+'"]'); if(it&&M.tab==='places'&&it.scrollIntoView) it.scrollIntoView({block:'nearest'});
+  }
+  function renderMap(){ renderChips(); renderTimeline(); renderPlaces(); renderMarkers(); }
+
+  /* ---- Поиск по карте ---- */
+  var q=$('#q'), res=$('#results'), hits=[];
+  function norm(s){ return String(s).toLowerCase().replace(/ё/g,'е'); }
+  function doSearch(){
+    var t=norm(q.value.trim()); if(!t){ res.hidden=true; hits=[]; return; } hits=[];
+    ROUTES.forEach(function(r){ if(norm(r.name+' '+r.sub+' маршрут').indexOf(t)>=0) hits.push({type:'route',id:r.id,title:r.name,sub:r.sub,icon:'route',c:'var(--accent)'}); });
+    PLACES.forEach(function(p){ if(norm(p.name+' '+p.sub+' '+KIND[p.kind].t).indexOf(t)>=0) hits.push({type:'place',id:p.id,title:p.name,sub:p.sub,icon:KIND[p.kind].icon,c:KIND[p.kind].c}); });
+    PEOPLE.forEach(function(h){ if(norm(h.name+' '+h.sub).indexOf(t)>=0) hits.push({type:'person',id:h.place,title:h.name,sub:h.sub,icon:'user',c:'var(--muted)'}); });
+    EVENTS.forEach(function(e){ if(norm(e.title+' '+e.date+' '+e.text).indexOf(t)>=0) hits.push({type:'event',id:e.id,title:e.title,sub:e.date,icon:'calendar',c:'var(--sepia)'}); });
+    res.innerHTML=hits.length?hits.slice(0,8).map(function(h,i){ return '<button class="res'+(i===0?' is-hl':'')+'" role="option" data-i="'+i+'"><span class="ic" style="--c:'+h.c+'">'+svg(h.icon)+'</span><span><b>'+esc(h.title)+'</b><small>'+esc(h.sub)+'</small></span></button>'; }).join('')
+      :'<div class="res-empty">Ничего не нашлось. Попробуйте «музей», «маршрут», название деревни или фамилию.</div>';
+    res.hidden=false;
+  }
+  function pick(h){ res.hidden=true; q.value=h.title; q.blur();
+    if(h.type==='event'){ var ev=evById(h.id); M.year=ev.year; M.event=ev.id; M.route=null; M.place=ev.places[0]; M.more=false; if(mapApi) mapApi.setRoute(null); setMapTab('history'); if(M.sheet==='peek') setSheet('half'); renderMap(); fit(ev.places); }
+    else if(h.type==='route'){ M.route=null; selectRoute(h.id); }
+    else selectPlace(h.id,'search'); }
+  q.addEventListener('input',doSearch);
+  q.addEventListener('focus',function(){ if(q.value) doSearch(); });
+  q.addEventListener('keydown',function(e){ if(e.key==='Enter'&&hits.length){ e.preventDefault(); pick(hits[0]); } if(e.key==='Escape'){ q.value=''; res.hidden=true; } });
+  res.addEventListener('click',function(e){ var b=e.target.closest('.res'); if(b) pick(hits[+b.getAttribute('data-i')]); });
+
+  function renderAttrib(){
+    var base='<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> © <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a>, данные © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">участники OpenStreetMap</a>';
+    var o;
+    if(mapApi&&mapApi.kind==='static') o='<div class="warn">Картографическая библиотека недоступна — показана схема района</div>';
+    else if(mapApi&&mapApi.sketch) o='<div class="warn">Тайлы недоступны — показана схема района</div>'+base;
+    else o=base;
+    $('#attrib').innerHTML=o;
+  }
+
+  /* ===================================================================
+     МЕРОПРИЯТИЯ — лента по дате публикации
+     =================================================================== */
+  var TYPE={vol:{t:'Набор волонтёров',c:'tag-act'},trip:{t:'Выезд',c:'tag-done'},fund:{t:'Сбор средств',c:'tag-wait'}};
+  function post(id){ for(var i=0;i<D.posts.length;i++) if(D.posts[i].id===id) return D.posts[i]; }
+  function ageTag(a){ return '<span class="age" title="Минимальный возраст волонтёров">'+a+'+</span>'; }
+  function fld(id,label,type,err,ph,val,attrs){
+    return '<label class="fld" for="'+id+'"><span>'+esc(label)+'</span><input id="'+id+'" type="'+type+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+
+      (val!=null?' value="'+esc(val)+'"':'')+(attrs||'')+(err?' aria-invalid="true" aria-describedby="'+id+'-err"':'')+'>'+(err?'<span class="err" id="'+id+'-err">'+esc(err)+'</span>':'')+'</label>';
+  }
+  function mast(){ return '<header class="mast"><div class="mast-meta"><span>Орловская область</span><span>'+esc(fmtLong(TODAY))+'</span><span>Поисковые отряды</span></div>'+
+    '<h1>Мероприятия</h1><p>Новости поисковых отрядов: выезды, набор волонтёров и сборы</p></header>'; }
+  var EV_TYPES=[['all','Все'],['vol','Волонтёры'],['trip','Выезды'],['fund','Сборы']];
+  function renderEvents(){
+    var el=$('#events'), s=U.ev;
+    if(s.view==='detail'){ el.innerHTML=mast()+detail(); return; }
+    el.innerHTML=mast()+'<div class="filters"><label class="search-box"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>'+
+      '<input id="ev-q" type="search" placeholder="Поиск: отряд, место, выезд..." value="'+esc(s.q)+'" aria-label="Поиск по мероприятиям"></label>'+
+      '<div class="seg" role="group" aria-label="Тип мероприятия" id="ev-types"></div></div><ol class="feed" id="feed" aria-live="polite"></ol><p style="margin-top:8px"><span class="demo">Демо-данные</span></p>';
+    renderFeed();
+  }
+  function renderFeed(){
+    var s=U.ev, qn=norm(s.q.trim());
+    $('#ev-types').innerHTML=EV_TYPES.map(function(x){ return '<button data-type="'+x[0]+'" aria-pressed="'+(s.type===x[0])+'">'+x[1]+'</button>'; }).join('');
+    var list=D.posts.slice().sort(function(a,b){ return a.posted<b.posted?1:a.posted>b.posted?-1:0; }).filter(function(p){
+      return (s.type==='all'||p.type===s.type)&&(!qn||norm(p.title+' '+(p.place||'')+' '+p.team+' '+p.text+' '+TYPE[p.type].t).indexOf(qn)>=0); });
+    var o='<li class="week" aria-label="Новости недели"><div class="week-hd"><h2>Новости недели</h2><span class="kick">'+esc(fmtShort(D.week[0].date))+' — '+esc(fmtShort(TODAY))+'</span></div>'+
+      D.week.map(function(w){ return '<div class="week-item"><div class="kick">'+esc(F({weekday:'long'},w.date))+', '+ddmm(w.date)+' · '+esc(w.team)+' · '+esc(w.kind)+'</div><p>'+esc(w.text)+'</p></div>'; }).join('')+'</li>';
+    o+=list.map(function(p){ var T=TYPE[p.type], line='';
+      if(p.type==='vol') line=esc(fmtDay(p.date))+' · '+esc(p.place)+' · Нужны волонтёры '+ageTag(p.age)+(U.joined[p.id]?' · <b style="display:inline;color:var(--done)">вы в команде</b>':'');
+      if(p.type==='trip') line=esc(fmtDay(p.date))+' · '+esc(p.place)+' · Волонтёры '+ageTag(p.age)+' · свободно '+(p.total-p.taken)+' из '+p.total+(U.registered[p.id]?' · <b style="display:inline;color:var(--done)">вы записаны</b>':'');
+      var bar=''; if(p.type==='fund'){ var pct=Math.min(100,Math.round(p.got/p.goal*100)); bar='<span class="bar" role="img" aria-label="Собрано '+pct+'%"><i style="width:'+pct+'%"></i></span>'; line='Собрано '+esc(rub(p.got))+' из '+esc(rub(p.goal)); }
+      return '<li><button class="post" data-open="'+p.id+'"><span class="post-top"><span class="kick">'+esc(fmtShort(p.posted))+' · '+esc(p.team)+'</span><span class="tag '+T.c+'">'+T.t+'</span></span>'+
+        '<b>'+esc(p.title)+'</b>'+bar+'<span class="ln">'+line+'</span><span class="more">Подробнее →</span></button></li>'; }).join('');
+    if(!list.length) o+='<li class="empty" style="background:var(--panel);border:1px solid var(--rule)">Ничего не нашлось. <button class="link" data-act="clear">Сбросить поиск и фильтр</button></li>';
+    $('#feed').innerHTML=o;
+  }
+  function detail(){
+    var s=U.ev, p=post(s.id), T=TYPE[p.type], o='<div class="detail"><button class="back" data-act="back">'+svg('left')+'К мероприятиям</button>'+
+      '<div class="post-top"><span class="kick">Опубликовано '+esc(fmtShort(p.posted))+' · '+esc(p.team)+'</span><span class="tag '+T.c+'">'+T.t+'</span></div><h2>'+esc(p.title)+'</h2>';
+    if(p.type==='vol'){
+      var j=U.joined[p.id], f=p.fund&&post(p.fund);
+      o+='<div class="meta"><div><span>Когда</span><b>'+esc(fmtDay(p.date))+'</b></div><div><span>Где</span><b>'+esc(p.place)+'</b></div>'+
+        '<div><span>Волонтёры</span><b>с '+p.age+' лет</b></div><div><span>Записались</span><b>'+p.joined+'</b></div></div><p>'+esc(p.text)+'</p>'+
+        (j?'<div class="note-ok">'+svg('check')+'<span>Вы в команде. Командир свяжется с вами накануне выезда.</span></div>':'')+
+        '<div class="actions">'+(j?'':'<button class="btn btn-main" data-act="join" data-id="'+p.id+'">Стать волонтёром</button>')+(f?'<button class="btn" data-act="donate" data-id="'+f.id+'">Пожертвовать на бензин</button>':'')+'</div>';
+    }
+    if(p.type==='trip'){
+      var reg=U.registered[p.id], ch=U.checks[p.id]||{}, done=CHECK.filter(function(c){ return ch[c.id]; }).length;
+      o+='<div class="meta"><div><span>Когда</span><b>'+esc(fmtDay(p.date))+'</b></div><div><span>Где</span><b>'+esc(p.place)+'</b></div>'+
+        '<div><span>Волонтёры</span><b>с '+p.age+' лет</b></div><div><span>Свободно</span><b>'+(p.total-p.taken)+' из '+p.total+'</b></div></div><p>'+esc(p.text)+'</p>'+
+        '<div class="checklist"><div class="hd"><span>Чек-лист новичка</span><span>Готово '+done+' из '+CHECK.length+'</span></div>'+
+        CHECK.map(function(c){ return '<label><input type="checkbox" id="chk-'+p.id+'-'+c.id+'" data-chk="'+p.id+':'+c.id+'"'+(ch[c.id]?' checked':'')+'>'+esc(c.label)+'</label>'; }).join('')+'</div>'+
+        (reg?'<div class="note-ok">'+svg('check')+'<span>Вы записаны на выезд. Мест осталось: '+(p.total-p.taken)+'.</span></div>':'')+
+        '<div class="actions">'+(reg?'':'<button class="btn btn-main" data-act="register" data-id="'+p.id+'"'+(p.total-p.taken<1?' disabled':'')+'>Записаться на выезд</button>')+
+        '<button class="btn" data-act="group" aria-expanded="'+s.group+'">Заявка от школы или клуба</button></div>';
+      if(s.group){ var e=s.errors||{}, g=s.g||{};
+        o+='<form class="group-form" id="groupForm" novalidate><div class="kick" style="margin-bottom:6px">Коллективная заявка</div>'+
+          fld('g-org','Организация','text',e.org,'Школа № 1, 8 «Б» класс',g.org)+fld('g-count','Сколько человек','number',e.count,'от 2 до 100',g.count)+
+          fld('g-contact','Телефон или почта ответственного','text',e.contact,'',g.contact)+'<button class="btn btn-main" type="submit">Отправить заявку</button></form>'; }
+      var mine=U.groups.filter(function(x){ return x.trip===p.id; });
+      if(mine.length) o+='<div class="glist"><div style="font-weight:700;font-size:12px"><span>Мои заявки групп</span><span></span></div>'+mine.map(function(x){ return '<div><span>'+esc(x.org)+' · '+x.count+' '+plural(x.count,'человек','человека','человек')+'</span><span class="tag tag-wait">'+svg('clock')+'На рассмотрении</span></div>'; }).join('')+'</div>';
+    }
+    if(p.type==='fund'){
+      var pct=Math.min(100,Math.round(p.got/p.goal*100));
+      o+='<div class="meta"><div><span>Собрано</span><b>'+esc(rub(p.got))+'</b></div><div><span>Цель</span><b>'+esc(rub(p.goal))+'</b></div><div><span>Готово</span><b>'+pct+'%</b></div></div>'+
+        '<div class="bar" style="margin-bottom:10px"><i style="width:'+pct+'%"></i></div><p>'+esc(p.text)+'</p><div class="actions"><button class="btn btn-main" data-act="donate" data-id="'+p.id+'">Пожертвовать</button></div>';
+    }
+    return o+'</div>';
+  }
+  $('#events').addEventListener('click',function(e){
+    var ty=e.target.closest('[data-type]'); if(ty){ U.ev.type=ty.getAttribute('data-type'); renderFeed(); return; }
+    var n=e.target.closest('[data-open]');
+    if(n){ U.ev=Object.assign(U.ev,{view:'detail',id:n.getAttribute('data-open'),group:false,errors:{},g:{}}); renderEvents(); $('#view-events').scrollTop=0; return; }
+    var a=e.target.closest('[data-act]'); if(!a) return;
+    var act=a.getAttribute('data-act'), id=a.getAttribute('data-id');
+    if(act==='clear'){ U.ev.q=''; U.ev.type='all'; renderEvents(); return; }
+    if(act==='back'){ U.ev.view='list'; renderEvents(); return; }
+    if(act==='join'){ var r=post(id); r.joined++; U.joined[id]=true; renderEvents(); toast('Вы в команде: '+r.team); return; }
+    if(act==='register'){ var t=post(id); if(t.total-t.taken<1) return; t.taken++; U.registered[id]=true; renderEvents(); toast('Вы записаны на выезд'); return; }
+    if(act==='group'){ U.ev.group=!U.ev.group; U.ev.errors={}; renderEvents(); if(U.ev.group){ var f=$('#g-org'); if(f) f.focus(); } return; }
+    if(act==='donate') openDonate(id);
+  });
+  $('#events').addEventListener('input',function(e){
+    if(e.target.id==='ev-q'){ U.ev.q=e.target.value; renderFeed(); }
+  });
+  $('#events').addEventListener('change',function(e){
+    var c=e.target.getAttribute('data-chk'); if(!c) return; var p=c.split(':');
+    U.checks[p[0]]=U.checks[p[0]]||{}; U.checks[p[0]][p[1]]=e.target.checked;
+    e.target.closest('.checklist').querySelector('.hd span:last-child').textContent='Готово '+CHECK.filter(function(x){ return U.checks[p[0]][x.id]; }).length+' из '+CHECK.length;
+  });
+  $('#events').addEventListener('submit',function(e){
+    if(e.target.id!=='groupForm') return; e.preventDefault();
+    var g={org:$('#g-org').value.trim(),count:$('#g-count').value,contact:$('#g-contact').value.trim()}, cnt=parseInt(g.count,10), er={};
+    if(g.org.length<2) er.org='Укажите школу, клуб или семью.';
+    if(!(cnt>=2&&cnt<=100)) er.count='В группе должно быть от 2 до 100 человек.';
+    if(!/@/.test(g.contact)&&g.contact.replace(/\D/g,'').length<10) er.contact='Укажите телефон (10 цифр) или почту.';
+    U.ev.g=g;
+    if(Object.keys(er).length){ U.ev.errors=er; renderEvents(); var f=$('#groupForm [aria-invalid="true"]'); if(f) f.focus(); return; }
+    U.groups.push({trip:U.ev.id,org:g.org,count:cnt,contact:g.contact}); U.ev.group=false; U.ev.errors={}; U.ev.g={}; renderEvents(); toast('Заявка группы отправлена командиру');
+  });
+
+  var dlg=$('#donate'), dFund=null, dAmt=500;
+  function openModal(d){ if(d.showModal){ try{ d.showModal(); return; }catch(_){} } d.setAttribute('open',''); }
+  function closeModal(d){ if(d.close) d.close(); else d.removeAttribute('open'); }
+  function renderAmounts(){ $('#amounts').innerHTML=[300,500,1000,2000].map(function(a){ return '<button type="button" data-amt="'+a+'" aria-pressed="'+(a===dAmt)+'">'+esc(rub(a))+'</button>'; }).join(''); $('#donateOk').textContent='Пожертвовать '+rub(dAmt); }
+  function openDonate(id){ dFund=post(id); dAmt=500; $('#donateWhat').textContent=dFund.title; renderAmounts(); openModal(dlg); }
+  $('#amounts').addEventListener('click',function(e){ var b=e.target.closest('[data-amt]'); if(b){ dAmt=+b.getAttribute('data-amt'); renderAmounts(); } });
+  $('#donateCancel').addEventListener('click',function(){ closeModal(dlg); });
+  $('#donateForm').addEventListener('submit',function(e){ e.preventDefault(); dFund.got+=dAmt; closeModal(dlg); renderEvents(); toast('Спасибо! Тестовый платёж на '+rub(dAmt)+' учтён, деньги не списаны.'); });
+
+  /* ===================================================================
+     ИСТОРИИ — список, страница истории, изображения
+     =================================================================== */
+  var ST={verified:{t:'Подтверждено',c:'tag-done',i:'check'},pending:{t:'Ожидает проверки',c:'tag-wait',i:'clock'},clarify:{t:'Нужно уточнение',c:'tag-act',i:'alert'}};
+  function stTag(s){ var x=ST[s]; return '<span class="tag '+x.c+'">'+svg(x.i)+x.t+'</span>'; }
+  function story(id){ for(var i=0;i<D.stories.length;i++) if(D.stories[i].id===id) return D.stories[i]; }
+  function yearHtml(y){ var p=String(y).split(/[–-]/); return p.length>1?esc(p[0])+'<small>–'+esc(p[1])+'</small>':esc(y); }
+  function gallery(imgs,removable){
+    if(!imgs.length) return '';
+    return '<div class="gallery">'+imgs.map(function(src,i){ return '<figure><button class="open" type="button" data-img="'+i+'" aria-label="Открыть изображение '+(i+1)+'"><img src="'+src+'" alt="Изображение '+(i+1)+'"></button>'+
+      (removable?'<button class="rm" type="button" data-rm="'+i+'" aria-label="Убрать изображение '+(i+1)+'">Убрать</button>':'')+'</figure>'; }).join('')+'</div>';
+  }
+  function renderStories(){
+    var s=U.st, el=$('#stories');
+    var head='<div class="page-head"><div><div class="kick">Народный архив</div><h1>Книга памяти</h1><p>Истории семей и краеведов. Каждую проверяет краевед или поисковый отряд.</p></div>';
+    if(s.view==='list'){
+      el.innerHTML=head+'<button class="btn btn-main" data-act="new">Рассказать историю</button></div><ol class="stories">'+
+        D.stories.map(function(x){ return '<li><button class="st-row" data-story="'+x.id+'"><span class="st-year">'+yearHtml(x.year)+'</span>'+
+          '<span><b>'+esc(x.title)+'</b><span class="p">'+esc(x.place)+' · '+esc(x.author)+(x.images.length?'<span class="ph">'+svg('image')+x.images.length+'</span>':'')+'</span></span>'+stTag(x.status)+'</button></li>'; }).join('')+
+        '</ol><p style="margin-top:8px"><span class="demo">Демо-данные</span></p>';
+      return;
+    }
+    if(s.view==='read'){
+      var x=story(s.id);
+      el.innerHTML='<article class="reader"><button class="back" data-act="list">'+svg('left')+'К списку историй</button><div class="kick">'+esc(x.place)+' · '+esc(x.year)+'</div><h1>'+esc(x.title)+'</h1>'+
+        '<div class="by"><span>Записал: '+esc(x.author)+' · '+esc(fmtLong(x.date))+'</span>'+stTag(x.status)+'</div>'+
+        (x.status==='clarify'&&x.note?'<div class="note-warn">'+svg('alert')+'<span><b>Краевед просит уточнить:</b> '+esc(x.note)+'</span></div>':'')+
+        (x.status==='pending'?'<div class="note-wait">'+svg('clock')+'<span>История ждёт проверки. Пока её видит только автор.</span></div>':'')+
+        gallery(x.images,false)+'<p class="txt">'+esc(x.story)+'</p>'+
+        '<div class="upload"><label class="btn btn-sm" for="st-add">'+svg('image')+'Добавить изображение</label><input class="sr" id="st-add" type="file" accept="image/*" multiple>'+
+        '<small>Фото письма, документа, места или бойца. До 6 изображений.</small></div>'+
+        '<p class="src">Источник: '+(x.source?esc(x.source):'не указан')+'</p></article>';
+      return;
+    }
+    var e=s.errors||{}, d=s.draft;
+    el.innerHTML='<div class="reader"><button class="back" data-act="list">'+svg('left')+'К списку историй</button><div class="kick">Новая запись</div><h1>Рассказать историю</h1>'+
+      '<form id="storyForm" novalidate>'+fld('st-title','Название','text',e.title,'Например: Землянка у оврага',d.title)+fld('st-place','Место','text',e.place,'Деревня, район',d.place)+
+      fld('st-year','Год событий','text',e.year,'1943 или 1941–1943',d.year,' inputmode="numeric"')+fld('st-author','Как вас подписать','text',e.author,'Семья Петровых',d.author)+
+      '<label class="fld" for="st-text"><span>Рассказ</span><textarea id="st-text"'+(e.text?' aria-invalid="true" aria-describedby="st-text-err"':'')+' placeholder="Что вы знаете об этом месте или человеке">'+esc(d.text)+'</textarea>'+
+      '<small class="count" id="st-count">'+countText(d.text)+'</small>'+(e.text?'<span class="err" id="st-text-err">'+esc(e.text)+'</span>':'')+'</label>'+
+      '<div class="fld"><span>Изображения</span><div class="upload" style="margin:0"><label class="btn btn-sm" for="st-files">'+svg('image')+'Выбрать файлы</label><input class="sr" id="st-files" type="file" accept="image/*" multiple>'+
+      '<small>'+(d.images.length?'Добавлено: '+d.images.length+' из 6':'Фото письма, документа, места. До 6 изображений.')+'</small></div>'+gallery(d.images,true)+'</div>'+
+      fld('st-source','Источник (необязательно)','text',null,'Письмо, фото, рассказ очевидца',d.source)+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-main" type="submit">Отправить краеведу</button><button class="btn" type="button" data-act="list">Отмена</button></div></form></div>';
+  }
+  function countText(t){ var n=String(t).trim().length; return n+' '+plural(n,'знак','знака','знаков')+(n<30?', нужно не меньше 30':''); }
+  function readImages(files,max,done){
+    var arr=[].slice.call(files||[]).filter(function(f){ return /^image\//.test(f.type); }).slice(0,max), out=[], left=arr.length;
+    if(!left){ done(out); return; }
+    arr.forEach(function(f,i){ var fr=new FileReader(); fr.onload=function(){ out[i]=fr.result; if(--left===0) done(out.filter(Boolean)); }; fr.onerror=function(){ if(--left===0) done(out.filter(Boolean)); }; fr.readAsDataURL(f); });
+  }
+  $('#stories').addEventListener('click',function(e){
+    var r=e.target.closest('[data-story]'); if(r){ U.st.view='read'; U.st.id=r.getAttribute('data-story'); renderStories(); $('#view-stories').scrollTop=0; return; }
+    var im=e.target.closest('[data-img]'); if(im){ var list=U.st.view==='read'?story(U.st.id).images:U.st.draft.images; openLightbox(list[+im.getAttribute('data-img')]); return; }
+    var rm=e.target.closest('[data-rm]'); if(rm){ U.st.draft.images.splice(+rm.getAttribute('data-rm'),1); renderStories(); return; }
+    var a=e.target.closest('[data-act]'); if(!a) return; var act=a.getAttribute('data-act');
+    if(act==='new'){ U.st.view='new'; U.st.errors={}; renderStories(); $('#view-stories').scrollTop=0; var t=$('#st-title'); if(t) t.focus(); }
+    if(act==='list'){ U.st.view='list'; renderStories(); }
+  });
+  $('#stories').addEventListener('input',function(e){
+    var map={'st-title':'title','st-place':'place','st-year':'year','st-author':'author','st-text':'text','st-source':'source'}, k=map[e.target.id];
+    if(k){ U.st.draft[k]=e.target.value; if(k==='text') $('#st-count').textContent=countText(e.target.value); }
+  });
+  $('#stories').addEventListener('change',function(e){
+    if(e.target.id==='st-files'){ var room=6-U.st.draft.images.length; readImages(e.target.files,room,function(imgs){ U.st.draft.images=U.st.draft.images.concat(imgs); renderStories(); if(imgs.length) toast('Изображения добавлены: '+imgs.length); }); }
+    if(e.target.id==='st-add'){ var x=story(U.st.id), room2=6-x.images.length;
+      if(room2<1){ toast('У истории уже 6 изображений'); return; }
+      readImages(e.target.files,room2,function(imgs){ x.images=x.images.concat(imgs);
+        if(x.status==='clarify'&&imgs.length){ x.status='pending'; toast('Изображение добавлено. История снова отправлена краеведу на проверку.'); } else if(imgs.length) toast('Изображение добавлено к истории');
+        renderStories(); }); }
+  });
+  $('#stories').addEventListener('submit',function(e){
+    if(e.target.id!=='storyForm') return; e.preventDefault();
+    var d=U.st.draft, v={title:d.title.trim(),place:d.place.trim(),year:d.year.trim(),author:d.author.trim(),text:d.text.trim(),source:d.source.trim()}, er={};
+    if(v.title.length<3) er.title='Дайте истории название — от 3 знаков.';
+    if(v.place.length<2) er.place='Укажите место: деревню или район.';
+    if(!/^(1[89]\d\d|20\d\d)(\s*[–-]\s*(1[89]\d\d|20\d\d))?$/.test(v.year)) er.year='Укажите год, например 1943 или 1941–1943.';
+    if(v.author.length<2) er.author='Подпишитесь: имя или «Семья …».';
+    if(v.text.length<30) er.text='Расскажите подробнее — не меньше 30 знаков.';
+    if(Object.keys(er).length){ U.st.errors=er; renderStories(); var f=$('#storyForm [aria-invalid="true"]'); if(f) f.focus(); return; }
+    var id='ST'+(100+D.stories.length);
+    D.stories.unshift({id:id,title:v.title,place:v.place,year:v.year.replace('-','–'),author:v.author,date:TODAY,status:'pending',story:v.text,source:v.source,images:d.images.slice()});
+    U.st={view:'read',id:id,errors:{},draft:{title:'',place:'',year:'',author:'',text:'',source:'',images:[]}}; renderStories(); $('#view-stories').scrollTop=0;
+    toast('История отправлена краеведу. Статус: «Ожидает проверки».');
+  });
+  var lb=$('#lightbox');
+  function openLightbox(src){ $('#lbImg').src=src; openModal(lb); }
+  $('#lbClose').addEventListener('click',function(){ closeModal(lb); });
+  lb.addEventListener('click',function(e){ if(e.target===lb) closeModal(lb); });
+
+  /* ===================================================================
+     ДРУГОЕ — большая панель с выпадающим списком разделов
+     =================================================================== */
+  var HUB=[
+    {id:'login',icon:'user',t:function(){ return U.auth?'Профиль':'Вход'; },d:function(){ return U.auth?'Ваши данные и роль':'Телефон или почта и пароль'; }},
+    {id:'archive',icon:'archive',lock:1,t:function(){ return 'Семейный архив'; },d:function(){ return 'Бойцы вашей семьи и их документы'; }},
+    {id:'ar',icon:'locate',lock:1,t:function(){ return 'AR-режим'; },d:function(){ return 'Места боёв «тогда и сейчас» через камеру'; }},
+    {id:'revive',icon:'image',lock:1,t:function(){ return 'Оживить фото'; },d:function(){ return 'Фото бойца произносит слова памяти'; }},
+    {id:'role',icon:'family',t:function(){ return 'Роль и демо'; },d:function(){ return 'Кем вы пользуетесь приложением, сброс данных'; }}
+  ];
+  var ROLES=[{id:'family',t:'Семья',d:'Прогулка-квест с ребёнком по местам боёв'},{id:'volunteer',t:'Волонтёр',d:'Помочь отряду делом или рублём'},
+    {id:'commander',t:'Командир отряда',d:'Набирать волонтёров и отмечать места гибели'},{id:'verifier',t:'Краевед',d:'Проверять истории и места по архивам'}];
+  function roleName(id){ for(var i=0;i<ROLES.length;i++) if(ROLES[i].id===id) return ROLES[i].t; }
+  function hubItem(id){ for(var i=0;i<HUB.length;i++) if(HUB[i].id===id) return HUB[i]; }
+  function renderHub(){
+    var s=U.hub, cur=s.active&&hubItem(s.active), title=cur?cur.t():'Разделы', sub=cur?cur.d():'Выберите раздел';
+    var o='<button class="hub-hd" id="hub-hd" aria-expanded="'+s.open+'" aria-controls="hub-list"><span><span class="t">'+esc(title)+'</span><span class="s">'+esc(sub)+'</span></span>'+
+      svg(s.open?'down':'up')+'<span class="sr">'+(s.open?'Свернуть список разделов':'Показать список разделов')+'</span></button>';
+    if(s.open){
+      o+='<ul class="hub-list" id="hub-list">'+HUB.map(function(h){ var locked=h.lock&&!U.auth;
+        return '<li><button class="hub-row" data-hub="'+h.id+'" aria-current="'+(s.active===h.id)+'"><span class="ic">'+svg(h.icon)+'</span><span><b>'+esc(h.t())+'</b><span class="d">'+esc(h.d())+'</span></span>'+
+          (locked?'<span class="lk">'+svg('lock')+'после входа</span>':'')+'</button></li>'; }).join('')+'</ul>';
+    } else if(cur){
+      o+='<div class="hub-body">'+hubBody(cur)+'</div>';
+    }
+    $('#hub').innerHTML=o;
+  }
+  function hubBody(cur){
+    var s=U.hub, e=s.errors||{}, o='';
+    if(cur.lock&&!U.auth) return '<div class="lock-panel">'+svg('lock')+'<h2 style="margin-top:6px">'+esc(cur.t())+'</h2><p style="margin:0 auto 10px">Раздел откроется после входа.</p><button class="btn btn-main" data-act="to-login">Войти</button></div>';
+    if(cur.id==='login'){
+      if(!U.auth){
+        var f=s.form||{};
+        return '<form class="auth" id="loginForm" novalidate>'+fld('lg-login','Телефон или почта','text',e.login,'+7 900 000-00-00 или name@mail.ru',f.login,' autocomplete="username"')+
+          '<label class="fld" for="lg-pass"><span>Пароль</span><span class="pw"><input id="lg-pass" type="'+(s.showPw?'text':'password')+'" autocomplete="current-password"'+(f.pass?' value="'+esc(f.pass)+'"':'')+(e.pass?' aria-invalid="true" aria-describedby="lg-pass-err"':'')+'>'+
+          '<button type="button" data-act="pw" aria-pressed="'+s.showPw+'">'+(s.showPw?'Скрыть':'Показать')+'</button></span>'+(e.pass?'<span class="err" id="lg-pass-err">'+esc(e.pass)+'</span>':'')+'</label>'+
+          '<div class="auth-row"><label><input type="checkbox" id="lg-remember" checked>Запомнить меня</label><button class="link" type="button" data-act="forgot">Забыли пароль?</button></div>'+
+          '<button class="btn btn-main" type="submit" style="width:100%">Войти</button>'+
+          '<p class="auth-alt">Нет аккаунта? <button class="link" type="button" data-act="signup">Зарегистрироваться</button></p>'+
+          '<p style="font-size:12px;color:var(--muted);margin:0">Демо: подойдёт любой телефон или почта и пароль от 6 символов. Данные никуда не отправляются.</p></form>';
+      }
+      return '<div class="profile"><div class="avatar" aria-hidden="true">'+esc(U.auth.charAt(0).toUpperCase())+'</div><div><b>'+esc(U.auth)+'</b><div style="font-size:12px;color:var(--muted)">Роль: '+esc(roleName(U.role))+'</div></div></div>'+
+        '<p>Семейный архив, AR-режим и «Оживить фото» открыты.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="go-role">Сменить роль</button><button class="btn" data-act="logout">Выйти</button></div>';
+    }
+    if(cur.id==='archive'){
+      o='<p>Бойцы вашей семьи. Их можно сверить с «Книгой Памяти» и передать поисковикам.</p>'+
+        D.family.map(function(f){ return '<div class="fam"><b>'+esc(f.name)+'</b><span>'+esc(f.years)+'</span><p style="margin:4px 0 2px">'+esc(f.text)+'</p><span>Источник: '+esc(f.src)+'</span></div>'; }).join('');
+      var ff=s.fam||{};
+      return o+'<form id="famForm" novalidate style="border-top:1px solid var(--rule);padding-top:10px;margin-top:6px;max-width:520px"><div class="kick" style="margin-bottom:6px">Добавить бойца</div>'+
+        fld('fam-name','Фамилия, имя, отчество','text',e.name,'',ff.name)+fld('fam-years','Годы жизни','text',null,'1910 — 1943',ff.years)+fld('fam-text','Что известно','text',e.text,'Где служил, откуда последнее письмо',ff.text)+
+        '<button class="btn btn-main" type="submit">Добавить в архив</button></form>';
+    }
+    if(cur.id==='ar'){
+      return '<p>Наведите камеру телефона на место — поверх появится снимок того, как оно выглядело в 1943 году, и задание для ребёнка. Камера работает в мобильном приложении, здесь — список точек.</p>'+
+        [['p1','Рубеж десантников','«Тогда и сейчас»: окоп на месте сквера'],['p2','Бой у переправы','«Найди окоп»: следы траншеи у берега'],['p5','Братская могила','«Расшифруй донесение»: имена на обелиске']].map(function(r){
+          return '<div class="ar-row"><div><b>'+esc(r[1])+'</b><span>'+esc(r[2])+'</span></div><button class="btn btn-sm" data-act="show" data-id="'+r[0]+'">На карте</button></div>'; }).join('');
+    }
+    if(cur.id==='revive'){
+      var rv=U.revive;
+      return '<p>Загрузите фотографию бойца. Нейросеть создаст короткое видео, где он произнесёт слова памяти.</p>'+
+        '<div class="revive"><div class="photo-box">'+(rv.photo?'<img src="'+rv.photo+'" alt="Загруженная фотография бойца"><div class="ai-plate">Создано ИИ · только для памяти</div>':'Фото бойца<br>появится здесь')+'</div><div>'+
+        '<div class="upload" style="margin-top:0"><label class="btn btn-sm" for="rv-file">'+svg('image')+'Выбрать фото</label><input class="sr" id="rv-file" type="file" accept="image/*"><small>'+(rv.photo?'Фото загружено':'JPG или PNG')+'</small></div>'+
+        '<div class="quote">«Я сделал это, чтобы ты жил и видел голубое небо. Помни меня.»</div>'+
+        '<label class="chk"><input type="checkbox" id="rv-consent"'+(rv.consent?' checked':'')+'>Я родственник бойца или получил согласие семьи</label>'+
+        '<p style="font-size:12px;color:var(--muted)">Технология применяется только для мемориальных целей, с уважением к памяти. Коммерческое использование и изменение смысла высказывания запрещены.</p>'+
+        '<button class="btn btn-main" data-act="revive"'+(rv.photo&&rv.consent?'':' disabled')+'>Оживить фото</button>'+
+        (rv.done?'<div class="note-warn" style="margin-top:10px">'+svg('alert')+'<span>Фото готово к отправке. В прототипе видео не создаётся: оживление делает сервер с нейросетью, он ещё не подключён.</span></div>':'')+'</div></div>';
+    }
+    if(cur.id==='role'){
+      return '<h2>Роль</h2><p>Роль задаёт, что вы видите первым и какие действия доступны.</p><div class="roles" role="radiogroup" aria-label="Роль">'+
+        ROLES.map(function(r){ return '<label><input type="radio" name="role" value="'+r.id+'"'+(U.role===r.id?' checked':'')+'><span><b>'+esc(r.t)+'</b><span>'+esc(r.d)+'</span></span></label>'; }).join('')+'</div>'+
+        '<h2>Демо</h2><p>Сброс возвращает все демо-данные: записи, истории, семейный архив и вход.</p>'+
+        (U.confirmReset?'<div class="note-warn">'+svg('alert')+'<span>Сбросить все изменения? <button class="btn btn-sm btn-main" data-act="reset-yes" style="margin-left:6px">Сбросить</button> <button class="btn btn-sm" data-act="reset-no">Отмена</button></span></div>'
+          :'<button class="btn" data-act="reset">Сбросить демо-данные</button>');
+    }
+    return o;
+  }
+  function openHub(id){ U.hub={open:false,active:id,errors:{},showPw:false}; U.confirmReset=false; renderHub(); }
+  $('#hub').addEventListener('click',function(e){
+    if(e.target.closest('#hub-hd')){ U.hub.open=!U.hub.open; if(!U.hub.active) U.hub.open=true; renderHub(); return; }
+    var r=e.target.closest('[data-hub]'); if(r){ openHub(r.getAttribute('data-hub')); var f=$('#lg-login'); if(f) f.focus(); return; }
+    var a=e.target.closest('[data-act]'); if(!a) return; var act=a.getAttribute('data-act');
+    if(act==='to-login'){ openHub('login'); var l=$('#lg-login'); if(l) l.focus(); }
+    if(act==='pw'){ U.hub.form={login:$('#lg-login').value,pass:$('#lg-pass').value}; U.hub.showPw=!U.hub.showPw; renderHub(); var p=$('#lg-pass'); if(p) p.focus(); }
+    if(act==='forgot') toast('Восстановление пароля появится с сервером. В демо введите любой пароль от 6 символов.');
+    if(act==='signup') toast('Регистрация появится с сервером. В демо просто войдите с любыми данными.');
+    if(act==='logout'){ U.auth=null; openHub('login'); toast('Вы вышли из профиля'); }
+    if(act==='go-role') openHub('role');
+    if(act==='show'){ go('map'); selectPlace(a.getAttribute('data-id'),'search'); }
+    if(act==='revive'){ U.revive.done=true; renderHub(); }
+    if(act==='reset'){ U.confirmReset=true; renderHub(); }
+    if(act==='reset-no'){ U.confirmReset=false; renderHub(); }
+    if(act==='reset-yes'){ D=seed(); U=fresh(); M.event='e2'; M.route=null; M.place='p1'; M.year=1941; if(mapApi) mapApi.setRoute(null); openHub('role'); renderAll(); go('other'); toast('Демо-данные сброшены'); }
+  });
+  $('#hub').addEventListener('change',function(e){
+    if(e.target.name==='role'){ U.role=e.target.value; renderHub(); toast('Роль: '+roleName(U.role)); }
+    if(e.target.id==='rv-consent'){ U.revive.consent=e.target.checked; renderHub(); }
+    if(e.target.id==='rv-file'){ readImages(e.target.files,1,function(imgs){ if(imgs[0]){ U.revive.photo=imgs[0]; U.revive.done=false; renderHub(); } }); }
+  });
+  $('#hub').addEventListener('submit',function(e){
+    e.preventDefault();
+    if(e.target.id==='loginForm'){
+      var login=$('#lg-login').value.trim(), pass=$('#lg-pass').value, er={};
+      var isMail=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login), isPhone=login.replace(/\D/g,'').length>=10&&/^[+\d\s()-]+$/.test(login);
+      if(!isMail&&!isPhone) er.login='Введите телефон (10 цифр) или почту.';
+      if(pass.length<6) er.pass='Пароль — не меньше 6 символов.';
+      U.hub.form={login:login,pass:pass};
+      if(Object.keys(er).length){ U.hub.errors=er; renderHub(); var f=$('#loginForm [aria-invalid="true"]'); if(f) f.focus(); return; }
+      U.auth=login; openHub('login'); toast('Вы вошли');
+    }
+    if(e.target.id==='famForm'){
+      var ff={name:$('#fam-name').value.trim(),years:$('#fam-years').value.trim(),text:$('#fam-text').value.trim()}, er2={};
+      if(ff.name.split(/\s+/).length<2) er2.name='Укажите хотя бы фамилию и имя.';
+      if(ff.text.length<5) er2.text='Напишите, что о нём известно.';
+      U.hub.fam=ff;
+      if(Object.keys(er2).length){ U.hub.errors=er2; renderHub(); var f2=$('#famForm [aria-invalid="true"]'); if(f2) f2.focus(); return; }
+      D.family.push({name:ff.name,years:ff.years||'годы не указаны',text:ff.text,src:'Добавлено вами'}); U.hub.errors={}; U.hub.fam={}; renderHub(); toast('Боец добавлен в семейный архив');
+    }
+  });
+
+  /* ===================================================================
+     Разделы и общее
+     =================================================================== */
+  var TABS=['map','events','stories','other'];
+  function go(t){
+    if(TABS.indexOf(t)<0) t='map'; U.tab=t;
+    $$('.nav button').forEach(function(b){ if(b.getAttribute('data-tab')===t) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
+    $('#view-map').hidden=t!=='map'; $('#view-events').hidden=t!=='events'; $('#view-stories').hidden=t!=='stories'; $('#view-other').hidden=t!=='other';
+    if(t==='map'&&mapApi){ mapApi.resize(); setSheet(M.sheet); }
+    try{ history.replaceState(null,'','#'+t); }catch(_){}
+  }
+  $('#nav').addEventListener('click',function(e){ var b=e.target.closest('[data-tab]'); if(b) go(b.getAttribute('data-tab')); });
+  var toastEl=$('#toast'), toastT;
+  function toast(m){ toastEl.textContent=m; toastEl.hidden=false; clearTimeout(toastT); toastT=setTimeout(function(){ toastEl.hidden=true; },3800); }
+  function renderAll(){ renderMap(); renderEvents(); renderStories(); renderHub(); renderAttrib(); }
+  var rsT; addEventListener('resize',function(){ clearTimeout(rsT); rsT=setTimeout(function(){ setSheet(M.sheet); if(mapApi) mapApi.resize(); },80); });
+
+  setSheet('half'); setMapTab('history'); renderAll();
+  go((location.hash||'').replace('#','')||'map');
+  fitAll();
+})();
+</script>

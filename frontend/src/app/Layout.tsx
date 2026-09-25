@@ -1,68 +1,81 @@
-import { NavLink, Outlet, ScrollRestoration } from 'react-router'
+import { Link, Outlet, ScrollRestoration, useLocation } from 'react-router'
 import { region } from '../config/region.ts'
+import { useAccount } from '../functions/account/useAccount.ts'
+import { paths } from '../functions/core/paths.ts'
 import { Icon } from '../ui/Icon.tsx'
 import { Logo } from '../ui/Logo.tsx'
 import s from './layout.module.css'
 import { useRole } from './RoleContext.tsx'
-import { DEFAULT_TABS, TABS } from './roles.ts'
+import { TAB_ORDER, TABS, tabOf } from './roles.ts'
 import { Toaster } from './Toaster.tsx'
 
 /**
- * Оболочка из макета «Универсальный вариант»: на телефоне — шапка и нижняя панель разделов,
- * на ноутбуке — узкая тёмная панель слева. Роль — в шапке, как кнопка аккаунта на макете.
+ * Оболочка дизайна «Стол и газета» (ADR 0012): четыре раздела с подписями — внизу на телефоне,
+ * узкой тёмной панелью слева на ноутбуке. Страница лежит на газете, по краям виден стол.
+ * Карта-хаб занимает всё место без газеты и шапки.
  */
 export function Layout() {
   const { role } = useRole()
-  const tabs = role?.tabs ?? DEFAULT_TABS
+  const { account } = useAccount()
+  const { pathname } = useLocation()
+  const active = tabOf(pathname)
+  const fullBleed = pathname === paths.map()
   return (
-    <div className={s.shell}>
+    <div className={s.shell} data-full-bleed={fullBleed || undefined}>
       <a href="#main" className={s.skip}>
         Перейти к содержимому
       </a>
-      <div className={s.rail}>
-        <header className={s.header}>
-          <NavLink to="/" end className={s.brand} data-testid="nav-home">
-            <Logo size={2} />
-            <span className={s.brandText}>
+      <nav className={s.nav} aria-label="Разделы">
+        <Link to={paths.home()} className={s.brand} data-testid="nav-home">
+          <Logo size={2} />
+          <span className="visually-hidden">{region.appTitle}: кто вы?</span>
+        </Link>
+        <ul className={s.navList}>
+          {TAB_ORDER.map((id) => {
+            const tab = TABS[id]
+            return (
+              <li key={id}>
+                <Link
+                  to={tab.path}
+                  className={s.navLink}
+                  aria-current={active === id ? 'page' : undefined}
+                  data-testid={`tab-${id}`}
+                >
+                  <Icon name={tab.icon} size={1.35} />
+                  {tab.label}
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+      </nav>
+      <div className={s.page}>
+        {!fullBleed && (
+          <header className={s.masthead}>
+            <Link to={paths.home()} className={s.mastTitle}>
               {region.appTitle}
-              {/* Подпись как на макетах; «демо» — этика: придуманное не выдаём за реальное */}
-              <span className={s.brandSub}>
-                Демо<span className={s.brandRegion}> · Орловская обл.</span>
-              </span>
-            </span>
-          </NavLink>
-          {/* Роль — как кнопка аккаунта на макете: без регистрации, меняется в одно нажатие */}
-          <NavLink to="/" end className={s.roleLink} data-testid="nav-role">
-            <Icon name="user" size={1.2} />
-            {role ? (
-              <span>
-                <span className="visually-hidden">Роль: </span>
-                {role.short}
-              </span>
-            ) : (
-              'Выбрать роль'
-            )}
-          </NavLink>
-        </header>
-        <nav className={s.nav} aria-label="Разделы">
-          <ul className={s.navList}>
-            {tabs.map((id) => {
-              const tab = TABS[id]
-              return (
-                <li key={id}>
-                  <NavLink to={tab.path} className={s.navLink} data-testid={`tab-${id}`}>
-                    <Icon name={tab.icon} />
-                    {tab.label}
-                  </NavLink>
-                </li>
-              )
-            })}
-          </ul>
-        </nav>
+              <span className={s.mastRegion}> · {region.regionName}</span>
+              {/* Этика: придуманное не выдаём за реальное */}
+              <span className={s.mastDemo}>Демо</span>
+            </Link>
+            {/* Кнопка аккаунта: «Вход» до входа, «Профиль» после; роль — рядом, меняется в «Другом» */}
+            <Link to={paths.other()} className={s.account} data-testid="nav-role">
+              <Icon name="user" size={1.1} />
+              <span>{account ? 'Профиль' : 'Вход'}</span>
+              {role && (
+                <span className={s.accountRole}>
+                  {' · '}
+                  <span className="visually-hidden">Роль: </span>
+                  {role.short}
+                </span>
+              )}
+            </Link>
+          </header>
+        )}
+        <main id="main" className={s.main} tabIndex={-1}>
+          <Outlet />
+        </main>
       </div>
-      <main id="main" className={s.main} tabIndex={-1}>
-        <Outlet />
-      </main>
       <Toaster />
       {/* Новый экран открывается сверху, «Назад» возвращает прежнюю прокрутку */}
       <ScrollRestoration />

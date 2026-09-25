@@ -1,63 +1,39 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
-import { ApiError } from '../../api/client.ts'
 import { QueryState } from '../../app/QueryState.tsx'
 import { ShareButton } from '../../app/ShareButton.tsx'
-import { useApi } from '../../app/services.tsx'
 import type { LastBattleSite, SiteStatus } from '../../contract/schemas.ts'
 import { describeFighters, NOTIFY_RADIUS_KM } from '../../domain/lastBattle.ts'
 import { useRole } from '../../app/RoleContext.tsx'
+import { paths } from '../../functions/core/paths.ts'
+import { can } from '../../functions/core/permissions.ts'
+import {
+  needsRaising as siteNeedsRaising,
+  readNotified,
+  statusActionFor,
+  useHelpRaise,
+  usePlace,
+} from '../../functions/places/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Icon } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { SourceList } from '../../ui/SourceList.tsx'
 import { StatusBadge } from '../../ui/StatusBadge.tsx'
-import type { SiteCreatedState } from './NewSiteScreen.tsx'
 import { SiteStatusAction, StatusChanged } from './SiteStatusAction.tsx'
-import { statusActionFor } from './statusAction.ts'
 import s from './lastBattle.module.css'
 
-/** Подъём нужен, пока останки не подняты. */
-const NEEDS_RAISING: readonly SiteStatus[] = ['found_needs_check', 'archive_confirmed']
-
-const isNotFound = (error: unknown) => error instanceof ApiError && error.status === 404
-
-function readNotified(state: unknown): number | undefined {
-  const n = (state as Partial<SiteCreatedState> | null)?.notifiedCount
-  return typeof n === 'number' ? n : undefined
-}
-
 function HelpAction({ site }: { site: LastBattleSite }) {
-  const api = useApi()
-  const queryClient = useQueryClient()
-  const [done, setDone] = useState(false)
-  const [busy, setBusy] = useState(false)
-  const [failed, setFailed] = useState(false)
-
-  const help = async () => {
-    setBusy(true)
-    setFailed(false)
-    try {
-      const updated = await api.volunteerForSite({ id: site.id })
-      queryClient.setQueryData(['sites', site.id], updated)
-      void queryClient.invalidateQueries({ queryKey: ['sites'], exact: true })
-      setDone(true)
-    } catch {
-      setFailed(true)
-    } finally {
-      setBusy(false)
-    }
-  }
+  const { done, busy, failed, help } = useHelpRaise(site.id)
 
   if (done) {
     return (
       <Notice tone="success" testID="site-help-done">
         <p>Спасибо! Командир отряда свяжется с вами перед выездом.</p>
-        <Link to="/weekends">Выходные с поисковиком</Link> — подготовьтесь к первому выезду.
+        <Link to={paths.weekends()}>Выходные с поисковиком</Link> — подготовьтесь к первому выезду.
       </Notice>
     )
   }
@@ -76,12 +52,12 @@ function HelpAction({ site }: { site: LastBattleSite }) {
 }
 
 function SiteCard({ site, notified }: { site: LastBattleSite; notified: number | undefined }) {
-  const needsRaising = NEEDS_RAISING.includes(site.status)
+  const needsRaising = siteNeedsRaising(site)
   const roleId = useRole().role?.id
-  const isCommander = roleId === 'commander'
+  const canAddPlace = can(roleId, 'place.create')
   // Защита от «чёрных копателей»: точные координаты — только поисковикам и краеведам.
   // Это витрина; настоящее скрытие должен делать сервер (docs/BACKEND_REQUESTS.md).
-  const seesExactCoords = isCommander || roleId === 'verifier'
+  const seesExactCoords = can(roleId, 'place.exactCoords')
   const statusAction = statusActionFor(roleId, site.status)
   // Проверка по архиву — главное дело краеведа на этом месте: большая кнопка у неё
   const confirmIsMain = statusAction === 'confirm'
@@ -102,9 +78,9 @@ function SiteCard({ site, notified }: { site: LastBattleSite; notified: number |
           Требуется подъём
         </p>
       )}
-      {isCommander ? (
+      {canAddPlace ? (
         // Командир место и отметил — его главное действие: отметить следующее
-        <BigButton to="/last-battle/new" icon="pin" testID="site-add-next">
+        <BigButton to={paths.newSite()} icon="pin" testID="site-add-next">
           Отметить ещё одно место
         </BigButton>
       ) : (
@@ -161,31 +137,30 @@ function SiteCard({ site, notified }: { site: LastBattleSite; notified: number |
         testID="site-share"
       />
       <p>
-        <Link to="/last-battle">Все места на карте</Link>
+        <Link to={paths.lastBattle()}>Все места на карте</Link>
       </p>
     </>
   )
 }
 
 export function SiteScreen() {
-  const api = useApi()
   const { siteId = '' } = useParams()
   const location = useLocation()
-  const site = useQuery({
-    queryKey: ['sites', siteId],
-    queryFn: () => api.getSite({ id: siteId }),
-    retry: (count, error) => !isNotFound(error) && count < 1,
-  })
+  const { place: site, notFound } = usePlace(siteId)
 
-  const notFound = site.isError && isNotFound(site.error)
   return (
     <Screen
       title={notFound ? 'Место не найдено' : (site.data?.placeName ?? 'Место гибели')}
+      back={
+        <BackLink to={paths.lastBattle()} testID="back-link">
+          К местам поиска
+        </BackLink>
+      }
       testID="screen-site"
     >
       {notFound ? (
         <p data-testid="site-not-found">
-          Такого места нет или его удалили. <Link to="/last-battle">Все места на карте</Link>
+          Такого места нет или его удалили. <Link to={paths.lastBattle()}>Все места на карте</Link>
         </p>
       ) : (
         <QueryState query={site} what="место">

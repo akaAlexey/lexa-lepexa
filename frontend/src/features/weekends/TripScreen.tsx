@@ -1,39 +1,43 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
 import { Link, useParams } from 'react-router'
-import { ApiError } from '../../api/client.ts'
 import { QueryState } from '../../app/QueryState.tsx'
 import { ShareButton } from '../../app/ShareButton.tsx'
-import { useServices } from '../../app/services.tsx'
 import type { Trip } from '../../contract/schemas.ts'
-import { checklistProgress, toggleChecklistItem } from '../../domain/checklist.ts'
 import { formatDayRu } from '../../domain/format.ts'
+import { isNotFound } from '../../functions/core/errors.ts'
+import { paths } from '../../functions/core/paths.ts'
+import {
+  freeSpots,
+  spotsText,
+  useChecklist,
+  useRegisterTrip,
+  useTrip,
+} from '../../functions/trips/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
-import { groupUrl } from './groups.ts'
-import { checklistKey, freeSpots, spotsText } from './trips.ts'
 import s from './weekends.module.css'
-
-const isNotFound = (e: unknown) => e instanceof ApiError && e.status === 404
 
 export function TripScreen() {
   const { tripId = '' } = useParams()
-  const { api } = useServices()
-  const trip = useQuery({
-    queryKey: ['trip', tripId],
-    queryFn: () => api.getTrip({ id: tripId }),
-    retry: (count, e) => !isNotFound(e) && count < 1,
-  })
+  const trip = useTrip(tripId, { notFoundIsFinal: true })
 
   if (trip.isError && isNotFound(trip.error)) {
     return (
-      <Screen title="Выезд не найден" testID="screen-trip-not-found">
+      <Screen
+        title="Выезд не найден"
+        back={
+          <BackLink to={paths.events()} testID="back-link">
+            К мероприятиям
+          </BackLink>
+        }
+        testID="screen-trip-not-found"
+      >
         <p>Такого выезда нет или его уже убрали из расписания.</p>
         <p>
-          <Link to="/weekends" className={s.tripLink}>
+          <Link to={paths.weekends()} className={s.tripLink}>
             К списку выездов
           </Link>
         </p>
@@ -42,7 +46,15 @@ export function TripScreen() {
   }
   if (!trip.data) {
     return (
-      <Screen title="Выезд" testID="screen-trip">
+      <Screen
+        title="Выезд"
+        back={
+          <BackLink to={paths.events()} testID="back-link">
+            К мероприятиям
+          </BackLink>
+        }
+        testID="screen-trip"
+      >
         <QueryState query={trip} what="выезд">
           {() => null}
         </QueryState>
@@ -53,22 +65,20 @@ export function TripScreen() {
 }
 
 function TripDetails({ trip }: { trip: Trip }) {
-  const { api } = useServices()
-  const queryClient = useQueryClient()
-  const register = useMutation({
-    mutationFn: () => api.registerTrip({ id: trip.id }),
-    onSuccess: (updated) => {
-      queryClient.setQueryData(['trip', trip.id], updated)
-      queryClient.setQueryData<Trip[]>(['trips'], (list) =>
-        list?.map((t) => (t.id === updated.id ? updated : t)),
-      )
-    },
-  })
+  const register = useRegisterTrip(trip.id)
   const full = freeSpots(trip) === 0
   const registered = register.isSuccess
 
   return (
-    <Screen title={trip.title} testID="screen-trip">
+    <Screen
+      title={trip.title}
+      back={
+        <BackLink to={paths.events()} testID="back-link">
+          К мероприятиям
+        </BackLink>
+      }
+      testID="screen-trip"
+    >
       <Card as="section" aria-labelledby="trip-about">
         <h2 id="trip-about" className="visually-hidden">
           О выезде
@@ -104,7 +114,7 @@ function TripDetails({ trip }: { trip: Trip }) {
       )}
       {!registered && full && (
         <Notice testID="trip-full">
-          Свободных мест на этот выезд нет. <Link to="/weekends">Выберите другую дату</Link>
+          Свободных мест на этот выезд нет. <Link to={paths.weekends()}>Выберите другую дату</Link>
         </Notice>
       )}
       {register.isError && (
@@ -114,7 +124,7 @@ function TripDetails({ trip }: { trip: Trip }) {
       )}
 
       <p>
-        <Link to={groupUrl(trip.id)} className={s.tripLink} data-testid="trip-group">
+        <Link to={paths.tripGroup(trip.id)} className={s.tripLink} data-testid="trip-group">
           Записать группу: школу, клуб или семью
         </Link>
       </p>
@@ -130,19 +140,7 @@ function TripDetails({ trip }: { trip: Trip }) {
 }
 
 function Checklist({ trip }: { trip: Trip }) {
-  const { platform } = useServices()
-  const key = checklistKey(trip.id)
-  const [checked, setChecked] = useState<string[]>(() => {
-    const saved = platform.storage.get<unknown>(key)
-    return Array.isArray(saved) ? saved.filter((x): x is string => typeof x === 'string') : []
-  })
-  const progress = checklistProgress(trip.checklist, checked)
-
-  const toggle = (id: string) => {
-    const next = toggleChecklistItem(checked, id)
-    platform.storage.set(key, next)
-    setChecked(next)
-  }
+  const { isChecked, toggle, progress } = useChecklist(trip)
 
   return (
     <Card as="section">
@@ -153,7 +151,7 @@ function Checklist({ trip }: { trip: Trip }) {
             <label className={s.check}>
               <input
                 type="checkbox"
-                checked={checked.includes(item.id)}
+                checked={isChecked(item.id)}
                 onChange={() => toggle(item.id)}
                 data-testid={`checklist-${item.id}`}
               />

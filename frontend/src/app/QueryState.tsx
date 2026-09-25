@@ -1,4 +1,4 @@
-import type { UseQueryResult } from '@tanstack/react-query'
+import type { Loadable } from '../functions/core/query.ts'
 import type { ReactNode } from 'react'
 
 /** Единые состояния загрузки и ошибки: крупно, по-русски, с повтором. */
@@ -7,7 +7,7 @@ export function QueryState<T>({
   children,
   what,
 }: {
-  query: UseQueryResult<T>
+  query: Loadable<T>
   children: (data: T) => ReactNode
   what: string
 }) {

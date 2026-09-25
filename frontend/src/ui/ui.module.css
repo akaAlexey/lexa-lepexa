@@ -11,17 +11,19 @@
   border-radius: var(--radius-control);
   background: var(--color-accent);
   color: #fff;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 700;
   text-align: center;
   text-decoration: none;
   cursor: pointer;
-  box-shadow: var(--shadow-float);
+}
+
+.bigButton:hover {
+  background: #9f4815;
 }
 
 .bigButton:active {
   transform: translateY(0.1rem);
-  box-shadow: var(--shadow-card);
 }
 
 .bigButton[aria-disabled='true'],
@@ -38,11 +40,12 @@
   }
 }
 
+/* Карточка — панель на газете: полупрозрачная бумага и тонкая линейка, без «пузыря» */
 .card {
-  background: var(--color-surface);
+  background: rgb(251 246 236 / 0.82);
+  border: 1px solid var(--color-line-strong);
   border-radius: var(--radius-card);
-  padding: var(--space-4);
-  box-shadow: var(--shadow-card);
+  padding: var(--space-3) var(--space-4);
 }
 
 /* Плашка-пилюля: демо-данные, статусы */
@@ -51,9 +54,9 @@
   align-items: center;
   gap: var(--space-1);
   padding: 0.1rem 0.6rem;
-  border: 2px solid currentColor;
+  border: 1px solid currentColor;
   border-radius: var(--radius-pill);
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
   line-height: 1.4;
   background: var(--color-surface);
@@ -77,13 +80,32 @@
   font-weight: 400;
 }
 
+/* Экран — газетная полоса: колонка до 62rem, шапка с двойной линейкой */
 .screen {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  padding: var(--space-4);
-  max-width: 72rem;
+  padding: var(--space-4) var(--space-4) var(--space-8);
+  max-width: 62rem;
   margin: 0 auto;
+}
+
+.screenHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 3px double var(--color-ink);
+}
+
+.screenHead h1 {
+  margin: 0;
+}
+
+.screenHead .lead {
+  margin: var(--space-1) 0 0;
 }
 
 /*
@@ -94,16 +116,8 @@
   .screen:has([data-map-frame]) {
     width: var(--panel-width);
     max-width: none;
-    margin: var(--float-gap);
+    margin: 0;
     padding: var(--space-4) var(--space-4) var(--space-6);
-    border-radius: var(--radius-panel);
-    background: var(--color-surface);
-    box-shadow: var(--shadow-panel);
-  }
-
-  .screen:has([data-map-frame]) .card {
-    background: var(--color-paper);
-    box-shadow: none;
   }
 }
 
@@ -127,17 +141,22 @@
   gap: var(--space-2);
   min-height: var(--touch-min);
   padding: var(--space-2) var(--space-4);
-  border: 2px solid var(--color-olive);
+  border: 1px solid var(--color-ink);
   border-radius: var(--radius-control);
   background: transparent;
-  color: var(--color-olive);
+  color: var(--color-ink);
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
 }
 
+.button:hover {
+  background: rgb(43 42 38 / 0.06);
+}
+
 .button[aria-pressed='true'] {
-  background: var(--color-olive);
+  border-color: var(--color-ink);
+  background: var(--color-ink);
   color: var(--color-surface);
 }
 
@@ -166,9 +185,9 @@
   min-height: var(--touch-min);
   width: 100%;
   padding: var(--space-2) var(--space-3);
-  border: 2px solid var(--color-control-border);
+  border: 1px solid var(--color-control-border);
   border-radius: var(--radius-control);
-  background: #fff;
+  background: rgb(255 252 244 / 0.92);
   color: var(--color-ink);
 }
 
@@ -213,7 +232,7 @@
 }
 
 .chips .button[aria-pressed='true'] {
-  border-color: var(--color-olive);
+  border-color: var(--color-ink);
   color: var(--color-surface);
 }
 
@@ -224,9 +243,10 @@
   gap: var(--space-3);
   align-items: flex-start;
   padding: var(--space-3) var(--space-4);
-  border-left: 0.3rem solid var(--color-olive);
+  border: 1px solid var(--color-sepia);
+  border-left-width: 0.3rem;
   border-radius: var(--radius-control);
-  background: var(--color-surface);
+  background: rgb(251 246 236 / 0.85);
 }
 
 .noticeSuccess {
@@ -286,4 +306,52 @@
   color: var(--color-ink-muted);
   font-family: var(--font-mono);
   font-size: 0.9rem;
+}
+
+/* «← К мероприятиям»: тёмная кнопка над газетой, липнет к верху при прокрутке */
+.back {
+  position: sticky;
+  top: var(--space-2);
+  z-index: 3;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4) 0 var(--space-3);
+  border-radius: var(--radius-control);
+  background: var(--color-ink);
+  color: var(--color-surface);
+  font-weight: 700;
+  text-decoration: none;
+  /* Кольцо «бумаги» вокруг: прилипшая кнопка не режет строки текста под собой */
+  box-shadow:
+    0 0 0 0.5rem color-mix(in srgb, var(--color-paper) 94%, transparent),
+    var(--shadow-float);
+}
+
+.back:hover {
+  background: #000;
+}
+
+/* Надстрочник: дата, отряд — моноширинным, прописными, как в газете */
+.kick {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+/* Типографский штамп: тип записи в ленте */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 0.4rem;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
 }

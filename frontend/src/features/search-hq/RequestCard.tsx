@@ -1,12 +1,18 @@
 import type { Fundraiser, Team, VolunteerRequest } from '../../contract/schemas.ts'
 import { formatDayRu } from '../../domain/format.ts'
-import { progressPercent } from '../../domain/fundraising.ts'
-import { describeRoles } from '../../domain/requests.ts'
+import { ageLabel, volunteersNeeded } from '../../domain/events.ts'
+import { fundProgress } from '../../functions/fundraising/index.ts'
 import { Button } from '../../ui/Button.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { Icon } from '../../ui/Icon.tsx'
-import { formatNumberRu } from './queries.ts'
 import s from './search.module.css'
+
+const numberRu = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 })
+
+/** 15000 → «15 000» (без знака валюты — для «Собрано: 15 000 из 50 000 ₽»). */
+function formatNumberRu(n: number): string {
+  return numberRu.format(n)
+}
 
 interface Props {
   request: VolunteerRequest
@@ -38,7 +44,11 @@ export function RequestCard({
         {team ? `Отряд «${team.name}»` : 'Поисковый отряд'} · {r.place}
       </p>
       <p>
-        <span className={s.needs}>Требуется: {describeRoles(r.roles)}.</span> {formatDayRu(r.date)}
+        <span className={s.needs}>
+          Требуются волонтёры: {volunteersNeeded(r)}
+          {r.minAge !== undefined && ` · ${ageLabel(r.minAge)}`}.
+        </span>{' '}
+        {formatDayRu(r.date)}
       </p>
       <p className={s.meta}>Уже в команде: {r.joined}</p>
       {f && (
@@ -46,12 +56,7 @@ export function RequestCard({
           <label htmlFor={`fund-${r.id}`}>
             Собрано: {formatNumberRu(f.collectedRub)} из {formatNumberRu(f.goalRub)} ₽
           </label>
-          <progress
-            id={`fund-${r.id}`}
-            className={s.progress}
-            max={100}
-            value={progressPercent(f.collectedRub, f.goalRub)}
-          />
+          <progress id={`fund-${r.id}`} className={s.progress} max={100} value={fundProgress(f)} />
         </>
       )}
       <div className={s.actions}>

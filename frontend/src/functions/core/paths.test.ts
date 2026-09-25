@@ -14,6 +14,9 @@ function routePaths(routes: RouteObject[], base = ''): string[] {
 
 const SAMPLE: Record<ScreenId, string> = {
   home: paths.home(),
+  map: paths.map(),
+  events: paths.events(),
+  other: paths.other(),
   trail: paths.trail(),
   point: paths.point('park-3km', 'okop'),
   finish: paths.finish('park-3km'),
@@ -36,9 +39,12 @@ const SAMPLE: Record<ScreenId, string> = {
 }
 
 describe('адреса экранов', () => {
-  it('прежние адреса: ссылки из QR-кодов и «Поделиться» не меняются на шаге A', () => {
+  it('прежние адреса из QR-кодов и «Поделиться» живы, у разделов ADR 0012 свои адреса', () => {
     expect(SAMPLE).toEqual({
       home: '/',
+      map: '/map',
+      events: '/events',
+      other: '/other',
       trail: '/trail',
       point: '/trail/park-3km/point/okop',
       finish: '/trail/park-3km/finish',

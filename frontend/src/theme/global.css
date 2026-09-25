@@ -14,11 +14,13 @@
   --space-4: 1rem;
   --space-6: 1.5rem;
   --space-8: 2rem;
-  --nav-height: 4.5rem;
+  --nav-height: 4rem;
   /* Ноутбук: узкая тёмная панель разделов и панель экрана рядом с картой */
-  --rail-width: 7rem;
+  --rail-width: 6.5rem;
   --panel-width: 27rem;
   --float-gap: 1rem;
+  /* Стол виден полосами по краям страницы, содержимое лежит на газете (ADR 0012) */
+  --edge: max(1vw, 0.5rem);
   font-size: var(--font-size-base, 112.5%);
 }
 
@@ -50,8 +52,24 @@ body {
   font-family: var(--font-body);
   line-height: 1.5;
   color: var(--color-ink, #2b2a26);
-  background-color: var(--color-paper, #f2e8d5);
+  /* Стол под всем приложением; фон на случай, если картинка не загрузилась */
+  background: #3b2210 url('./textures/desk.jpg') center / cover;
   -webkit-text-size-adjust: 100%;
+}
+
+@media (max-width: 40rem) {
+  :root {
+    --edge: 0.8rem;
+  }
+}
+
+/* Полосы прокрутки скрыты: прокрутка пальцем, колесом и клавиатурой работает как прежде */
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
 }
 
 h1,
@@ -70,8 +88,12 @@ h2 {
   letter-spacing: 0.01em;
 }
 
+/* Заголовок экрана — газетная шапка: прописные, двойная линейка снизу */
 h1 {
-  font-size: 1.9rem;
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 h2 {
@@ -127,7 +149,7 @@ textarea {
 /* Вертикальный список карточек */
 .stack-list {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;

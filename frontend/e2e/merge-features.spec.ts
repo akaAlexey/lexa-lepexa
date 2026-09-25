@@ -37,7 +37,7 @@ test('«Истории»: семья рассказывает историю, к
 }, testInfo) => {
   const family = await context.newPage()
   await startAs(family, 'family')
-  await family.getByTestId('tab-archive').click()
+  await family.getByTestId('tab-stories').click()
   await expect(family.getByTestId('story-ST01')).toBeVisible()
   await snap(family, testInfo, 'merge-01-archive')
 
@@ -77,7 +77,8 @@ test('коллективная заявка: школа записывается
 }, testInfo) => {
   await useDemoDate(page)
   await startAs(page, 'family')
-  await page.getByTestId('tab-weekends').click()
+  await page.getByTestId('tab-events').click()
+  await page.getByTestId('events-weekends').click()
   await page.getByTestId('weekends-register').click()
   await page.getByTestId('trip-group').click()
   await page.getByTestId('group-organization').fill('Школа № 5, 7 «А» класс')
@@ -85,13 +86,14 @@ test('коллективная заявка: школа записывается
   await page.getByTestId('group-contact').fill('+7 900 555-44-33')
   await page.getByTestId('group-comment').fill('8 детей и 2 взрослых, нужен гид')
   await snap(page, testInfo, 'merge-06-group-form')
+  await page.getByTestId('group-consent').check()
   await page.getByTestId('group-send').click()
   await expect(page.getByTestId('group-sent')).toBeVisible()
   await page.getByRole('heading', { name: 'Мои заявки групп' }).scrollIntoViewIfNeeded()
   await snap(page, testInfo, 'merge-07-group-sent')
 
   await startAs(page, 'commander')
-  await page.getByTestId('tab-weekends').click()
+  await page.getByTestId('events-weekends').click()
   const card = page.getByTestId('group-G01')
   await card.scrollIntoViewIfNeeded()
   await expectNoA11yViolations(page)
@@ -112,7 +114,7 @@ test('«Где я?» на карте тропы: метка и расстоян�
 
 test('хроника: события по годам, фильтр и выбор события на карте', async ({ page }, testInfo) => {
   await startAs(page, 'family')
-  await page.getByTestId('tab-archive').click()
+  await page.getByTestId('tab-stories').click()
   await page.getByTestId('archive-chronicle').click()
   await expect(page.getByRole('heading', { level: 2, name: '1941 оборона' })).toBeVisible()
   await expect(page.getByTestId('chronicle-map')).toHaveAttribute('data-ready', 'true')

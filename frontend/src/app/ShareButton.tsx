@@ -1,6 +1,4 @@
-import { useState } from 'react'
-import { useServices } from './services.tsx'
-import type { ShareResult } from '../platform/types.ts'
+import { useShare, type ShareResult } from '../functions/share/index.ts'
 import { Button } from '../ui/Button.tsx'
 
 const RESULT_TEXT: Record<Exclude<ShareResult, 'shared'>, string> = {
@@ -21,14 +19,14 @@ export function ShareButton({
   text?: string
   testID: string
 }) {
-  const { platform } = useServices()
-  const [result, setResult] = useState<ShareResult>()
-  const share = async () => {
-    setResult(await platform.share.share({ title, text, url: window.location.href }))
-  }
+  const { result, share } = useShare()
   return (
     <div>
-      <Button onClick={() => void share()} icon="share" testID={testID}>
+      <Button
+        onClick={() => share({ title, text, url: window.location.href })}
+        icon="share"
+        testID={testID}
+      >
         Поделиться
       </Button>
       <p role="status" aria-live="polite" data-testid={`${testID}-result`}>

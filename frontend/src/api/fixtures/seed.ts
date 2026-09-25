@@ -185,6 +185,7 @@ export const fundraisers: Fundraiser[] = [
     collectedRub: 15000,
     lat: 53.28,
     lon: 36.57,
+    createdAt: '2026-09-20T09:00:00Z',
     demo: true,
   },
   {
@@ -196,6 +197,7 @@ export const fundraisers: Fundraiser[] = [
     collectedRub: 9000,
     lat: 53.21,
     lon: 36.45,
+    createdAt: '2026-09-29T11:00:00Z',
     demo: true,
   },
   {
@@ -207,6 +209,7 @@ export const fundraisers: Fundraiser[] = [
     collectedRub: 21000,
     lat: 52.74,
     lon: 35.84,
+    createdAt: '2026-09-26T10:00:00Z',
     demo: true,
   },
   {
@@ -218,6 +221,7 @@ export const fundraisers: Fundraiser[] = [
     collectedRub: 32000,
     lat: 53.15,
     lon: 36.33,
+    createdAt: '2026-09-24T12:00:00Z',
     demo: true,
   },
   {
@@ -229,6 +233,7 @@ export const fundraisers: Fundraiser[] = [
     collectedRub: 12500,
     lat: 52.97,
     lon: 36.07,
+    createdAt: '2026-09-18T09:00:00Z',
     demo: true,
   },
 ]
@@ -240,8 +245,9 @@ export const requests: VolunteerRequest[] = [
     title: 'Вахта Памяти (Орловская обл.)',
     date: '2026-10-03',
     place: 'Мценский р-н',
-    roles: [{ role: 'digger', count: 5 }],
+    roles: [{ role: 'any', count: 5 }],
     joined: 2,
+    minAge: 16,
     fundraiserId: 'F01',
     lat: 53.28,
     lon: 36.57,
@@ -272,7 +278,9 @@ export const trips: Trip[] = [
     lon: 36.22,
     spotsTotal: 12,
     spotsTaken: 5,
+    minAge: 14,
     checklist,
+    createdAt: '2026-09-22T08:00:00Z',
     demo: true,
   },
   {
@@ -285,7 +293,9 @@ export const trips: Trip[] = [
     lon: 36.33,
     spotsTotal: 8,
     spotsTaken: 1,
+    minAge: 16,
     checklist,
+    createdAt: '2026-09-30T08:00:00Z',
     demo: true,
   },
 ]
