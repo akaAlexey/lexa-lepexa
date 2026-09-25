@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { renderApp } from '../../test/renderApp.tsx'
 
 vi.mock('../../map/MapView.tsx', () => ({
@@ -32,24 +32,9 @@ describe('карта-хаб', () => {
     expect(screen.getByTestId('hub-map')).toHaveAttribute('data-padding', padding)
   })
 
-  it('геопозиция запрашивается только по кнопке и затем передаётся карте', async () => {
-    const getPosition = vi.fn<() => Promise<{ lat: number; lon: number }>>(async () => ({
-      lat: 52.971,
-      lon: 36.071,
-    }))
-    renderApp('/map', {
-      platform: {
-        geo: { source: 'device', getPosition },
-      },
-    })
-
-    expect(getPosition).not.toHaveBeenCalled()
-    await userEvent.click(await screen.findByTestId('hub-locate'))
-    expect(getPosition).toHaveBeenCalledTimes(1)
-    expect(await screen.findByTestId('hub-map')).toHaveAttribute(
-      'data-user-position',
-      JSON.stringify({ lat: 52.971, lon: 36.071 }),
-    )
+  it('на карте нет отдельной кнопки показа местоположения', async () => {
+    renderApp('/map')
+    await screen.findByTestId('hub-map')
     expect(screen.queryByTestId('hub-locate')).not.toBeInTheDocument()
   })
 })
