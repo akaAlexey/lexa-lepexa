@@ -33,7 +33,6 @@ def nulls(value, path=""):
     return []
 
 
-
 async def test_server_registration_login_and_logout(api):
     password = "correct-horse-42"
     registered = await api.post(
@@ -110,6 +109,7 @@ async def test_server_registration_by_phone(api):
             json={"login": "+7 900 123-45-67", "password": "example-password"},
         )
     ).status_code == 200
+
 
 async def test_health(api):
     assert (await api.get("/health")).json() == {"ok": True}
