@@ -12,7 +12,7 @@ import { Notice } from '../../ui/Notice.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import s from './other.module.css'
 
-type SectionId = 'account' | 'archive' | 'ar' | 'photo' | 'role'
+type SectionId = 'account' | 'profile' | 'archive' | 'ar' | 'photo' | 'role'
 
 interface Section {
   id: SectionId
@@ -29,6 +29,13 @@ function sectionsFor(signedIn: boolean): Section[] {
       id: 'account',
       title: signedIn ? 'Демо-профиль' : 'Демо-вход',
       hint: signedIn ? 'Данные только на этом устройстве' : 'Пароль не проверяется',
+      icon: 'user',
+      locked: false,
+    },
+    {
+      id: 'profile',
+      title: 'Профиль',
+      hint: signedIn ? 'Данные вашего профиля' : 'Сначала войдите',
       icon: 'user',
       locked: false,
     },
@@ -64,7 +71,12 @@ function sectionsFor(signedIn: boolean): Section[] {
 }
 
 const isSection = (v: string | null): v is SectionId =>
-  v === 'account' || v === 'archive' || v === 'ar' || v === 'photo' || v === 'role'
+  v === 'account' ||
+  v === 'profile' ||
+  v === 'archive' ||
+  v === 'ar' ||
+  v === 'photo' ||
+  v === 'role'
 
 /**
  * «Другое» (ADR 0012): одна большая панель со списком разделов. В шапке — имя открытого раздела
@@ -159,6 +171,7 @@ function Locked({ onSignIn }: { onSignIn: () => void }) {
 function Panel({ id }: { id: SectionId }) {
   switch (id) {
     case 'account':
+    case 'profile':
       return <AccountPanel />
     case 'archive':
       return (

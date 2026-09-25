@@ -45,6 +45,7 @@ export const paths = {
   /** «Другое»; `section` — сразу открытый раздел (account, profile, role…). */
   other: (section?: string) =>
     section ? `${patterns.other}?section=${seg(section)}` : patterns.other,
+  otherSection: (section: 'account' | 'profile') => `${patterns.other}?section=${section}`,
   trail: () => patterns.trail,
   point: (routeId: string, pointId: string) => `/trail/${seg(routeId)}/point/${seg(pointId)}`,
   finish: (routeId: string) => `/trail/${seg(routeId)}/finish`,
@@ -64,4 +65,6 @@ export const paths = {
   newLivePhoto: () => patterns.newLivePhoto,
   livePhoto: (photoId: string) => `/live/${seg(photoId)}`,
   demo: () => patterns.demo,
-} as const satisfies Record<ScreenId, (...ids: string[]) => string>
+} as const satisfies Record<ScreenId, (...ids: string[]) => string> & {
+  otherSection: (section: 'account' | 'profile') => string
+}

@@ -40,6 +40,10 @@ const SAMPLE: Record<ScreenId, string> = {
 }
 
 describe('адреса экранов', () => {
+  it('ссылка аккаунта ведёт прямо к нужной подвкладке', () => {
+    expect(paths.otherSection('account')).toBe('/other?section=account')
+    expect(paths.otherSection('profile')).toBe('/other?section=profile')
+  })
   it('прежние адреса из QR-кодов и «Поделиться» живы, у разделов ADR 0012 свои адреса', () => {
     expect(SAMPLE).toEqual({
       home: '/',

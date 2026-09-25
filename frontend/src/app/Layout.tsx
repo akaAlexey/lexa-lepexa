@@ -58,7 +58,11 @@ export function Layout() {
               <span className={s.mastRegion}> · {region.regionName}</span>
             </Link>
             {/* Кнопка аккаунта: «Вход» до входа, «Профиль» после; роль — рядом, меняется в «Другом» */}
-            <Link to={paths.other()} className={s.account} data-testid="nav-role">
+            <Link
+              to={paths.otherSection(account ? 'profile' : 'account')}
+              className={s.account}
+              data-testid="nav-role"
+            >
               <Icon name="user" size={1.1} />
               <span>{account ? 'Профиль' : 'Вход'}</span>
               {role && (
