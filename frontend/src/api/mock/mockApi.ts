@@ -88,8 +88,7 @@ export function createMockApi(options: MockOptions = {}): ApiClient {
   /** Подтянуть сохранённое: своё после перезагрузки и созданное в соседних вкладках. */
   function load() {
     const snap = storage?.load() as
-      | { v?: number; data?: Partial<Record<(typeof MUTABLE)[number], unknown>> }
-      | undefined
+      { v?: number; data?: Partial<Record<(typeof MUTABLE)[number], unknown>> } | undefined
     if (!snap || snap.v !== MOCK_DB_VERSION || !snap.data) return
     const target = db as Record<(typeof MUTABLE)[number], unknown>
     for (const key of MUTABLE) if (Array.isArray(snap.data[key])) target[key] = snap.data[key]
