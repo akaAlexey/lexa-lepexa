@@ -122,7 +122,13 @@ export function ArchiveScreen() {
               )}
               <section aria-labelledby="archive-published">
                 <h2 id="archive-published">Проверенные истории</h2>
-                <StoryList label="Проверенные истории" stories={published} />
+                {published.length > 0 ? (
+                  <StoryList label="Проверенные истории" stories={published} />
+                ) : (
+                  <Notice>
+                    Проверенных историй пока нет. Вы можете рассказать историю своей семьи.
+                  </Notice>
+                )}
               </section>
             </>
           )

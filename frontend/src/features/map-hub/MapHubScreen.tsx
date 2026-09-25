@@ -105,11 +105,20 @@ export function MapHubScreen() {
   const selectedKey = params.get('place') ?? undefined
   const selected = hub.places.find((p) => p.key === selectedKey)
   const [sheetOpen, setSheetOpen] = useState(true)
+  const [viewportHeight, setViewportHeight] = useState(() => window.innerHeight)
   const h1 = useRef<HTMLHeadingElement>(null)
 
   useEffect(() => {
     document.title = `Карта — ${region.appTitle}`
-    h1.current?.focus({ preventScroll: true })
+    document
+      .querySelector<HTMLInputElement>('[data-testid="hub-search"]')
+      ?.focus({ preventScroll: true })
+  }, [])
+
+  useEffect(() => {
+    const updateHeight = () => setViewportHeight(window.innerHeight)
+    window.addEventListener('resize', updateHeight)
+    return () => window.removeEventListener('resize', updateHeight)
   }, [])
 
   const update = (next: Record<string, string | undefined>, replace = true) => {
@@ -152,10 +161,10 @@ export function MapHubScreen() {
         : {
             top: 90,
             right: 32,
-            bottom: sheetOpen ? Math.round(window.innerHeight * 0.45) + 40 : 110,
+            bottom: sheetOpen ? Math.round(viewportHeight * 0.45) + 40 : 110,
             left: 32,
           },
-    [wide, sheetOpen],
+    [wide, sheetOpen, viewportHeight],
   )
 
   return (
@@ -195,11 +204,10 @@ export function MapHubScreen() {
             {sheetOpen ? 'Свернуть панель' : 'Развернуть панель'}
           </span>
         </button>
-        <div className={s.tabs} role="tablist" aria-label="Что показать">
+        <div className={s.tabs} role="group" aria-label="Что показать">
           <button
             type="button"
-            role="tab"
-            aria-selected={tab === 'places'}
+            aria-pressed={tab === 'places'}
             className={s.tab}
             onClick={() => update({ tab: undefined, year: undefined })}
             data-testid="hub-tab-places"
@@ -208,8 +216,7 @@ export function MapHubScreen() {
           </button>
           <button
             type="button"
-            role="tab"
-            aria-selected={tab === 'history'}
+            aria-pressed={tab === 'history'}
             className={s.tab}
             onClick={() => {
               update({ tab: 'history', place: undefined })
@@ -220,7 +227,7 @@ export function MapHubScreen() {
             История края
           </button>
         </div>
-        <div className={s.body} role="tabpanel" hidden={!sheetOpen && !wide}>
+        <div className={s.body} hidden={!sheetOpen && !wide}>
           {hub.pending && (
             <p role="status" data-testid="loading">
               Загружаем карту…
@@ -274,7 +281,7 @@ function SearchBox({ places, onPick }: { places: Place[]; onPick: (p: Place) => 
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Места боя, музеи, исторические маршруты..."
-          aria-controls={listId}
+          aria-controls={found.length > 0 || showEmpty ? listId : undefined}
           autoComplete="off"
           data-testid="hub-search"
         />
@@ -296,7 +303,7 @@ function SearchBox({ places, onPick }: { places: Place[]; onPick: (p: Place) => 
                 <span>
                   <span className={s.resultTitle}>{p.title}</span>
                   <span className={s.resultHint}>
-                    {PLACE_KIND_LABEL[p.kind]} · {p.subtitle}
+                    {PLACE_KIND_LABEL[p.kind]} · {p.subtitle} {p.demo && <DemoBadge />}
                   </span>
                 </span>
               </button>
@@ -370,6 +377,11 @@ function Overview({
         <h2 id="hub-sites" className={s.blockTitle}>
           Места поиска
         </h2>
+        {sites.some((site) => site.demo) && (
+          <p>
+            <DemoBadge /> Числа включают демонстрационные места.
+          </p>
+        )}
         <ul className={s.counts}>
           {counts.map((c) => (
             <li key={c.status}>
@@ -400,7 +412,9 @@ function Overview({
                 <Icon name={KIND_ICON[p.kind]} size={1.1} />
                 <span>
                   <span className={s.resultTitle}>{p.title}</span>
-                  <span className={s.resultHint}>{p.subtitle}</span>
+                  <span className={s.resultHint}>
+                    {p.subtitle} {p.demo && <DemoBadge />}
+                  </span>
                 </span>
               </button>
             </li>

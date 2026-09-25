@@ -15,6 +15,7 @@ describe('коллективные заявки на выезд', () => {
     await userEvent.type(screen.getByTestId('group-organization'), 'Школа № 5, 7 «А»')
     await userEvent.type(screen.getByTestId('group-contact-name'), 'Мария Петровна')
     await userEvent.type(screen.getByTestId('group-contact'), '+7 900 555-44-33')
+    await userEvent.click(screen.getByTestId('group-consent'))
     await userEvent.click(screen.getByTestId('group-send'))
 
     expect(await screen.findByTestId('group-sent')).toBeInTheDocument()
@@ -30,6 +31,7 @@ describe('коллективные заявки на выезд', () => {
     const count = await screen.findByTestId('group-count')
     await userEvent.clear(count)
     await userEvent.type(count, '150')
+    await userEvent.click(screen.getByTestId('group-consent'))
     await userEvent.click(screen.getByTestId('group-send'))
     expect(await screen.findByText(/Не больше 100 человек/)).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/weekends/W01/group')

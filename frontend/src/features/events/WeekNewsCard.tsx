@@ -13,7 +13,9 @@ export function WeekNewsCard() {
   return (
     <section className={s.week} aria-labelledby="week-news-title" data-testid="week-news">
       <header className={s.weekHead}>
-        <h2 id="week-news-title">Новости недели</h2>
+        <h2 id="week-news-title">
+          Новости недели <DemoBadge />
+        </h2>
         <span className={ui.kick}>
           {day(news.from)} — {day(news.to)}
         </span>
@@ -21,14 +23,11 @@ export function WeekNewsCard() {
       {news.items.map((n) => (
         <div key={n.id} className={s.weekItem}>
           <p className={ui.kick}>
-            {formatDayRu(n.date)} · {n.team} · {n.kind}
+            {formatDayRu(n.date)} · {n.team} · {n.kind} <DemoBadge />
           </p>
           <p className={s.weekText}>{n.text}</p>
         </div>
       ))}
-      <p className={s.weekFoot}>
-        <DemoBadge />
-      </p>
     </section>
   )
 }

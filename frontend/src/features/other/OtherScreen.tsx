@@ -27,24 +27,24 @@ function sectionsFor(signedIn: boolean): Section[] {
   return [
     {
       id: 'account',
-      title: signedIn ? 'Профиль' : 'Вход',
-      hint: signedIn ? 'Ваш вход на этом устройстве' : 'Телефон или почта и пароль',
+      title: signedIn ? 'Демо-профиль' : 'Демо-вход',
+      hint: signedIn ? 'Данные только на этом устройстве' : 'Пароль не проверяется',
       icon: 'user',
       locked: false,
     },
     {
       id: 'archive',
-      title: 'Семейный архив',
-      hint: 'Бойцы вашей семьи и их документы',
+      title: 'Семейный архив (в разработке)',
+      hint: 'Пока доступен рассказ в «Историях»',
       icon: 'archive',
-      locked: !signedIn,
+      locked: false,
     },
     {
       id: 'ar',
-      title: 'AR-режим',
-      hint: 'Места боёв «тогда и сейчас» через камеру',
+      title: 'AR-режим (позже)',
+      hint: 'Совмещение снимков пока недоступно',
       icon: 'target',
-      locked: !signedIn,
+      locked: false,
     },
     {
       id: 'photo',
@@ -222,9 +222,7 @@ function AccountPanel() {
   const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
   const [show, setShow] = useState(false)
-  const [remember, setRemember] = useState(true)
   const [errors, setErrors] = useState<FieldErrors>({})
-  const [note, setNote] = useState<string>()
 
   if (account) {
     return (
@@ -256,6 +254,10 @@ function AccountPanel() {
 
   return (
     <form className={s.form} onSubmit={submit} noValidate data-testid="signin-form">
+      <Notice>
+        Демо-вход только на этом устройстве: пароль не проверяется и не отправляется. Не вводите
+        свой настоящий пароль.
+      </Notice>
       <TextField
         label="Телефон или почта"
         value={login}
@@ -286,34 +288,10 @@ function AccountPanel() {
           {show ? 'Скрыть' : 'Показать'}
         </button>
       </div>
-      <label className={s.check}>
-        <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
-        Запомнить меня
-      </label>
       <BigButton onClick={() => submit()} icon="user" testID="signin-submit">
         Войти
       </BigButton>
-      <p className={s.links}>
-        <button
-          type="button"
-          className={s.linkButton}
-          onClick={() => setNote('Восстановление пароля появится вместе с сервером входа.')}
-        >
-          Забыли пароль?
-        </button>
-        <button
-          type="button"
-          className={s.linkButton}
-          onClick={() =>
-            setNote(
-              'Регистрация появится вместе с сервером входа. Сейчас можно войти с любым телефоном или почтой.',
-            )
-          }
-        >
-          Зарегистрироваться
-        </button>
-      </p>
-      {note && <Notice testID="signin-note">{note}</Notice>}
+      <p className={s.muted}>Регистрация и восстановление пароля пока недоступны.</p>
       <p className={s.muted}>
         Демо: вход только на этом устройстве, пароль никуда не отправляется.{' '}
         <Link to={paths.home()}>Выбрать роль без входа</Link>
