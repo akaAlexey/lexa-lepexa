@@ -10,6 +10,7 @@ export const qk = {
   site: (id: string) => ['sites', id] as const,
   graves: ['graves'],
   battles: ['battles'],
+  memorials: ['memorials'],
   teams: ['teams'],
   requests: ['requests'],
   fundraisers: ['fundraisers'],

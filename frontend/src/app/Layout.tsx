@@ -5,7 +5,6 @@ import { otherSection, paths } from '../functions/core/paths.ts'
 import { Icon } from '../ui/Icon.tsx'
 import { Logo } from '../ui/Logo.tsx'
 import s from './layout.module.css'
-import { useRole } from './RoleContext.tsx'
 import { TAB_ORDER, TABS, tabOf } from './roles.ts'
 import { PaymentReturn } from './PaymentReturn.tsx'
 import { Toaster } from './Toaster.tsx'
@@ -16,7 +15,6 @@ import { Toaster } from './Toaster.tsx'
  * Карта-хаб занимает всё место без газеты и шапки.
  */
 export function Layout() {
-  const { role } = useRole()
   const { account } = useAccount()
   const { pathname } = useLocation()
   const active = tabOf(pathname)
@@ -53,25 +51,14 @@ export function Layout() {
       <div className={s.page}>
         {!fullBleed && (
           <header className={s.masthead}>
-            {/* Без региона и «Демо» — решение команды 25.09 (пометки демо — флаг в ui/DemoBadge) */}
+            {/* Без региона и пометок «Демо» — решение команды 25.09 */}
             <Link to={paths.events()} className={s.mastTitle} data-testid="mast-home">
               {region.appTitle}
             </Link>
-            {/* Кнопка аккаунта: «Вход» до входа, «Профиль» после; роль — рядом, меняется в «Другом» */}
-            <Link
-              to={account ? paths.other() : otherSection('account')}
-              className={s.account}
-              data-testid="nav-role"
-            >
+            {/* В шапке: «Войти» для гостя, имя пользователя после входа. */}
+            <Link to={otherSection('account')} className={s.account} data-testid="nav-role">
               <Icon name="user" size={1.1} />
-              <span>{account ? 'Профиль' : 'Вход'}</span>
-              {role && (
-                <span className={s.accountRole}>
-                  {' · '}
-                  <span className="visually-hidden">Роль: </span>
-                  {role.short}
-                </span>
-              )}
+              <span>{account ? account.name?.trim() || account.login : 'Войти'}</span>
             </Link>
           </header>
         )}
@@ -85,9 +72,6 @@ export function Layout() {
               <Link to={paths.about()}>О нас</Link>
               <Link to={paths.privacy()}>Политика конфиденциальности</Link>
               <Link to={paths.terms()}>Пользовательские условия</Link>
-              <Link to={paths.newStory()} className={s.footerAccent}>
-                Есть история?
-              </Link>
             </nav>
             <p className={s.footerNote}>
               © {new Date().getFullYear()} {region.appTitle}

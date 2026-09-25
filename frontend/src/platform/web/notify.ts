@@ -15,10 +15,21 @@ export function createWebNotify(): NotifyService {
       return Notification.requestPermission()
     },
     show({ title, body, url }) {
-      if (!supported() || Notification.permission !== 'granted') return
-      const n = new Notification(title, { body, lang: 'ru' })
-      // Адрес экрана — от корня приложения: на GitHub Pages оно живёт в /lexa-lepexa/, на домене — в /
-      if (url) n.onclick = () => window.location.assign(withBase(url))
+      if (!supported()) return
+      const display = () => {
+        const n = new Notification(title, { body, lang: 'ru' })
+        // Адрес экрана — от корня приложения: на GitHub Pages оно живёт в /lexa-lepexa/, на домене — в /
+        if (url) n.onclick = () => window.location.assign(withBase(url))
+      }
+      if (Notification.permission === 'granted') {
+        display()
+        return
+      }
+      if (Notification.permission === 'default') {
+        void Notification.requestPermission().then((permission) => {
+          if (permission === 'granted') display()
+        })
+      }
     },
   }
 }

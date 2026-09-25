@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { renderApp } from '../test/renderApp.tsx'
@@ -28,8 +28,8 @@ describe('шапка и меню', () => {
     const { api } = renderApp('/events', { role: 'volunteer' })
     const header = (await screen.findByTestId('mast-home')).closest('header')
     expect(header).not.toHaveTextContent(/демо/i)
-    const card = await screen.findByTestId('request-card-R01')
-    expect(within(card).queryByText('Демо-данные')).not.toBeInTheDocument()
+    await screen.findByTestId('request-card-R01')
+    expect(document.body).not.toHaveTextContent(/демо/i)
     expect((await api.listRequests()).find((r) => r.id === 'R01')?.demo).toBe(true)
   })
 
@@ -38,5 +38,26 @@ describe('шапка и меню', () => {
     await screen.findByTestId('role-family')
     expect(screen.getByTestId('tab-other')).toHaveAttribute('aria-current', 'page')
     expect(screen.getByTestId('tab-events')).not.toHaveAttribute('aria-current')
+  })
+
+  it('в шапке гость видит «Войти», а вошедший пользователь — своё имя без роли', async () => {
+    const guest = renderApp('/events', { role: 'volunteer' })
+    expect(await screen.findByTestId('nav-role')).toHaveTextContent('Войти')
+    expect(screen.getByTestId('nav-role')).not.toHaveTextContent('Волонтёр')
+    guest.unmount()
+
+    renderApp('/events', {
+      role: 'volunteer',
+      stored: {
+        account: {
+          login: 'anna@example.com',
+          name: 'Анна Иванова',
+          since: '2026-09-25T09:00:00Z',
+        },
+      },
+    })
+    expect(await screen.findByTestId('nav-role')).toHaveTextContent('Анна Иванова')
+    expect(screen.getByTestId('nav-role')).not.toHaveTextContent('Профиль')
+    expect(screen.getByTestId('nav-role')).not.toHaveTextContent('Волонтёр')
   })
 })

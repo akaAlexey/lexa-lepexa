@@ -72,15 +72,6 @@
   color: #fff;
 }
 
-.demoBadge {
-  composes: badge;
-  color: var(--color-ink-muted);
-  border: 1.5px dashed var(--color-sepia);
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  font-weight: 400;
-}
-
 /* Экран — газетная полоса: колонка до 62rem, шапка с двойной линейкой */
 .screen {
   display: flex;
@@ -94,15 +85,25 @@
 .screenHead {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
   padding-bottom: var(--space-2);
   border-bottom: 3px double var(--color-ink);
 }
 
+.screenHead > div {
+  min-width: 0;
+  flex: 1 1 20rem;
+}
+
 .screenHead h1 {
   margin: 0;
+}
+
+.screenTitle {
+  width: 100%;
+  text-align: center;
 }
 
 .screenHead .lead {
@@ -122,10 +123,11 @@
   }
 }
 
+/* Заголовок получает фокус после перехода для скринридера, но не должен выглядеть как кнопка. */
 .screenTitle:focus,
 .screenTitle:focus-visible {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 3px;
+  outline: none;
+  box-shadow: none;
 }
 
 .lead {

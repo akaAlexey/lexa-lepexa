@@ -11,7 +11,7 @@ export interface ReviewInput {
   checks: readonly ReviewCheckId[]
   /** Комментарий автору. */
   note: string
-  /** Кто проверяет — подпись роли. */
+  /** Имя автора комментария. */
   reviewer: string
 }
 
@@ -34,8 +34,12 @@ export const reviewProblem = ({
   decision,
   checks,
   note,
-}: Omit<ReviewInput, 'reviewer'>): string | undefined =>
-  reviewBlocker(decision, { source: story.sourceText, checks, note })
+  reviewer,
+}: ReviewInput): string | undefined =>
+  reviewBlocker(decision, { source: story.sourceText, checks, note }) ??
+  (reviewer.trim().length < 2 || reviewer.trim().length > 80
+    ? 'Подпишите комментарий: имя от 2 до 80 символов'
+    : undefined)
 
 /** Решение краеведа: проверка правил, затем запрос. Причина отказа или сбой связи — текст для человека. */
 export async function reviewStory({ api }: Deps, input: ReviewInput): Promise<ReviewResult> {
@@ -45,7 +49,7 @@ export async function reviewStory({ api }: Deps, input: ReviewInput): Promise<Re
   try {
     const updated = await api.reviewStory({
       id: story.id,
-      body: { decision, reviewer, note: note.trim() },
+      body: { decision, reviewer: reviewer.trim(), note: note.trim() },
     })
     return { ok: true, story: updated }
   } catch {

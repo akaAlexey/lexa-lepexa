@@ -96,7 +96,7 @@ describe('«Последний бой» по ролям', () => {
   })
 
   it('метка места на карте открывает карточку, из неё — страница места со своим адресом', async () => {
-    const { router } = renderApp('/last-battle', { role: 'volunteer' })
+    const { router } = renderApp('/map', { role: 'volunteer' })
     await userEvent.click(await screen.findByTestId('marker-site-S02'))
     await userEvent.click(await screen.findByTestId('hub-card-open'))
     expect(router.state.location.pathname).toBe('/last-battle/S02')

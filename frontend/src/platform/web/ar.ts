@@ -43,6 +43,25 @@ interface MindArModule {
 
 export function createWebAr(): ArService {
   return {
+    async openCamera(video) {
+      if (!navigator.mediaDevices?.getUserMedia)
+        throw new Error('Камера недоступна в этом браузере')
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } },
+        audio: false,
+      })
+      video.srcObject = stream
+      video.muted = true
+      video.playsInline = true
+      await video.play()
+      return {
+        stop() {
+          for (const track of stream.getTracks()) track.stop()
+          video.pause()
+          video.srcObject = null
+        },
+      }
+    },
     async trackImage({ container, targetUrl, video, aspect, onFound, onLost }) {
       if (!navigator.mediaDevices?.getUserMedia)
         throw new Error('Камера недоступна в этом браузере')

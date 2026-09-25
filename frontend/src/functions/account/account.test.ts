@@ -29,7 +29,7 @@ describe('вход по телефону или почте (витрина на 
     const result = signIn({ login: '+7 900 123-45-67', password: 'секрет12' }, NOW)
     expect(result).toEqual({
       ok: true,
-      account: { login: '+7 ··· ···-45-67', since: '2026-10-02T09:00:00.000Z' },
+      account: { id: '79001234567', login: '+7 ··· ···-45-67', since: '2026-10-02T09:00:00.000Z' },
     })
     expect(JSON.stringify(result)).not.toContain('секрет')
     expect(maskLogin('ivanov@mail.ru')).toBe('i•••@mail.ru')

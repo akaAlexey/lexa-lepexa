@@ -94,11 +94,47 @@ const livePhotoList = (raw: unknown): MyLivePhoto[] | undefined =>
 
 /** Все слоты приложения. Новый слот — только здесь (ключи не должны совпадать). */
 export const memory = {
-  /** Вход на этом устройстве (витрина ADR 0012): только логин в скрытом виде, пароль не хранится. */
-  account: memorySlot<{ login: string; since: string } | undefined>('account', undefined, (raw) =>
-    raw && typeof raw === 'object' && typeof (raw as { login?: unknown }).login === 'string'
-      ? (raw as { login: string; since: string })
-      : undefined,
+  /** Вход и профиль на этом устройстве (витрина ADR 0012); пароль не хранится. */
+  account: memorySlot<
+    | {
+        id?: string
+        login: string
+        since: string
+        name?: string
+        city?: string
+        bio?: string
+      }
+    | undefined
+  >('account', undefined, (raw) => {
+    if (!raw || typeof raw !== 'object') return undefined
+    const v = raw as Record<string, unknown>
+    if (typeof v.login !== 'string' || typeof v.since !== 'string') return undefined
+    return {
+      login: v.login,
+      since: v.since,
+      id: typeof v.id === 'string' ? v.id : undefined,
+      name: typeof v.name === 'string' ? v.name : undefined,
+      city: typeof v.city === 'string' ? v.city : undefined,
+      bio: typeof v.bio === 'string' ? v.bio : undefined,
+    }
+  }),
+  /** Локальные профили сохраняются после выхода, отдельно для каждого логина. */
+  profiles: memorySlot<Record<string, { name: string; city: string; bio: string; since: string }>>(
+    'account:profiles',
+    {},
+    (raw) => {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined
+      return Object.fromEntries(
+        Object.entries(raw).filter(
+          ([, v]) =>
+            v &&
+            typeof v.name === 'string' &&
+            typeof v.city === 'string' &&
+            typeof v.bio === 'string' &&
+            typeof v.since === 'string',
+        ),
+      )
+    },
   ),
   /** Изображения к историям, добавленные с этого устройства (до загрузки на сервер). */
   storyImages: perId((storyId) =>
@@ -146,8 +182,6 @@ export const memory = {
   myStories: memorySlot<string[]>('archive:mine', []),
   /** Платёж ЮKassa, на оплату которого ушёл пользователь: после возврата проверяем статус. */
   pendingPayment: memorySlot<PendingPayment | undefined>('payment:pending', undefined),
-  /** Предложение «Рассказать историю» в «Истории» закрыто на этом устройстве. */
-  storyPromptClosed: memorySlot<boolean>('archive:prompt-closed', false),
   /** «Живые фото», загруженные с этого устройства и ждущие генерации. */
   myLivePhotos: memorySlot<MyLivePhoto[]>('live:mine', [], livePhotoList),
   /** Подписка на находки рядом — восстанавливается при старте. */

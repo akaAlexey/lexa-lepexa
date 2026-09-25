@@ -6,7 +6,6 @@ import { progressPercent } from '../../domain/fundraising.ts'
 import { paths } from '../../functions/core/paths.ts'
 import { freeSpots } from '../../functions/trips/index.ts'
 import { Button } from '../../ui/Button.tsx'
-import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Icon } from '../../ui/Icon.tsx'
 import ui from '../../ui/ui.module.css'
 import s from './events.module.css'
@@ -22,6 +21,9 @@ interface Props {
   item: FeedItem
   /** Можно ли записаться в заявку: командир набирает людей, а не записывается. */
   canSignUp: boolean
+  /** Гость видит понятную ссылку на вход вместо действия записи. */
+  signedIn: boolean
+  signInPath: string
   /** Уже записан с этого устройства (заявка или выезд). */
   signedUp: boolean
   /** Открыть окно записи с условиями. */
@@ -48,7 +50,16 @@ function Progress({ id, f }: { id: string; f: Fundraiser }) {
 }
 
 /** Запись ленты «Мероприятия»: надстрочник, штамп типа, заголовок, условия и действие. */
-export function FeedCard({ item, canSignUp, signedUp, onSignUp, onDonate, pendingGroups }: Props) {
+export function FeedCard({
+  item,
+  canSignUp,
+  signedIn,
+  signInPath,
+  signedUp,
+  onSignUp,
+  onDonate,
+  pendingGroups,
+}: Props) {
   const headingId = `feed-title-${item.id}`
   const kick = [
     item.postedAt ? posted.format(new Date(item.postedAt)) : undefined,
@@ -56,10 +67,6 @@ export function FeedCard({ item, canSignUp, signedUp, onSignUp, onDonate, pendin
   ]
     .filter(Boolean)
     .join(' · ')
-  const demo =
-    (item.kind === 'request' && item.request.demo) ||
-    (item.kind === 'trip' && item.trip.demo) ||
-    (item.kind === 'fund' && item.fundraiser.demo)
   const testID =
     item.kind === 'request' ? `request-card-${item.id}` : `feed-${item.kind}-${item.id}`
 
@@ -68,7 +75,6 @@ export function FeedCard({ item, canSignUp, signedUp, onSignUp, onDonate, pendin
       <p className={ui.kick}>{kick}</p>
       <p className={s.tagLine}>
         <span className={`${ui.tag} ${s[`tag-${item.kind}`]}`}>{EVENT_KIND_LABEL[item.kind]}</span>
-        {demo && <DemoBadge />}
       </p>
       {item.kind === 'request' && (
         <>
@@ -100,6 +106,11 @@ export function FeedCard({ item, canSignUp, signedUp, onSignUp, onDonate, pendin
                   Записаться
                 </Button>
               ))}
+            {!canSignUp && !signedIn && (
+              <Link to={signInPath} className={ui.button} data-testid={`request-signin-${item.id}`}>
+                Войти, чтобы записаться
+              </Link>
+            )}
             {item.fundraiser && (
               <Button
                 onClick={() => item.fundraiser && onDonate(item.fundraiser)}

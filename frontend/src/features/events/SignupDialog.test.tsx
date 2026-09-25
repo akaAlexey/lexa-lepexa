@@ -7,7 +7,7 @@ import { renderApp } from '../../test/renderApp.tsx'
 const ADULT = { 'profile.age': { adultVerified: true, age: 25 } }
 
 async function openRequestSignup(stored: Record<string, unknown> = {}) {
-  const app = renderApp('/events', { role: 'volunteer', stored })
+  const app = renderApp('/events', { role: 'volunteer', stored, signedIn: true })
   const card = await screen.findByTestId('request-card-R01')
   await userEvent.click(within(card).getByTestId('request-join-R01'))
   const dialog = await screen.findByTestId('signup-dialog')
@@ -101,7 +101,7 @@ describe('окно записи на заявку отряда', () => {
 
 describe('окно записи на выезд', () => {
   it('«Записаться на выезд» открывает условия, после записи — минус место и «Вы записаны»', async () => {
-    renderApp('/weekends/W01', { role: 'volunteer', stored: ADULT })
+    renderApp('/weekends/W01', { role: 'volunteer', stored: ADULT, signedIn: true })
     expect(await screen.findByTestId('trip-time')).toHaveTextContent('10:00–17:00 по Москве')
     expect(screen.getByTestId('trip-spots')).toHaveTextContent('Свободно мест: 7 из 12')
     await userEvent.click(screen.getByTestId('trip-register'))
@@ -116,12 +116,20 @@ describe('окно записи на выезд', () => {
   })
 
   it('запись на выезд помнится после перезагрузки и видна в ленте', async () => {
-    renderApp('/events?show=trip', { role: 'volunteer', stored: { 'trips.registered': ['W01'] } })
+    renderApp('/events?show=trip', {
+      role: 'volunteer',
+      stored: { 'trips.registered': ['W01'] },
+      signedIn: true,
+    })
     expect(await screen.findByTestId('feed-trip-registered-W01')).toHaveTextContent('Вы записаны')
   })
 
   it('на выезд без мест кнопка неактивна, окно не открывается', async () => {
-    const { api, router } = renderApp('/events', { role: 'volunteer', stored: ADULT })
+    const { api, router } = renderApp('/events', {
+      role: 'volunteer',
+      stored: ADULT,
+      signedIn: true,
+    })
     const body = { termsAccepted: true, adultVerified: true } as const
     for (let i = 0; i < 7; i++) await api.registerTrip({ id: 'W02', body })
     await router.navigate('/weekends/W02')

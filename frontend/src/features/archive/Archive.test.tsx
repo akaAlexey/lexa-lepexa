@@ -4,16 +4,20 @@ import { describe, expect, it } from 'vitest'
 import { renderApp } from '../../test/renderApp.tsx'
 
 describe('«Истории»: народный архив', () => {
-  it('гость видит только проверенные истории и главную кнопку «Рассказать историю»', async () => {
+  it('гость видит проверенные истории без предложения рассказать свою', async () => {
     renderApp('/archive', { role: 'family' })
     const published = await screen.findByRole('list', { name: 'Проверенные истории' })
     expect(within(published).getByText('Памятник морякам-тихоокеанцам')).toBeInTheDocument()
     expect(screen.queryByTestId('story-ST02')).not.toBeInTheDocument()
-    expect(screen.getByTestId('archive-new')).toHaveAttribute('href', '/archive/new')
+    expect(screen.queryByTestId('archive-new')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('archive-prompt')).not.toBeInTheDocument()
+    expect(
+      within(screen.getByTestId('site-footer')).queryByText('Есть история?'),
+    ).not.toBeInTheDocument()
   })
 
   it('семья рассказывает историю — она ждёт проверки и видна автору в «Моих историях»', async () => {
-    const { router, platform } = renderApp('/archive/new', { role: 'family' })
+    const { router, platform } = renderApp('/archive/new', { role: 'family', signedIn: true })
     await userEvent.type(await screen.findByTestId('story-title'), 'Письмо прадеда')
     await userEvent.type(screen.getByTestId('story-place'), 'Кромы')
     await userEvent.type(
@@ -34,7 +38,7 @@ describe('«Истории»: народный архив', () => {
   })
 
   it('короткая история не отправляется — ошибки у полей', async () => {
-    const { router } = renderApp('/archive/new', { role: 'family' })
+    const { router } = renderApp('/archive/new', { role: 'family', signedIn: true })
     await userEvent.type(await screen.findByTestId('story-body'), 'Коротко')
     await userEvent.click(screen.getByTestId('story-send'))
     expect(await screen.findByText(/не короче 30 символов/)).toBeInTheDocument()
@@ -53,6 +57,7 @@ describe('«Истории»: народный архив', () => {
     await userEvent.click(await screen.findByTestId('review-verify'))
     expect(await screen.findByTestId('review-blocker')).toHaveTextContent('Отметьте все пункты')
 
+    await userEvent.type(screen.getByTestId('review-author'), 'Ирина Иванова')
     for (const id of ['datePlace', 'source', 'archive'])
       await userEvent.click(screen.getByTestId(`review-check-${id}`))
     await userEvent.click(screen.getByTestId('review-verify'))
@@ -65,14 +70,24 @@ describe('«Истории»: народный архив', () => {
     await userEvent.click(await screen.findByTestId('review-clarify'))
     expect(await screen.findByTestId('review-blocker')).toHaveTextContent('что нужно уточнить')
     await userEvent.type(screen.getByTestId('review-note'), 'Нужен номер полевой почты')
+    await userEvent.type(screen.getByTestId('review-author'), 'Ирина Иванова')
     await userEvent.click(screen.getByTestId('review-clarify'))
     expect(await screen.findByTestId('review-saved')).toBeInTheDocument()
     expect(screen.getByTestId('story-review-note')).toHaveTextContent('Нужен номер полевой почты')
+    expect(screen.getByTestId('story-review-note')).toHaveTextContent('Ирина Иванова')
   })
 
   it('волонтёр историю не проверяет', async () => {
     renderApp('/archive/ST02', { role: 'volunteer' })
     expect(await screen.findByTestId('story-status')).toHaveTextContent('Ожидает проверки')
     expect(screen.queryByTestId('review-verify')).not.toBeInTheDocument()
+  })
+
+  it('гость не может открыть форму новой истории', async () => {
+    const { router } = renderApp('/archive/new', { role: 'family' })
+    expect(await screen.findByTestId('signin-form')).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/other')
+    expect(router.state.location.search).toBe('?section=account&next=%2Farchive%2Fnew')
+    expect(screen.queryByTestId('story-send')).not.toBeInTheDocument()
   })
 })

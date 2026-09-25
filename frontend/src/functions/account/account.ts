@@ -1,16 +1,41 @@
 import type { FieldErrors } from '../core/form.ts'
 
 /**
- * Вход по телефону или почте и паролю (ADR 0012). Пока это витрина на устройстве:
- * сервера авторизации нет, пароль никуда не отправляется и не хранится —
- * запоминается только логин в скрытом виде, чтобы вместо «Вход» показать «Профиль».
+ * Проверка полей входа по телефону или почте. В live-режиме пароль отправляется только
+ * серверу авторизации по HTTPS; в памяти устройства пароль не сохраняется.
  */
 export interface SignInValues {
   login: string
   password: string
 }
 
-export interface Account {
+export interface ProfileValues {
+  name: string
+  city: string
+  bio: string
+}
+
+export function validateProfile(values: ProfileValues): FieldErrors {
+  const errors: Record<string, string> = {}
+  if (values.name.trim().length < 2 || values.name.trim().length > 80)
+    errors.name = 'Укажите имя: от 2 до 80 символов'
+  if (values.city.trim().length > 100) errors.city = 'Название города — не длиннее 100 символов'
+  if (values.bio.trim().length > 500) errors.bio = 'Описание — не длиннее 500 символов'
+  return errors
+}
+
+/** Ключ различает даже логины с одинаковой маской; это не средство авторизации. */
+export function accountId(login: string): string {
+  return loginKind(login) === 'email'
+    ? login.trim().toLowerCase()
+    : login
+        .replace(/\D/g, '')
+        .replace(/^8(?=\d{10}$)/, '7')
+        .replace(/^(?=\d{10}$)/, '7')
+}
+
+export interface Account extends Partial<ProfileValues> {
+  id?: string
   /** Логин в скрытом виде: «+7 ··· ···-45-67» или «a•••@mail.ru». */
   login: string
   /** Когда вошли, ISO 8601. */
@@ -61,18 +86,29 @@ export type SignInResult = { ok: true; account: Account } | { ok: false; errors:
 export function signIn(values: SignInValues, now: Date): SignInResult {
   const errors = validateSignIn(values)
   if (Object.keys(errors).length > 0) return { ok: false, errors }
-  return { ok: true, account: { login: maskLogin(values.login), since: now.toISOString() } }
+  return {
+    ok: true,
+    account: {
+      id: accountId(values.login),
+      login: maskLogin(values.login),
+      since: now.toISOString(),
+    },
+  }
 }
 
 /** Регистрация: те же логин и пароль плюс обязательное согласие с условиями и политикой. */
 export interface RegisterValues extends SignInValues {
+  name: string
   repeat: string
   terms: boolean
   privacy: boolean
 }
 
 export function validateRegister(values: RegisterValues): FieldErrors {
-  const errors = { ...validateSignIn(values) } as Record<string, string>
+  const errors = {
+    ...validateSignIn(values),
+    ...validateProfile({ name: values.name, city: '', bio: '' }),
+  } as Record<string, string>
   if (values.password && values.repeat !== values.password) errors.repeat = 'Пароли не совпадают'
   if (!values.terms) errors.terms = 'Нужно согласие с пользовательскими условиями'
   if (!values.privacy) errors.privacy = 'Нужно согласие с политикой конфиденциальности'
@@ -82,5 +118,13 @@ export function validateRegister(values: RegisterValues): FieldErrors {
 export function register(values: RegisterValues, now: Date): SignInResult {
   const errors = validateRegister(values)
   if (Object.keys(errors).length > 0) return { ok: false, errors }
-  return { ok: true, account: { login: maskLogin(values.login), since: now.toISOString() } }
+  return {
+    ok: true,
+    account: {
+      id: accountId(values.login),
+      login: maskLogin(values.login),
+      since: now.toISOString(),
+      name: values.name.trim(),
+    },
+  }
 }

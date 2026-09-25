@@ -80,13 +80,13 @@ export const Grave = entity(
 
 export const MemorialKind = entity(
   'MemorialKind',
-  'Тип памятника: братская могила, вечный огонь, техника, памятник или стела',
-  z.enum(['grave', 'flame', 'vehicle', 'monument']),
+  'Тип памятного места: братская могила, вечный огонь, техника, памятник или стела, музей',
+  z.enum(['grave', 'flame', 'vehicle', 'monument', 'museum']),
 )
 
 export const Memorial = entity(
   'Memorial',
-  'Памятник Великой Отечественной войны. Источник — OpenStreetMap (historic=memorial|monument)',
+  'Памятник Великой Отечественной войны или музей края. Источник — OpenStreetMap (historic=memorial|monument, tourism=museum)',
   z.object({ id, lat, lon, name: z.string().min(1), kind: MemorialKind, osmUrl: z.url() }),
 )
 

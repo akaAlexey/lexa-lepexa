@@ -1,102 +1,13 @@
-/* «Другое»: одна большая панель, шапка — раскрывающийся список разделов (ADR 0012) */
+/* «Другое»: корневой экран — список, выбранный пункт — отдельная страница. */
 .hub {
   border: 1px solid var(--color-ink);
   background: rgb(251 246 236 / 0.86);
 }
 
-.hubHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  width: 100%;
-  min-height: 4.5rem;
-  padding: var(--space-3) var(--space-4);
-  border: 0;
-  border-bottom: 1px solid var(--color-ink);
-  background: rgb(232 222 196 / 0.7);
-  color: var(--color-ink);
-  text-align: left;
-  cursor: pointer;
-}
-
-.hubTitle {
-  display: grid;
-}
-
-.hubName {
-  font-family: var(--font-heading);
-  font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-.hubHint {
-  color: var(--color-ink-muted);
-  font-size: 0.9rem;
-}
-
-.arrow {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 2.6rem;
-  height: 2.6rem;
-  border-radius: 50%;
-  background: rgb(43 42 38 / 0.08);
-  transition:
-    transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
-    background-color 0.2s;
-}
-
-.arrow[data-open] {
-  transform: rotate(180deg);
-  background: rgb(43 42 38 / 0.14);
-}
-
-.hubHead:hover .arrow {
-  background: rgb(43 42 38 / 0.16);
-}
-
-/* Плавное раскрытие списка: высота 0fr → 1fr, пункты проявляются по очереди */
-.listWrap {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.listWrap[data-open] {
-  grid-template-rows: 1fr;
-}
-
 .list {
-  min-height: 0;
-  overflow: hidden;
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-.list li {
-  opacity: 0;
-  transform: translateY(-0.4rem);
-  transition:
-    opacity 0.2s,
-    transform 0.25s;
-}
-
-.listWrap[data-open] .list li {
-  opacity: 1;
-  transform: none;
-  transition-delay: calc(var(--i, 0) * 35ms + 60ms);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .listWrap,
-  .list li,
-  .arrow {
-    transition: none;
-  }
 }
 
 .list li + li {
@@ -123,11 +34,11 @@
 
 .item:hover,
 .item:focus-visible,
-.item[aria-current='true'] {
+.item[aria-current='page'] {
   background: rgb(43 42 38 / 0.07);
 }
 
-.item[aria-current='true'] {
+.item[aria-current='page'] {
   box-shadow: inset 3px 0 0 var(--color-olive);
 }
 
@@ -158,18 +69,6 @@
   font-size: 0.95rem;
 }
 
-.lock {
-  display: inline-grid;
-  grid-template-columns: auto 3.6rem;
-  align-items: center;
-  gap: 0.2rem;
-  flex: none;
-  color: var(--color-ink-muted);
-  font-size: 0.75rem;
-  line-height: 1.2;
-  text-align: center;
-}
-
 .body {
   display: grid;
   gap: var(--space-4);
@@ -183,7 +82,9 @@
 .form {
   display: grid;
   gap: var(--space-4);
-  max-width: 30rem;
+  width: min(100%, 34rem);
+  margin: 0 auto;
+  max-width: 34rem;
 }
 
 .password {
@@ -256,17 +157,25 @@
 .tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  width: 100%;
   border: 1px solid var(--color-ink);
+  border-radius: var(--radius-control);
+  overflow: hidden;
 }
 
 .tab {
   min-height: var(--touch-min);
   border: 0;
+  border-radius: 0;
   background: transparent;
   color: var(--color-ink);
   font-weight: 700;
   cursor: pointer;
   transition: background-color 0.15s;
+}
+
+.tab + .tab {
+  border-left: 1px solid var(--color-ink);
 }
 
 .tab[aria-selected='true'] {
@@ -292,4 +201,46 @@
 .error {
   color: var(--color-danger);
   font-size: 0.9rem;
+}
+
+.item {
+  text-decoration: none;
+}
+.body h2 {
+  margin: 0;
+}
+.profileHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  flex: none;
+  border-radius: 50%;
+  background: var(--color-olive);
+  color: var(--color-surface);
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+}
+.profileHeader h3 {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.cameraPanel {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.cameraPreview {
+  display: block;
+  width: 100%;
+  max-height: 70dvh;
+  border-radius: var(--radius-card);
+  background: #000;
+  object-fit: cover;
 }

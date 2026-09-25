@@ -1,6 +1,9 @@
 import re
 
+from sqlalchemy import select
+
 from app.db import Session
+from app.models_domain import User
 from app.seed import seed
 
 ISO_Z = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$")
@@ -28,6 +31,84 @@ def nulls(value, path=""):
     if isinstance(value, list):
         return [p for i, v in enumerate(value) for p in nulls(v, f"{path}[{i}]")]
     return []
+
+
+async def test_server_registration_login_and_logout(api):
+    password = "correct-horse-42"
+    registered = await api.post(
+        "/auth/register",
+        json={
+            "login": "anna@example.com",
+            "password": password,
+            "name": "Анна Иванова",
+            "terms": True,
+            "privacy": True,
+        },
+    )
+    assert registered.status_code == 201
+    account = registered.json()
+    assert account["login"] == "anna@example.com"
+    assert account["name"] == "Анна Иванова"
+    assert ISO_Z.match(account["since"])
+
+    me = await api.get("/auth/me")
+    assert me.status_code == 200
+    assert me.json()["id"] == account["id"]
+
+    async with Session() as s:
+        stored = await s.scalar(select(User).where(User.id == account["id"]))
+        assert stored is not None
+        assert stored.password_hash != password
+        assert password not in stored.password_hash
+
+    duplicate = await api.post(
+        "/auth/register",
+        json={
+            "login": "ANNA@example.com",
+            "password": password,
+            "name": "Другая Анна",
+            "terms": True,
+            "privacy": True,
+        },
+    )
+    assert duplicate.status_code == 409
+
+    await api.post("/auth/logout")
+    assert (await api.get("/auth/me")).status_code == 401
+    wrong = await api.post(
+        "/auth/login",
+        json={"login": "anna@example.com", "password": "wrong-password"},
+    )
+    assert wrong.status_code == 401
+
+    logged_in = await api.post(
+        "/auth/login",
+        json={"login": "ANNA@example.com", "password": password},
+    )
+    assert logged_in.status_code == 200
+    assert (await api.get("/auth/me")).json()["name"] == "Анна Иванова"
+
+
+async def test_server_registration_by_phone(api):
+    registered = await api.post(
+        "/auth/register",
+        json={
+            "login": "8 (900) 123-45-67",
+            "password": "example-password",
+            "name": "Иван Иванов",
+            "terms": True,
+            "privacy": True,
+        },
+    )
+    assert registered.status_code == 201
+    assert registered.json()["login"] == "79001234567"
+    await api.post("/auth/logout")
+    assert (
+        await api.post(
+            "/auth/login",
+            json={"login": "+7 900 123-45-67", "password": "example-password"},
+        )
+    ).status_code == 200
 
 
 async def test_health(api):

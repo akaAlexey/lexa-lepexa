@@ -1,7 +1,9 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest'
 import jury from '../api/fixtures/jury.generated.json'
+import osm from '../api/fixtures/memorials.osm.json'
 import * as seed from '../api/fixtures/seed.ts'
+import type { Memorial } from '../contract/schemas.ts'
 import { collectPlaces, searchPlaces } from './mapHub.ts'
 
 const places = () =>
@@ -10,6 +12,7 @@ const places = () =>
     sites: seed.sites,
     graves: jury.graves,
     battles: jury.battles,
+    memorials: osm.memorials as Memorial[],
   })
 
 describe('карта-хаб: места и поиск', () => {
@@ -38,6 +41,28 @@ describe('карта-хаб: места и поиск', () => {
   })
 
   it('поиск по виду места: «захоронение»', () => {
-    expect(searchPlaces(places(), 'захоронение').every((p) => p.kind === 'grave')).toBe(true)
+    const found = searchPlaces(places(), 'захоронение')
+    expect(found.length).toBeGreaterThan(0)
+    expect(
+      found.every(
+        (p) => p.kind === 'grave' || (p.kind === 'memorial' && p.memorialKind === 'grave'),
+      ),
+    ).toBe(true)
+  })
+
+  it('настоящие памятники и музеи из OpenStreetMap — на карте, с источником', () => {
+    const memorials = places().filter((p) => p.kind === 'memorial')
+    expect(memorials).toHaveLength(osm.memorials.length)
+    expect(memorials.every((p) => p.sourceUrl?.startsWith('https://www.openstreetmap.org/'))).toBe(
+      true,
+    )
+    expect(memorials.every((p) => !p.demo)).toBe(true)
+    const museums = memorials.filter((p) => p.memorialKind === 'museum')
+    expect(museums.length).toBeGreaterThanOrEqual(15)
+    expect(museums.every((p) => p.subtitle === 'Музей')).toBe(true)
+    expect(searchPlaces(places(), 'военно-исторический')[0]).toMatchObject({
+      kind: 'memorial',
+      memorialKind: 'museum',
+    })
   })
 })

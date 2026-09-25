@@ -5,7 +5,7 @@ import { paths } from '../../functions/core/paths.ts'
 import { QueryState } from '../../app/QueryState.tsx'
 import { useApi } from '../../app/services.tsx'
 import { region } from '../../config/region.ts'
-import type { Battle, Grave, Memorial, MemorialKind } from '../../contract/schemas.ts'
+import type { Battle, Grave, Memorial } from '../../contract/schemas.ts'
 import {
   CHRONICLE_YEARS,
   chronicleByYear,
@@ -16,8 +16,7 @@ import { MapView, type MapMarker } from '../../map/MapView.tsx'
 import { tokens } from '../../theme/tokens.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { ChoiceChips, ToggleChips } from '../../ui/ChoiceChips.tsx'
-import { DemoBadge } from '../../ui/DemoBadge.tsx'
-import type { IconName } from '../../ui/Icon.tsx'
+import { MEMORIAL_META } from '../../ui/memorialKind.ts'
 import { Notice } from '../../ui/Notice.tsx'
 import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
@@ -36,12 +35,7 @@ const LAYERS: { value: Layer; label: string; testID: string }[] = [
   { value: 'graves', label: 'Захоронения', testID: 'layer-graves' },
 ]
 
-const MEMORIAL: Record<MemorialKind, { icon: IconName; label: string }> = {
-  grave: { icon: 'grave', label: 'Братская могила' },
-  flame: { icon: 'star', label: 'Вечный огонь' },
-  vehicle: { icon: 'helmet', label: 'Техника-памятник' },
-  monument: { icon: 'flag', label: 'Памятник' },
-}
+const MEMORIAL = MEMORIAL_META
 
 const NONE_MEMORIALS: Memorial[] = []
 const NONE_GRAVES: Grave[] = []
@@ -195,7 +189,6 @@ function Timeline({ battles, memorials, graves }: TimelineProps) {
                       Архивный источник
                       <span className="visually-hidden">: {formatHistoricDate(b.date)}</span>
                     </a>{' '}
-                    {b.demo && <DemoBadge />}
                   </p>
                 </li>
               ))}
@@ -212,7 +205,12 @@ export function ChronicleScreen() {
   const api = useApi()
   const battles = useQuery({ queryKey: ['battles'], queryFn: api.listBattles })
   // Фоновые слои: если не загрузились — хроника работает без них
-  const memorials = useQuery({ queryKey: ['memorials'], queryFn: api.listMemorials })
+  // Музеи показываются на «Карте»; в хронике — только памятники войны
+  const memorials = useQuery({
+    queryKey: ['memorials'],
+    queryFn: api.listMemorials,
+    select: (all) => all.filter((m) => m.kind !== 'museum'),
+  })
   const graves = useQuery({ queryKey: ['graves'], queryFn: api.listGraves })
   return (
     <Screen

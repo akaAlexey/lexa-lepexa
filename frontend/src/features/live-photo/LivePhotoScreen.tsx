@@ -9,7 +9,6 @@ import type { LivePhoto } from '../../contract/schemas.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Button } from '../../ui/Button.tsx'
 import { Card } from '../../ui/Card.tsx'
-import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
@@ -57,9 +56,7 @@ function LivePhotoCard({ photo }: { photo: LivePhoto }) {
           className={s.photo}
           data-testid="live-photo-image"
         />
-        <figcaption className={s.caption}>
-          {photo.caption} {photo.demo && <DemoBadge />}
-        </figcaption>
+        <figcaption className={s.caption}>{photo.caption}</figcaption>
       </figure>
 
       <Card as="section" aria-labelledby="live-speech-title">

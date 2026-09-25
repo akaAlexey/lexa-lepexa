@@ -1,5 +1,12 @@
 import { expect } from '@playwright/test'
-import { expectNoA11yViolations, snap, startAs, test, useDemoDate } from './helpers.ts'
+import {
+  expectNoA11yViolations,
+  signInOnDevice,
+  snap,
+  startAs,
+  test,
+  useDemoDate,
+} from './helpers.ts'
 
 /**
  * User story 2. Командир отряда «Высота» создаёт заявку на набор 10 волонтёров на завтра.
@@ -9,6 +16,7 @@ test.describe('История 2: заявка на 10 волонтёров на 
   test.beforeEach(async ({ page }) => useDemoDate(page))
 
   test('три нажатия от домашнего экрана командира', async ({ page }, testInfo) => {
+    await signInOnDevice(page)
     await startAs(page, 'commander')
     await expect(page).toHaveURL(/\/events$/)
     await snap(page, testInfo, 'story2-01-events-commander')
@@ -35,6 +43,7 @@ test.describe('История 2: заявка на 10 волонтёров на 
   })
 
   test('заявку видит волонтёр в ленте и записывается из её карточки', async ({ page }) => {
+    await signInOnDevice(page)
     await startAs(page, 'volunteer')
     const card = page.getByTestId('request-card-R01')
     await expect(card).toContainText('Вахта Памяти (Орловская обл.)')
@@ -55,6 +64,7 @@ test.describe('История 2: заявка на 10 волонтёров на 
     page,
   }, testInfo) => {
     test.skip(testInfo.project.name === 'phone', 'клавиатурный проход проверяем на ноутбуке')
+    await signInOnDevice(page)
     await page.goto('/roles')
     await page.getByTestId('role-commander').focus()
     await page.keyboard.press('Enter')

@@ -1,15 +1,17 @@
-import { useId, useState, type CSSProperties, type FormEvent, type ReactNode } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router'
+import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
 import { useRole } from '../../app/RoleContext.tsx'
 import type { FieldErrors } from '../../functions/core/form.ts'
-import { paths, type OtherSection } from '../../functions/core/paths.ts'
+import { otherSection, paths, type OtherSection } from '../../functions/core/paths.ts'
 import { useAccount } from '../../functions/account/useAccount.ts'
+import { useDeps } from '../../functions/core/useDeps.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
-import { Button } from '../../ui/Button.tsx'
 import { TextField } from '../../ui/Field.tsx'
 import { Icon, type IconName } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
+import { ProfilePanel } from './ProfilePanel.tsx'
 import s from './other.module.css'
 
 type SectionId = OtherSection
@@ -20,7 +22,7 @@ interface Section {
   hint: string
   icon: IconName
   /** Закрыт до входа: у раздела нужны личные данные. */
-  locked: boolean
+  requiresAccount: boolean
 }
 
 function sectionsFor(signedIn: boolean): Section[] {
@@ -30,122 +32,108 @@ function sectionsFor(signedIn: boolean): Section[] {
       title: signedIn ? 'Профиль' : 'Вход и регистрация',
       hint: signedIn ? 'Ваш профиль на этом устройстве' : 'По телефону или почте',
       icon: 'user',
-      locked: false,
+      requiresAccount: false,
+    },
+    {
+      id: 'last-battle',
+      title: 'Последний бой',
+      hint: 'Места гибели бойцов и поисковая работа',
+      icon: 'pin',
+      requiresAccount: false,
     },
     {
       id: 'archive',
-      title: 'Семейный архив (в разработке)',
+      title: 'Семейный архив',
       hint: 'Пока доступен рассказ в «Историях»',
       icon: 'archive',
-      locked: false,
+      requiresAccount: true,
     },
     {
       id: 'ar',
-      title: 'AR-режим (позже)',
+      title: 'AR-режим',
       hint: 'Совмещение снимков пока недоступно',
       icon: 'target',
-      locked: false,
+      requiresAccount: true,
     },
     {
       id: 'photo',
       title: 'Живое фото',
       hint: 'Наведите камеру на снимок — и боец заговорит',
       icon: 'image',
-      locked: !signedIn,
+      requiresAccount: true,
     },
     {
       id: 'role',
       title: 'Роль',
       hint: 'Кем вы пользуетесь приложением',
       icon: 'family',
-      locked: false,
+      requiresAccount: false,
     },
   ]
 }
 
-const isSection = (v: string | null): v is SectionId =>
-  v === 'account' || v === 'archive' || v === 'ar' || v === 'photo' || v === 'role'
-
-/**
- * «Другое» (ADR 0012): одна большая панель со списком разделов. В шапке — имя открытого раздела
- * и стрелка: вверх — список свёрнут, вниз — раскрыт. У каждого раздела свой адрес (?section=).
- */
+/** «Другое»: корневой экран показывает меню, выбранный пункт — самостоятельную страницу. */
 export function OtherScreen() {
   const { account } = useAccount()
-  const [params, setParams] = useSearchParams()
+  const [params] = useSearchParams()
   const requested = params.get('section')
-  const activeId: SectionId | undefined = isSection(requested) ? requested : undefined
   const sections = sectionsFor(Boolean(account))
-  const active = sections.find((x) => x.id === activeId)
-  const [listOpen, setListOpen] = useState(!active)
-  const listId = useId()
-  // «Вход» в шапке ведёт сюда с ?section=account — раздел открывается сразу, даже если экран уже открыт
-  const [seenId, setSeenId] = useState(activeId)
-  if (seenId !== activeId) {
-    setSeenId(activeId)
-    if (activeId) setListOpen(false)
+  const active = sections.find((x) => x.id === requested)
+  if (active?.requiresAccount && !account) {
+    return <Navigate to={otherSection('account')} replace />
   }
 
-  const open = (id: SectionId) => {
-    setParams({ section: id }, { replace: false })
-    setListOpen(false)
-  }
-
-  return (
-    <Screen title="Другое" lead="Профиль, семейный архив и будущие режимы" testID="screen-other">
-      <div className={s.hub}>
-        <button
-          type="button"
-          className={s.hubHead}
-          aria-expanded={listOpen}
-          aria-controls={listId}
-          onClick={() => setListOpen((v) => !v)}
-          data-testid="other-toggle"
+  if (active) {
+    return (
+      <Screen
+        title={active.title}
+        back={
+          <BackLink to={paths.other()} testID="other-back">
+            Назад
+          </BackLink>
+        }
+        testID={`screen-other-${active.id}`}
+      >
+        <section
+          className={s.body}
+          aria-label={active.title}
+          data-testid={`other-panel-${active.id}`}
         >
-          <span className={s.hubTitle}>
-            <span className={s.hubName}>{active ? active.title : 'Разделы'}</span>
-            <span className={s.hubHint}>
-              {listOpen ? 'Выберите раздел' : 'Нажмите, чтобы выбрать другой раздел'}
-            </span>
-          </span>
-          {/* Стрелка вниз — список можно раскрыть, вверх — раскрыт */}
-          <span className={s.arrow} data-open={listOpen || undefined}>
-            <Icon name="chevron" size={1.4} />
-          </span>
-        </button>
-        {/* Плавное раскрытие: высота списка анимируется через grid-template-rows 0fr → 1fr */}
-        <div className={s.listWrap} data-open={listOpen || undefined}>
-          <ul id={listId} className={s.list} inert={!listOpen} aria-hidden={!listOpen || undefined}>
-            {sections.map((x, i) => (
-              <li key={x.id} style={{ '--i': i } as CSSProperties}>
-                <button
-                  type="button"
-                  className={s.item}
-                  aria-current={x.id === activeId ? 'true' : undefined}
-                  onClick={() => open(x.id)}
-                  data-testid={`other-${x.id}`}
-                >
-                  <span className={s.itemIcon}>
-                    <Icon name={x.icon} size={1.2} />
-                  </span>
-                  <span className={s.itemText}>
-                    <span className={s.itemTitle}>{x.title}</span>
-                    <span className={s.itemHint}>{x.hint}</span>
-                  </span>
-                  {x.locked && (
-                    <span className={s.lock}>
-                      <Icon name="lock" size={1} />
-                      после входа
-                    </span>
-                  )}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-        {active && !listOpen && (
-          <div className={s.body} data-testid={`other-panel-${active.id}`}>
-            {active.locked ? <Locked onSignIn={() => open('account')} /> : <Panel id={active.id} />}
+          <Panel id={active.id} />
+        </section>
+      </Screen>
+    )
+  }
+
+  const visible = sections.filter((x) => !x.requiresAccount || account)
+  return (
+    <Screen title="Другое" lead="Профиль, память семьи и поисковая работа" testID="screen-other">
+      <div className={s.hub}>
+        <ul className={s.list} aria-label="Разделы страницы Другое">
+          {visible.map((x) => (
+            <li key={x.id}>
+              <Link
+                to={x.id === 'last-battle' ? paths.lastBattle() : otherSection(x.id)}
+                className={s.item}
+                data-testid={`other-${x.id}`}
+              >
+                <span className={s.itemIcon}>
+                  <Icon name={x.icon} size={1.2} />
+                </span>
+                <span className={s.itemText}>
+                  <span className={s.itemTitle}>{x.title}</span>
+                  <span className={s.itemHint}>{x.hint}</span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        {!account && (
+          <div className={s.body}>
+            <Notice>Войдите, чтобы открыть личные функции.</Notice>
+            <BigButton to={otherSection('account')} icon="user" testID="other-signin">
+              Войти
+            </BigButton>
           </div>
         )}
       </div>
@@ -153,22 +141,10 @@ export function OtherScreen() {
   )
 }
 
-function Locked({ onSignIn }: { onSignIn: () => void }) {
-  return (
-    <>
-      <Notice>
-        Раздел откроется после входа: в нём ваши личные фото и данные, поэтому он не виден без
-        профиля.
-      </Notice>
-      <BigButton onClick={onSignIn} icon="user" testID="other-locked-signin">
-        Войти
-      </BigButton>
-    </>
-  )
-}
-
 function Panel({ id }: { id: SectionId }) {
   switch (id) {
+    case 'last-battle':
+      return <Navigate to={paths.lastBattle()} replace />
     case 'account':
       return <AccountPanel />
     case 'archive':
@@ -184,12 +160,7 @@ function Panel({ id }: { id: SectionId }) {
         </>
       )
     case 'ar':
-      return (
-        <Notice>
-          AR-режим «тогда и сейчас» появится в приложении для Android: камера совместит место боя с
-          архивным снимком.
-        </Notice>
-      )
+      return <ArPanel />
     case 'photo':
       return (
         <>
@@ -205,6 +176,63 @@ function Panel({ id }: { id: SectionId }) {
     case 'role':
       return <RolePanel />
   }
+}
+
+function ArPanel() {
+  const { platform } = useDeps()
+  const video = useRef<HTMLVideoElement>(null)
+  const session = useRef<{ stop(): void } | undefined>(undefined)
+  const [status, setStatus] = useState<'idle' | 'starting' | 'active' | 'error'>('idle')
+  const [error, setError] = useState('')
+
+  useEffect(
+    () => () => {
+      session.current?.stop()
+    },
+    [],
+  )
+
+  const start = async () => {
+    if (!video.current) return
+    setStatus('starting')
+    setError('')
+    try {
+      session.current?.stop()
+      session.current = await platform.ar.openCamera(video.current)
+      setStatus('active')
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e))
+      setStatus('error')
+    }
+  }
+
+  return (
+    <div className={s.cameraPanel}>
+      <p>
+        Разрешите сайту использовать камеру. После разрешения здесь появится обычное изображение с
+        камеры.
+      </p>
+      <video
+        ref={video}
+        className={s.cameraPreview}
+        autoPlay
+        muted
+        playsInline
+        hidden={status !== 'active'}
+        data-testid="ar-camera"
+      />
+      {status !== 'active' && (
+        <BigButton onClick={() => void start()} icon="target" testID="ar-camera-enable">
+          {status === 'starting' ? 'Включаем камеру…' : 'Включить камеру'}
+        </BigButton>
+      )}
+      {status === 'error' && (
+        <Notice>
+          Не удалось включить камеру: {error}. Проверьте разрешение камеры для этого сайта.
+        </Notice>
+      )}
+    </div>
+  )
 }
 
 function RolePanel() {
@@ -228,49 +256,52 @@ function RolePanel() {
 }
 
 function AccountPanel() {
-  const { account, signIn, signUp, signOut } = useAccount()
-  const { role } = useRole()
+  const { account } = useAccount()
+  return account ? (
+    <ProfilePanel key={account.id ?? account.login} account={account} />
+  ) : (
+    <SignInPanel />
+  )
+}
+
+function SignInPanel() {
+  const { signIn, signUp } = useAccount()
   const [mode, setMode] = useState<'signin' | 'register'>('signin')
   const [login, setLogin] = useState('')
+  const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [repeat, setRepeat] = useState('')
   const [terms, setTerms] = useState(false)
   const [privacy, setPrivacy] = useState(false)
   const [show, setShow] = useState(false)
   const [errors, setErrors] = useState<FieldErrors>({})
+  const [submitting, setSubmitting] = useState(false)
   const [params] = useSearchParams()
   const navigate = useNavigate()
   // Пришли с закрытого экрана (?next=/live) — после входа возвращаем туда
   const returnTo = params.get('next')
 
-  if (account) {
-    return (
-      <div className={s.profile} data-testid="profile">
-        <p>
-          Вы вошли как <strong data-testid="profile-login">{account.login}</strong>.
-        </p>
-        <p className={s.muted}>Роль: {role ? role.label : 'не выбрана'}.</p>
-        <Button onClick={signOut} testID="profile-signout">
-          Выйти
-        </Button>
-      </div>
-    )
-  }
-
   const registering = mode === 'register'
-  const submit = (e?: FormEvent) => {
+  const submit = async (e?: FormEvent) => {
     e?.preventDefault()
-    const result = registering
-      ? signUp({ login, password, repeat, terms, privacy })
-      : signIn({ login, password })
-    if (!result.ok) {
-      setErrors(result.errors)
-      return
-    }
-    setPassword('')
-    setRepeat('')
-    if (returnTo?.startsWith('/') && !returnTo.startsWith('//')) {
-      void navigate(returnTo, { replace: true })
+    if (submitting) return
+    setSubmitting(true)
+    try {
+      const result = registering
+        ? await signUp({ login, password, repeat, terms, privacy, name })
+        : await signIn({ login, password })
+      if (!result.ok) {
+        setErrors(result.errors)
+        return
+      }
+      setErrors({})
+      setPassword('')
+      setRepeat('')
+      if (returnTo?.startsWith('/') && !returnTo.startsWith('//')) {
+        void navigate(returnTo, { replace: true })
+      }
+    } finally {
+      setSubmitting(false)
     }
   }
   const switchTo = (next: 'signin' | 'register') => {
@@ -279,7 +310,10 @@ function AccountPanel() {
   }
 
   return (
-    <form className={s.form} onSubmit={submit} noValidate data-testid="signin-form">
+    <form className={s.form} onSubmit={(e) => void submit(e)} noValidate data-testid="signin-form">
+      <Notice>
+        Вход и регистрация проверяются сервером. Сессия хранится в защищённой cookie браузера.
+      </Notice>
       <div className={s.tabs} role="tablist" aria-label="Вход или регистрация">
         <button
           type="button"
@@ -302,6 +336,16 @@ function AccountPanel() {
           Регистрация
         </button>
       </div>
+      {registering && (
+        <TextField
+          label="Имя и фамилия"
+          value={name}
+          onChange={setName}
+          error={errors.name}
+          autoComplete="name"
+          testID="register-name"
+        />
+      )}
       <TextField
         label="Телефон или почта"
         value={login}
@@ -358,11 +402,11 @@ function AccountPanel() {
         </>
       )}
       <BigButton
-        onClick={() => submit()}
+        onClick={() => void submit()}
         icon="user"
         testID={registering ? 'register-submit' : 'signin-submit'}
       >
-        {registering ? 'Зарегистрироваться' : 'Войти'}
+        {submitting ? 'Проверяем…' : registering ? 'Зарегистрироваться' : 'Войти'}
       </BigButton>
       <p className={s.muted}>
         {registering ? (

@@ -3228,6 +3228,14 @@
       "osmUrl": "https://www.openstreetmap.org/node/5832583820"
     },
     {
+      "id": "osm-node-4826659721",
+      "lat": 53.44783,
+      "lon": 36.00527,
+      "name": "Болховской краеведческий музей",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/node/4826659721"
+    },
+    {
       "id": "osm-node-1659573526",
       "lat": 53.27615,
       "lon": 35.67959,
@@ -3306,22 +3314,6 @@
       "name": "Братская могила советских воинов",
       "kind": "grave",
       "osmUrl": "https://www.openstreetmap.org/node/7348714647"
-    },
-    {
-      "id": "osm-node-13970690458",
-      "lat": 52.26132,
-      "lon": 37.48876,
-      "name": "Братское захоронение",
-      "kind": "grave",
-      "osmUrl": "https://www.openstreetmap.org/node/13970690458"
-    },
-    {
-      "id": "osm-node-14092751039",
-      "lat": 52.33753,
-      "lon": 37.35885,
-      "name": "Братское захоронение",
-      "kind": "grave",
-      "osmUrl": "https://www.openstreetmap.org/node/14092751039"
     },
     {
       "id": "osm-node-5604184856",
@@ -3532,12 +3524,28 @@
       "osmUrl": "https://www.openstreetmap.org/node/10568370371"
     },
     {
+      "id": "osm-node-1715192461",
+      "lat": 52.49957,
+      "lon": 36.33132,
+      "name": "Глазуновский историко-краеведческий музей",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/node/1715192461"
+    },
+    {
       "id": "osm-node-4217217284",
       "lat": 52.96687,
       "lon": 37.04899,
       "name": "Горбатов А.В.",
       "kind": "monument",
       "osmUrl": "https://www.openstreetmap.org/node/4217217284"
+    },
+    {
+      "id": "osm-way-168757455",
+      "lat": 52.50493,
+      "lon": 35.13962,
+      "name": "Дмитровский историко-этнографический музей",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/way/168757455"
     },
     {
       "id": "osm-node-10687927103",
@@ -3554,6 +3562,54 @@
       "name": "Комсомольцам орловщины павшим в ВОВ",
       "kind": "monument",
       "osmUrl": "https://www.openstreetmap.org/node/1357129496"
+    },
+    {
+      "id": "osm-way-168802994",
+      "lat": 52.05679,
+      "lon": 37.5328,
+      "name": "Краеведческий музей (Долгое)",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/way/168802994"
+    },
+    {
+      "id": "osm-node-4965519028",
+      "lat": 52.22559,
+      "lon": 37.03535,
+      "name": "Краеведческий музей (Колпна)",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/node/4965519028"
+    },
+    {
+      "id": "osm-node-4825972523",
+      "lat": 53.2785,
+      "lon": 36.58133,
+      "name": "Краеведческий музей (Мценск)",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/node/4825972523"
+    },
+    {
+      "id": "osm-node-1879899610",
+      "lat": 52.97082,
+      "lon": 37.04323,
+      "name": "Краеведческий музей (Новосиль)",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/node/1879899610"
+    },
+    {
+      "id": "osm-node-8467798417",
+      "lat": 52.96426,
+      "lon": 36.06845,
+      "name": "Краеведческий музей (Орёл)",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/node/8467798417"
+    },
+    {
+      "id": "osm-way-357317666",
+      "lat": 52.42313,
+      "lon": 37.60673,
+      "name": "Ливенский краеведческий музей",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/way/357317666"
     },
     {
       "id": "osm-node-11274124156",
@@ -3620,6 +3676,86 @@
       "osmUrl": "https://www.openstreetmap.org/node/2178423912"
     },
     {
+      "id": "osm-node-5831744531",
+      "lat": 53.02216,
+      "lon": 36.95232,
+      "name": "Музей Боевой Славы",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/node/5831744531"
+    },
+    {
+      "id": "osm-node-2187151597",
+      "lat": 52.96333,
+      "lon": 36.0875,
+      "name": "Музей В.А. Русанова",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/node/2187151597"
+    },
+    {
+      "id": "osm-way-584370933",
+      "lat": 52.39379,
+      "lon": 35.34403,
+      "name": "Музей деревенского быта усадьбы супругов Булычевых",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/way/584370933"
+    },
+    {
+      "id": "osm-node-10565879138",
+      "lat": 52.96602,
+      "lon": 36.06092,
+      "name": "Музей И. А. Бунина",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/node/10565879138"
+    },
+    {
+      "id": "osm-node-1573366224",
+      "lat": 52.96718,
+      "lon": 36.06108,
+      "name": "Музей И. С. Тургенева",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/node/1573366224"
+    },
+    {
+      "id": "osm-node-2183625520",
+      "lat": 52.97236,
+      "lon": 36.05808,
+      "name": "Музей изобразительных искусств",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/node/2183625520"
+    },
+    {
+      "id": "osm-way-116606467",
+      "lat": 52.96756,
+      "lon": 36.06029,
+      "name": "Музей писателей-орловцев",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/way/116606467"
+    },
+    {
+      "id": "osm-node-10775690575",
+      "lat": 53.01376,
+      "lon": 35.97713,
+      "name": "Музей русской гармоники",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/node/10775690575"
+    },
+    {
+      "id": "osm-node-5595231100",
+      "lat": 53.27314,
+      "lon": 36.63982,
+      "name": "Музей сбитых самолетов",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/node/5595231100"
+    },
+    {
+      "id": "osm-node-7574921362",
+      "lat": 53.37325,
+      "lon": 36.63259,
+      "name": "Музей-усадьба Тургенева Спасское-Лутовиново",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/node/7574921362"
+    },
+    {
       "id": "osm-node-5840119779",
       "lat": 53.01939,
       "lon": 36.94609,
@@ -3634,6 +3770,14 @@
       "name": "Орёл-Город Воинской славы",
       "kind": "monument",
       "osmUrl": "https://www.openstreetmap.org/node/1165131576"
+    },
+    {
+      "id": "osm-way-73568977",
+      "lat": 52.95316,
+      "lon": 36.06391,
+      "name": "Орловский военно-исторический музей",
+      "kind": "museum",
+      "osmUrl": "https://www.openstreetmap.org/way/73568977"
     },
     {
       "id": "osm-node-1550221448",

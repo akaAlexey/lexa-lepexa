@@ -11,7 +11,6 @@ import {
 } from '../../functions/groupApplications/index.ts'
 import { Button } from '../../ui/Button.tsx'
 import { Card } from '../../ui/Card.tsx'
-import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { StatePill } from '../../ui/StatePill.tsx'
 import s from './weekends.module.css'
@@ -72,8 +71,11 @@ export function GroupList({ trip }: { trip: Trip }) {
                 </p>
               )}
               <p className={s.badges}>
-                <StatePill label={state.label} tone={state.tone} testID={`group-status-${a.id}`} />{' '}
-                {a.demo && <DemoBadge />}
+                <StatePill
+                  label={state.label}
+                  tone={state.tone}
+                  testID={`group-status-${a.id}`}
+                />{' '}
               </p>
               {isCommander && a.status === 'pending' && <Decision application={a} />}
             </Card>

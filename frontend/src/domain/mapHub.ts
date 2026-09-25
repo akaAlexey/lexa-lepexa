@@ -1,12 +1,21 @@
-import type { Battle, Grave, LastBattleSite, Route, SiteStatus } from '../contract/schemas.ts'
+import type {
+  Battle,
+  Grave,
+  LastBattleSite,
+  Memorial,
+  MemorialKind,
+  Route,
+  SiteStatus,
+} from '../contract/schemas.ts'
 import { formatHistoricDate } from './chronicle.ts'
 import { describeFighters } from './lastBattle.ts'
 
 /**
  * Карта-хаб (ADR 0012): всё, что можно найти на карте, одним списком —
- * точки семейных маршрутов, места поиска, захоронения и бои из хроники.
+ * точки семейных маршрутов, места поиска, захоронения, бои из хроники,
+ * а также настоящие памятники войны и музеи края из OpenStreetMap.
  */
-export type PlaceKind = 'point' | 'site' | 'grave' | 'battle'
+export type PlaceKind = 'point' | 'site' | 'grave' | 'battle' | 'memorial'
 
 export interface Place {
   /** Уникален среди всех видов: `point-rubezh`, `site-S01`, `grave-G001`, `battle-B01`. */
@@ -20,6 +29,9 @@ export interface Place {
   /** Для точки маршрута — id маршрута (адрес карточки точки). */
   routeId?: string
   status?: SiteStatus
+  /** Для памятного места — вид (музей, вечный огонь…) и карточка в OpenStreetMap. */
+  memorialKind?: MemorialKind
+  sourceUrl?: string
   demo: boolean
 }
 
@@ -28,6 +40,15 @@ export const PLACE_KIND_LABEL: Record<PlaceKind, string> = {
   site: 'Место поиска',
   grave: 'Воинское захоронение',
   battle: 'Бой',
+  memorial: 'Памятное место',
+}
+
+export const MEMORIAL_KIND_LABEL: Record<MemorialKind, string> = {
+  grave: 'Братская могила',
+  flame: 'Вечный огонь',
+  vehicle: 'Техника-памятник',
+  monument: 'Памятник',
+  museum: 'Музей',
 }
 
 export function collectPlaces(data: {
@@ -35,6 +56,7 @@ export function collectPlaces(data: {
   sites?: readonly LastBattleSite[]
   graves?: readonly Grave[]
   battles?: readonly Battle[]
+  memorials?: readonly Memorial[]
 }): Place[] {
   return [
     ...(data.routes ?? []).flatMap((r) =>
@@ -87,6 +109,18 @@ export function collectPlaces(data: {
           ]
         : [],
     ),
+    ...(data.memorials ?? []).map((m) => ({
+      key: `memorial-${m.id}`,
+      kind: 'memorial' as const,
+      id: m.id,
+      title: m.name,
+      subtitle: MEMORIAL_KIND_LABEL[m.kind],
+      lat: m.lat,
+      lon: m.lon,
+      memorialKind: m.kind,
+      sourceUrl: m.osmUrl,
+      demo: false,
+    })),
   ]
 }
 

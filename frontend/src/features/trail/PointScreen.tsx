@@ -14,7 +14,6 @@ import {
 } from '../../functions/quest/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
-import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Icon } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { BackLink } from '../../ui/BackLink.tsx'
@@ -84,7 +83,6 @@ function PointCard({ route, point, index }: { route: Route; point: RoutePoint; i
         <span data-testid="point-step">
           Точка {index + 1} из {route.points.length}
         </span>
-        {route.demo && <DemoBadge />}
       </p>
       <Stepper route={route} index={index} done={done} />
 

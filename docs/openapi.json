@@ -39,7 +39,7 @@
     "/memorials": {
       "get": {
         "operationId": "listMemorials",
-        "summary": "Памятники войны в регионе (OpenStreetMap, npm run memorials)",
+        "summary": "Памятники войны и музеи региона (OpenStreetMap, npm run memorials)",
         "responses": {
           "200": {
             "description": "OK",
@@ -1077,9 +1077,10 @@
           "grave",
           "flame",
           "vehicle",
-          "monument"
+          "monument",
+          "museum"
         ],
-        "description": "Тип памятника: братская могила, вечный огонь, техника, памятник или стела"
+        "description": "Тип памятного места: братская могила, вечный огонь, техника, памятник или стела, музей"
       },
       "Memorial": {
         "type": "object",
@@ -1119,7 +1120,7 @@
           "osmUrl"
         ],
         "additionalProperties": false,
-        "description": "Памятник Великой Отечественной войны. Источник — OpenStreetMap (historic=memorial|monument)"
+        "description": "Памятник Великой Отечественной войны или музей края. Источник — OpenStreetMap (historic=memorial|monument, tourism=museum)"
       },
       "Battle": {
         "type": "object",

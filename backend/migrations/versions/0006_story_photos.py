@@ -6,8 +6,8 @@
 import sqlalchemy as sa
 from alembic import op
 
-revision = "0005_story_photos"
-down_revision = "0004_needs_coordinates"
+revision = "0006_story_photos"
+down_revision = "0005_server_auth"
 branch_labels = None
 depends_on = None
 

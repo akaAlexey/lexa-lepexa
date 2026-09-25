@@ -3,7 +3,6 @@ import { otherSection, paths } from '../../functions/core/paths.ts'
 import { QueryState } from '../../app/QueryState.tsx'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
-import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { assetUrl, livePhotoUrl, useLivePhotos } from './livePhotos.ts'
@@ -55,9 +54,7 @@ export function LivePhotoListScreen() {
                   <h2 className={s.itemTitle}>
                     <Link to={livePhotoUrl(p.id)}>{p.title}</Link>
                   </h2>
-                  <p className={s.caption}>
-                    {p.caption} {p.demo && <DemoBadge />}
-                  </p>
+                  <p className={s.caption}>{p.caption}</p>
                   <a href={assetUrl(p.photoUrl)} download>
                     Скачать для печати<span className="visually-hidden">: {p.title}</span>
                   </a>

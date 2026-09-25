@@ -386,3 +386,30 @@
     display: none;
   }
 }
+
+/* Памятники и музеи: длинный список свёрнут, раскрывается по нажатию */
+.memorials > summary {
+  min-height: var(--touch-min);
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.memorials[open] > summary {
+  margin-bottom: 0.5rem;
+}
+
+/* Ссылки карточки памятного места: крупные, чтобы попасть пальцем */
+.cardLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+}
+
+.cardLinks a {
+  min-height: var(--touch-min);
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+}

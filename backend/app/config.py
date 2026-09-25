@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     yookassa_api_url: str = "https://api.yookassa.ru/v3"
     # Куда ЮKassa вернёт пользователя после оплаты (адрес сайта).
     site_url: str = "https://marshrutypobedy.ru"
+    # Серверная сессия входа: HttpOnly-cookie, токен хранится в БД только в виде SHA-256.
+    auth_cookie_name: str = "mp_session"
+    auth_cookie_secure: bool = True
+    auth_session_days: int = 30
 
     @property
     def yookassa_enabled(self) -> bool:
