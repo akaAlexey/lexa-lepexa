@@ -137,7 +137,7 @@ describe('mock API: демо переживает перезагрузку', () 
     const afterReload = createMockApi({ latencyMs: 0, channelName: null, storage })
     expect((await afterReload.getSite({ id: site.id })).placeName).toBe('Опушка (демо)')
 
-    afterReload.reset()
+    afterReload.reset?.()
     const fresh = createMockApi({ latencyMs: 0, channelName: null, storage })
     await expect(fresh.getSite({ id: site.id })).rejects.toThrow('не найден')
   })
