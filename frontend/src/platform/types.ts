@@ -45,10 +45,15 @@ export interface ImageTrackingOptions {
   aspect: number
   onFound(): void
   onLost(): void
+  /** Отмена запуска (закрыли экран, истёк таймаут): камера гаснет, промис отклоняется с AbortError. */
+  signal?: AbortSignal
 }
 
 export interface ArService {
-  /** Узнать снимок в камере и положить поверх него ролик. Ошибка — если камеры нет или доступ запрещён. */
+  /**
+   * Узнать снимок в камере и положить поверх него ролик. Ошибка — если нет защищённого адреса (https),
+   * камеры или доступа к ней. При любой ошибке и отмене камера уже выключена.
+   */
   trackImage(options: ImageTrackingOptions): Promise<ImageTrackingSession>
 }
 

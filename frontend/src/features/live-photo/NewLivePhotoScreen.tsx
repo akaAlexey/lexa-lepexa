@@ -89,8 +89,8 @@ export function NewLivePhotoScreen() {
     return (
       <Screen title="Фото принято" testID="screen-live-new">
         <Notice tone="success" testID="live-new-sent">
-          Снимок сохранён в «Моих живых фото» на этом устройстве. Ролик по нему соберёт сервер
-          генерации — это следующий этап проекта. Ниже — пример того, как будет выглядеть результат.
+          Снимок сохранён в «Моих живых фото» только на этом устройстве. Ролик по нему в демо не
+          создаётся. Ниже — пример ролика, который команда подготовила заранее по другому снимку.
         </Notice>
         <figure className={s.figure}>
           <img src={sent.photo} alt={`Фото: ${sent.name}`} className={s.photo} />
@@ -104,7 +104,9 @@ export function NewLivePhotoScreen() {
         </Card>
         {example && (
           <div className={s.player}>
-            <p className={s.aiLabel}>Пример ролика на другом снимке · Реконструкция с помощью ИИ</p>
+            <p className={s.aiLabel}>
+              Пример: ролик по другому снимку, подготовлен заранее · Реконструкция с помощью ИИ
+            </p>
             <video
               src={assetUrl(example.videoUrl)}
               controls
@@ -142,7 +144,7 @@ export function NewLivePhotoScreen() {
   return (
     <Screen
       title="Оживить своё фото"
-      lead="Фото бойца из семейного архива, музея или «Памяти народа» — нейросеть оживит лицо и озвучит слова от первого лица"
+      lead="Фото бойца из семейного архива, музея или «Памяти народа» и слова от первого лица. В демо снимок сохраняется на устройстве, ролик по нему не создаётся"
       testID="screen-live-new"
     >
       <Notice testID="live-new-ethics">
@@ -253,7 +255,7 @@ export function NewLivePhotoScreen() {
               <Card as="li" key={m.id}>
                 <img src={m.photo} alt={`Фото: ${m.name}`} className={s.thumb} />
                 <p className={s.itemTitle}>{m.name}</p>
-                <p className={s.caption}>Ожидает генерации</p>
+                <p className={s.caption}>Сохранён на устройстве</p>
               </Card>
             ))}
           </ul>
