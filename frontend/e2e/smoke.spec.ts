@@ -30,13 +30,14 @@ test('старт: главная — «Мероприятия»; роль — н
 })
 
 test('прямые ссылки открывают экраны, разделы доступны из меню', async ({ page }, testInfo) => {
-  // Отдельного экрана «Последний бой» нет (PR #17): старый адрес ведёт на «Карту»
+  // «Последний бой» — отдельная страница раздела «Другое».
   await page.goto('/last-battle')
-  await expect(page).toHaveURL(/\/map$/)
+  await expect(page).toHaveURL(/\/last-battle$/)
+  await expect(page.getByTestId('screen-last-battle')).toBeVisible()
   await snap(page, testInfo, '03-last-battle')
 
   // Четыре раздела ADR 0012: подписи видны всегда
-  await expect(page.getByTestId('tab-map')).toHaveAttribute('aria-current', 'page')
+  await expect(page.getByTestId('tab-other')).toHaveAttribute('aria-current', 'page')
   await page.getByTestId('tab-events').click()
   await expect(page.getByTestId('week-news')).toContainText('Новости недели')
   await expect(page.getByTestId('request-card-R01')).toContainText('Высота')

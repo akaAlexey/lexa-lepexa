@@ -12,7 +12,7 @@ const SCREENS = [
   // Разделы дизайна «Стол и газета» (ADR 0012)
   { url: '/map', main: 'hub-route-start' },
   { url: '/events', main: 'events-nearest-trip' },
-  { url: '/archive', main: 'archive-new' },
+  { url: '/archive', main: 'archive-chronicle' },
   { url: '/other?section=account', main: 'signin-submit' },
 ] as const
 
@@ -49,7 +49,9 @@ test.describe('Адаптив и доступность каждого экра�
     for (const { url } of SCREENS.slice(1)) {
       await page.goto(url)
       await expect(page.getByTestId('screen-not-implemented')).toHaveCount(0)
-      await expect(page.locator('[data-main-action]'), url).toHaveCount(1)
+      await expect(page.locator('[data-main-action]'), url).toHaveCount(
+        url === '/archive' || url === '/last-battle' ? 0 : 1,
+      )
     }
   })
 

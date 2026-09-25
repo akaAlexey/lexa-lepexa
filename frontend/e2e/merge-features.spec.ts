@@ -13,7 +13,7 @@ import {
 
 test.describe('Новые экраны: адаптив, доступность, одна главная кнопка', () => {
   const SCREENS = [
-    { url: '/archive', main: 'archive-new' },
+    { url: '/archive', main: 'archive-chronicle' },
     { url: '/archive/new', main: 'story-send' },
     { url: '/archive/ST01', main: 'story-tell-own' },
     { url: '/weekends/W01/group', main: 'group-send' },
@@ -26,7 +26,7 @@ test.describe('Новые экраны: адаптив, доступность, 
       await startAs(page, 'family')
       await page.goto(url)
       await expect(page.getByTestId(main)).toBeVisible()
-      await expect(page.locator('[data-main-action]')).toHaveCount(1)
+      await expect(page.locator('[data-main-action]')).toHaveCount(url === '/archive' ? 0 : 1)
       await expectNoHorizontalScroll(page)
       await expectNoA11yViolations(page)
     })
@@ -42,7 +42,12 @@ test('«Истории»: семья рассказывает историю, к
   await expect(family.getByTestId('story-ST01')).toBeVisible()
   await snap(family, testInfo, 'merge-01-archive')
 
-  await family.getByTestId('archive-new').click()
+  await family.goto('/other?section=account')
+  await family.getByTestId('signin-login').fill('family@example.com')
+  await family.getByTestId('signin-password').fill('example-password')
+  await family.getByTestId('signin-submit').click()
+  await family.getByTestId('other-archive').click()
+  await family.getByTestId('other-family-story').click()
   await family.getByTestId('story-title').fill('Письмо прадеда')
   await family.getByTestId('story-place').fill('Кромской район')
   await family
@@ -66,6 +71,7 @@ test('«Истории»: семья рассказывает историю, к
   await verifier.getByTestId('archive-review-next').click()
   await verifier.getByTestId('review-verify').click()
   await expect(verifier.getByTestId('review-blocker')).toContainText('Отметьте все пункты')
+  await verifier.getByTestId('review-author').fill('Ирина Иванова')
   for (const id of ['datePlace', 'source', 'archive'])
     await verifier.getByTestId(`review-check-${id}`).check()
   await expectNoA11yViolations(verifier)
