@@ -227,6 +227,48 @@ export const endpoints = {
     body: s.Subscription,
     response: s.SubscriptionResult,
   }),
+
+  // Семейный архив (A7): только для вошедшего пользователя (cookie сессии), иначе 401.
+  // Чужой боец — 404. Удаление — POST …/delete: в контракте нет DELETE.
+  listFamilyFighters: endpoint({
+    method: 'GET',
+    path: '/family/fighters',
+    summary: 'Бойцы семьи вошедшего пользователя',
+    response: z.array(s.FamilyFighter),
+  }),
+  createFamilyFighter: endpoint({
+    method: 'POST',
+    path: '/family/fighters',
+    summary: 'Добавить бойца в семейный архив',
+    body: s.FamilyFighterInput,
+    response: s.FamilyFighter,
+  }),
+  updateFamilyFighter: endpoint({
+    method: 'PATCH',
+    path: '/family/fighters/{id}',
+    summary: 'Исправить сведения о бойце (записи не меняются)',
+    body: s.FamilyFighterInput,
+    response: s.FamilyFighter,
+  }),
+  deleteFamilyFighter: endpoint({
+    method: 'POST',
+    path: '/family/fighters/{id}/delete',
+    summary: 'Удалить бойца вместе с найденными записями',
+    response: s.Ack,
+  }),
+  addFamilyRecord: endpoint({
+    method: 'POST',
+    path: '/family/fighters/{id}/records',
+    summary: 'Добавить найденную запись: только ссылки на официальные базы, без повторов',
+    body: s.FoundRecordInput,
+    response: s.FamilyFighter,
+  }),
+  deleteFamilyRecord: endpoint({
+    method: 'POST',
+    path: '/family/fighters/{id}/records/{recordId}/delete',
+    summary: 'Удалить найденную запись',
+    response: s.FamilyFighter,
+  }),
 }
 
 export type Endpoints = typeof endpoints

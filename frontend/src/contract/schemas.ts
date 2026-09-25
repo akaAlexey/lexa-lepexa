@@ -453,6 +453,41 @@ export const ArchiveReview = entity(
   }),
 )
 
+/* ---------- Семейный архив (A7) ---------- */
+
+export const FoundRecord = entity(
+  'FoundRecord',
+  'Найденный документ — ссылка на страницу в «Памяти народа», ОБД «Мемориал» или «Подвиге народа»',
+  z.object({ id, url: z.url(), title: z.string().min(1).max(120) }),
+)
+
+const fighterFields = {
+  lastName: z.string().min(1).max(60),
+  firstName: z.string().max(60),
+  middleName: z.string().max(60),
+  birthYear: z.number().int().min(1860).max(1935).optional(),
+  relation: z.string().max(60).describe('Кем приходится: «прадед по маме»'),
+  note: z.string().max(1000).describe('Что известно в семье'),
+}
+
+export const FamilyFighter = entity(
+  'FamilyFighter',
+  'Боец семьи в личном архиве пользователя. Виден только владельцу (нужен вход)',
+  z.object({ id, ...fighterFields, records: z.array(FoundRecord), createdAt: isoDateTime }),
+)
+
+export const FamilyFighterInput = entity(
+  'FamilyFighterInput',
+  'Новый боец или правка: сервер проверяет те же правила, что и форма (domain/familyArchive)',
+  z.object(fighterFields),
+)
+
+export const FoundRecordInput = entity(
+  'FoundRecordInput',
+  'Ссылка на найденный документ; без названия — название базы',
+  z.object({ url: z.string().min(1).max(500), title: z.string().max(120) }),
+)
+
 /* ---------- «Живое фото» ---------- */
 
 export const LivePhoto = entity(
@@ -608,6 +643,10 @@ export type ArchiveStory = z.infer<typeof ArchiveStory>
 export type StoryPhoto = z.infer<typeof StoryPhoto>
 export type NewArchiveStory = z.infer<typeof NewArchiveStory>
 export type LivePhoto = z.infer<typeof LivePhoto>
+export type FoundRecord = z.infer<typeof FoundRecord>
+export type FamilyFighter = z.infer<typeof FamilyFighter>
+export type FamilyFighterInput = z.infer<typeof FamilyFighterInput>
+export type FoundRecordInput = z.infer<typeof FoundRecordInput>
 export type SiteStatus = z.infer<typeof SiteStatus>
 export type LastBattleSite = z.infer<typeof LastBattleSite>
 export type NewLastBattleSite = z.infer<typeof NewLastBattleSite>

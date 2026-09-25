@@ -10,6 +10,7 @@ import {
   recordSource,
   searchLinks,
   useFamilyArchive,
+  type FamilyArchive,
   type FamilyFighter,
   type FighterValues,
   type RecordValues,
@@ -21,7 +22,7 @@ import { Icon } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import s from './other.module.css'
 
-type Archive = ReturnType<typeof useFamilyArchive>
+type Archive = FamilyArchive
 
 /**
  * Семейный архив (A7): список бойцов, форма и карточка бойца — по параметрам адреса
@@ -31,18 +32,58 @@ export function FamilyArchivePanel({ owner }: { owner: string }) {
   const archive = useFamilyArchive(owner)
   const [params] = useSearchParams()
   const id = params.get('fighter')
-  if (!id) return <FighterList fighters={archive.fighters} />
+  if (archive.status !== 'ready') return <ArchiveState archive={archive} />
+  if (!id) return <FighterList archive={archive} />
   if (id === 'new') return <FighterForm archive={archive} />
   const fighter = archive.fighters.find((f) => f.id === id)
-  if (!fighter) return <MissingFighter />
+  if (!fighter) return <MissingFighter storage={archive.storage} />
   if (params.get('edit') === '1')
     return <FighterForm key={id} archive={archive} fighter={fighter} />
   return <FighterCard key={id} archive={archive} fighter={fighter} />
 }
 
-function FighterList({ fighters }: { fighters: readonly FamilyFighter[] }) {
+/** Архив в базе ещё грузится, сессия истекла или нет связи. */
+function ArchiveState({ archive }: { archive: Archive }) {
+  if (archive.status === 'loading')
+    return (
+      <p role="status" className={s.muted} data-testid="family-loading">
+        Загружаем семейный архив…
+      </p>
+    )
+  if (archive.status === 'signed-out')
+    return (
+      <div className={s.family}>
+        <Notice tone="error" testID="family-signed-out">
+          Сессия истекла. Войдите снова — архив хранится в вашем аккаунте.
+        </Notice>
+        <BigButton to={otherSection('account')} icon="user" testID="family-sign-in">
+          Войти
+        </BigButton>
+      </div>
+    )
   return (
     <div className={s.family}>
+      <Notice tone="error" testID="family-error">
+        Не удалось загрузить архив. Проверьте интернет и попробуйте ещё раз.
+      </Notice>
+      <div className={s.links}>
+        <Button onClick={archive.retry} icon="refresh" testID="family-retry">
+          Повторить
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+function FighterList({ archive }: { archive: Archive }) {
+  const { fighters } = archive
+  return (
+    <div className={s.family}>
+      {archive.moved > 0 && (
+        <Notice tone="success" testID="family-moved">
+          Бойцы из этого браузера ({archive.moved}) перенесены в ваш аккаунт.
+        </Notice>
+      )}
       <p>
         Запишите бойцов своей семьи и найдите их в «Памяти народа» и ОБД «Мемориал»: ссылки поиска
         откроются с уже подставленными именем и годом рождения. Найденные документы сохраните в
@@ -76,9 +117,11 @@ function FighterList({ fighters }: { fighters: readonly FamilyFighter[] }) {
       <BigButton to={familyFighter('new')} icon="family" testID="family-add">
         Добавить бойца
       </BigButton>
-      <p className={s.muted}>
-        <Icon name="lock" size={1} /> Архив хранится только в этом браузере и никуда не
-        отправляется.
+      <p className={s.muted} data-testid="family-storage">
+        <Icon name="lock" size={1} />{' '}
+        {archive.storage === 'server'
+          ? 'Архив хранится в вашем аккаунте: его видите только вы, на любом устройстве после входа.'
+          : 'Архив хранится только в этом браузере и никуда не отправляется.'}
       </p>
       <div className={s.links}>
         <Link to={paths.newStory()} className={s.secondary} data-testid="other-family-story">
@@ -94,12 +137,16 @@ function FighterForm({ archive, fighter }: { archive: Archive; fighter?: FamilyF
   const navigate = useNavigate()
   const [values, setValues] = useState<FighterValues>(() => fighterValues(fighter))
   const [errors, setErrors] = useState<FieldErrors>({})
+  const [busy, setBusy] = useState(false)
   const set = (key: keyof FighterValues) => (value: string) =>
     setValues((prev) => ({ ...prev, [key]: value }))
 
-  const submit = (event?: FormEvent) => {
+  const submit = async (event?: FormEvent) => {
     event?.preventDefault()
-    const result = archive.save(values, fighter?.id)
+    if (busy) return
+    setBusy(true)
+    const result = await archive.save(values, fighter?.id)
+    setBusy(false)
     if (!result.ok) {
       setErrors(result.errors)
       return
@@ -108,7 +155,7 @@ function FighterForm({ archive, fighter }: { archive: Archive; fighter?: FamilyF
   }
 
   return (
-    <form className={s.form} onSubmit={submit} noValidate data-testid="family-form">
+    <form className={s.form} onSubmit={(e) => void submit(e)} noValidate data-testid="family-form">
       <h2>{fighter ? 'Изменить данные бойца' : 'Новый боец'}</h2>
       <p className={s.muted}>Обязательна только фамилия. Остальное можно дописать позже.</p>
       <TextField
@@ -168,8 +215,8 @@ function FighterForm({ archive, fighter }: { archive: Archive; fighter?: FamilyF
         rows={4}
         testID="family-note"
       />
-      <BigButton onClick={() => submit()} icon="check" testID="family-save">
-        Сохранить
+      <BigButton onClick={() => void submit()} disabled={busy} icon="check" testID="family-save">
+        {busy ? 'Сохраняем…' : 'Сохранить'}
       </BigButton>
       <div className={s.links}>
         <Link
@@ -192,6 +239,7 @@ function FighterCard({ archive, fighter }: { archive: Archive; fighter: FamilyFi
   const [errors, setErrors] = useState<FieldErrors>({})
   const [added, setAdded] = useState(false)
   const [confirming, setConfirming] = useState(false)
+  const [busy, setBusy] = useState(false)
   const links = searchLinks(fighter)
   const relation = fighterRelationLine(fighter)
   const name = fullName(fighter)
@@ -200,9 +248,12 @@ function FighterCard({ archive, fighter }: { archive: Archive; fighter: FamilyFi
     setRecord((prev) => ({ ...prev, [key]: value }))
     setAdded(false)
   }
-  const addRecord = (event: FormEvent) => {
+  const addRecord = async (event: FormEvent) => {
     event.preventDefault()
-    const result = archive.addRecord(fighter.id, record)
+    if (busy) return
+    setBusy(true)
+    const result = await archive.addRecord(fighter.id, record)
+    setBusy(false)
     if (!result.ok) {
       setErrors(result.errors)
       setAdded(false)
@@ -212,10 +263,21 @@ function FighterCard({ archive, fighter }: { archive: Archive; fighter: FamilyFi
     setRecord({ url: '', title: '' })
     setAdded(true)
   }
-  const remove = () => {
-    // сначала уходим к списку: иначе на миг мелькнёт «бойца нет в архиве»
+  const removeRecord = async (recordId: string) => {
+    setAdded(false)
+    const result = await archive.removeRecord(fighter.id, recordId)
+    setErrors(result.ok ? {} : result.errors)
+  }
+  const remove = async () => {
+    setBusy(true)
+    const result = await archive.remove(fighter.id)
+    if (!result.ok) {
+      setBusy(false)
+      setErrors(result.errors)
+      return
+    }
+    // уход к списку — в том же обновлении, что и удаление: «бойца нет в архиве» не мелькнёт
     void navigate(otherSection('archive'), { replace: true })
-    archive.remove(fighter.id)
   }
 
   return (
@@ -278,10 +340,7 @@ function FighterCard({ archive, fighter }: { archive: Archive; fighter: FamilyFi
                   <span className={s.muted}>{recordSource(r.url)?.title}</span>
                 </span>
                 <Button
-                  onClick={() => {
-                    archive.removeRecord(fighter.id, r.id)
-                    setAdded(false)
-                  }}
+                  onClick={() => void removeRecord(r.id)}
                   testID={`family-record-remove-${r.id}`}
                 >
                   Убрать<span className="visually-hidden">: {r.title}</span>
@@ -294,7 +353,12 @@ function FighterCard({ archive, fighter }: { archive: Archive; fighter: FamilyFi
             Записей пока нет.
           </p>
         )}
-        <form className={s.recordForm} onSubmit={addRecord} noValidate>
+        {errors.records && (
+          <Notice tone="error" testID="family-records-error">
+            {errors.records}
+          </Notice>
+        )}
+        <form className={s.recordForm} onSubmit={(e) => void addRecord(e)} noValidate>
           <TextField
             label="Ссылка на страницу документа"
             hint="Только «Память народа», ОБД «Мемориал» или «Подвиг народа»"
@@ -317,7 +381,13 @@ function FighterCard({ archive, fighter }: { archive: Archive; fighter: FamilyFi
             testID="family-record-title"
           />
           <div className={s.links}>
-            <Button type="submit" onClick={() => {}} icon="check" testID="family-record-add">
+            <Button
+              type="submit"
+              onClick={() => {}}
+              disabled={busy}
+              icon="check"
+              testID="family-record-add"
+            >
               Добавить запись
             </Button>
           </div>
@@ -353,25 +423,31 @@ function FighterCard({ archive, fighter }: { archive: Archive; fighter: FamilyFi
             Удалить «{name}» и все найденные записи? Отменить это нельзя.
           </p>
           <div className={s.links}>
-            <Button onClick={remove} testID="family-remove-confirm">
+            <Button onClick={() => void remove()} disabled={busy} testID="family-remove-confirm">
               Да, удалить
             </Button>
             <Button onClick={() => setConfirming(false)} testID="family-remove-cancel">
               Не удалять
             </Button>
           </div>
+          {errors.remove && (
+            <Notice tone="error" testID="family-remove-error">
+              {errors.remove}
+            </Notice>
+          )}
         </div>
       )}
     </article>
   )
 }
 
-function MissingFighter() {
+function MissingFighter({ storage }: { storage: FamilyArchive['storage'] }) {
   return (
     <div className={s.family}>
       <Notice tone="error" testID="family-missing">
-        Такого бойца нет в архиве на этом устройстве: запись могли удалить или она сохранена в
-        другом браузере.
+        {storage === 'server'
+          ? 'Такого бойца нет в вашем архиве: запись могли удалить.'
+          : 'Такого бойца нет в архиве на этом устройстве: запись могли удалить или она сохранена в другом браузере.'}
       </Notice>
       <BigButton to={otherSection('archive')} icon="archive" testID="family-to-list">
         К семейному архиву

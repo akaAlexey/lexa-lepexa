@@ -7,7 +7,7 @@ main.py без изменений, чтобы метаданные Alembic со�
 
 from datetime import date, datetime
 
-from sqlalchemy import JSON, Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .db import Base
@@ -35,6 +35,36 @@ class AuthSession(Base):
     token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+
+
+class FamilyFighter(Base):
+    """Боец семьи в личном архиве пользователя (A7). Виден только владельцу."""
+
+    __tablename__ = "family_fighters"
+    id: Mapped[str] = mapped_column(String(50), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(50), ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    last_name: Mapped[str] = mapped_column(String(60))
+    first_name: Mapped[str] = mapped_column(String(60), default="")
+    middle_name: Mapped[str] = mapped_column(String(60), default="")
+    birth_year: Mapped[int | None] = mapped_column(Integer)
+    relation: Mapped[str] = mapped_column(String(60), default="")
+    note: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class FamilyRecord(Base):
+    """Найденный документ бойца — ссылка на «Память народа», ОБД «Мемориал» или «Подвиг народа»."""
+
+    __tablename__ = "family_records"
+    __table_args__ = (UniqueConstraint("fighter_id", "url", name="uq_family_records_fighter_url"),)
+    id: Mapped[str] = mapped_column(String(50), primary_key=True)
+    fighter_id: Mapped[str] = mapped_column(
+        String(50), ForeignKey("family_fighters.id", ondelete="CASCADE"), index=True
+    )
+    url: Mapped[str] = mapped_column(String(500))
+    title: Mapped[str] = mapped_column(String(120))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 
 class Role(Base):

@@ -952,6 +952,211 @@
         }
       }
     },
+    "/family/fighters": {
+      "get": {
+        "operationId": "listFamilyFighters",
+        "summary": "Бойцы семьи вошедшего пользователя",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FamilyFighter"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createFamilyFighter",
+        "summary": "Добавить бойца в семейный архив",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyFighter"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FamilyFighterInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/family/fighters/{id}": {
+      "patch": {
+        "operationId": "updateFamilyFighter",
+        "summary": "Исправить сведения о бойце (записи не меняются)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyFighter"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FamilyFighterInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/family/fighters/{id}/delete": {
+      "post": {
+        "operationId": "deleteFamilyFighter",
+        "summary": "Удалить бойца вместе с найденными записями",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ack"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/family/fighters/{id}/records": {
+      "post": {
+        "operationId": "addFamilyRecord",
+        "summary": "Добавить найденную запись: только ссылки на официальные базы, без повторов",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyFighter"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FoundRecordInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/family/fighters/{id}/records/{recordId}/delete": {
+      "post": {
+        "operationId": "deleteFamilyRecord",
+        "summary": "Удалить найденную запись",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyFighter"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "recordId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/notifications/stream": {
       "get": {
         "operationId": "notificationStream",
@@ -2307,6 +2512,154 @@
         ],
         "additionalProperties": false,
         "description": "Решение проверяющего. Подтвердить — только с источником; «уточнить» — только с комментарием"
+      },
+      "FoundRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "title"
+        ],
+        "additionalProperties": false,
+        "description": "Найденный документ — ссылка на страницу в «Памяти народа», ОБД «Мемориал» или «Подвиге народа»"
+      },
+      "FamilyFighter": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "firstName": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "middleName": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "birthYear": {
+            "type": "integer",
+            "minimum": 1860,
+            "maximum": 1935
+          },
+          "relation": {
+            "type": "string",
+            "maxLength": 60,
+            "description": "Кем приходится: «прадед по маме»"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Что известно в семье"
+          },
+          "records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FoundRecord"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "description": "Дата и время ISO 8601, UTC"
+          }
+        },
+        "required": [
+          "id",
+          "lastName",
+          "firstName",
+          "middleName",
+          "relation",
+          "note",
+          "records",
+          "createdAt"
+        ],
+        "additionalProperties": false,
+        "description": "Боец семьи в личном архиве пользователя. Виден только владельцу (нужен вход)"
+      },
+      "FamilyFighterInput": {
+        "type": "object",
+        "properties": {
+          "lastName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "firstName": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "middleName": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "birthYear": {
+            "type": "integer",
+            "minimum": 1860,
+            "maximum": 1935
+          },
+          "relation": {
+            "type": "string",
+            "maxLength": 60,
+            "description": "Кем приходится: «прадед по маме»"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Что известно в семье"
+          }
+        },
+        "required": [
+          "lastName",
+          "firstName",
+          "middleName",
+          "relation",
+          "note"
+        ],
+        "additionalProperties": false,
+        "description": "Новый боец или правка: сервер проверяет те же правила, что и форма (domain/familyArchive)"
+      },
+      "FoundRecordInput": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "url",
+          "title"
+        ],
+        "additionalProperties": false,
+        "description": "Ссылка на найденный документ; без названия — название базы"
       },
       "LivePhoto": {
         "type": "object",

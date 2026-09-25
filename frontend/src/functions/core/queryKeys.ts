@@ -19,4 +19,5 @@ export const qk = {
   groupApplications: ['group-applications'],
   stories: ['stories'],
   story: (id: string) => ['stories', id] as const,
+  family: (owner: string) => ['family', owner] as const,
 } as const
