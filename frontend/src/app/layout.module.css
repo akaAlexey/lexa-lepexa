@@ -145,10 +145,10 @@
   padding: var(--space-1) 0.1rem;
   color: var(--color-rail-text);
   text-decoration: none;
-  /* «Мероприятия» помещается в четверть экрана 360 px одной строкой */
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   line-height: 1.15;
-  white-space: nowrap;
+  hyphens: auto;
+  overflow-wrap: normal;
   text-align: center;
 }
 

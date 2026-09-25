@@ -59,5 +59,6 @@ test('прямые ссылки открывают экраны, разделы 
   await page.getByTestId('tab-stories').click()
   await expect(page.getByRole('heading', { level: 1, name: 'Книга памяти' })).toBeVisible()
   await page.getByTestId('tab-other').click()
-  await expect(page.getByTestId('other-account')).toContainText('Вход')
+  // аудит P0-4: вход честно назван демонстрационным
+  await expect(page.getByTestId('other-account')).toContainText('Демо-вход')
 })

@@ -125,16 +125,20 @@ export function EventsScreen() {
           <WeekNewsCard />
         </li>
         {feed.status === 'pending' && (
-          <li role="status" data-testid="loading">
-            Загружаем мероприятия…
+          <li>
+            <div role="status" className={s.feedState} data-testid="loading">
+              Загружаем мероприятия…
+            </div>
           </li>
         )}
         {feed.status === 'error' && (
-          <li role="alert" data-testid="error">
-            <p>Не удалось загрузить мероприятия. Проверьте связь и попробуйте ещё раз.</p>
-            <button type="button" className={s.retry} onClick={feed.retry}>
-              Повторить
-            </button>
+          <li>
+            <div role="alert" className={s.feedState} data-testid="error">
+              <p>Не удалось загрузить мероприятия. Проверьте связь и попробуйте ещё раз.</p>
+              <button type="button" className={s.retry} onClick={feed.retry}>
+                Повторить
+              </button>
+            </div>
           </li>
         )}
         {shown.map((item) => {
@@ -143,7 +147,7 @@ export function EventsScreen() {
             <li key={`${item.kind}-${item.id}`}>
               <FeedCard
                 item={item}
-                canSignUp={!isCommander}
+                canSignUp={can(role?.id, 'request.join')}
                 signedUp={target ? isSignedUp(target) : false}
                 onSignUp={() => target && setSignupFor(target)}
                 onDonate={setDonateTo}
@@ -154,7 +158,24 @@ export function EventsScreen() {
         })}
         {feed.status === 'ready' && shown.length === 0 && (
           <li className={s.empty} data-testid="events-empty">
-            Ничего не нашли. Попробуйте другое слово или покажите все мероприятия.
+            {query || filter !== 'all' ? (
+              <>
+                Ничего не нашли. Попробуйте другое слово или{' '}
+                <button
+                  type="button"
+                  className={s.retry}
+                  onClick={() => {
+                    setQuery('')
+                    setFilter('all')
+                  }}
+                >
+                  покажите все мероприятия
+                </button>
+                .
+              </>
+            ) : (
+              'Мероприятий пока нет. Загляните позже.'
+            )}
           </li>
         )}
       </ul>

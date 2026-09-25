@@ -10,6 +10,8 @@ export type RoleId = 'family' | 'volunteer' | 'commander' | 'verifier'
 export type Action =
   /** Создать заявку на набор волонтёров. */
   | 'request.create'
+  /** Записаться волонтёром в открытую заявку. */
+  | 'request.join'
   /** Отметить место гибели. */
   | 'place.create'
   /** Видеть точные координаты места (защита от «чёрных копателей»; настоящее скрытие — на сервере). */
@@ -25,6 +27,7 @@ export type Action =
 
 const RULES: Record<Action, (role: RoleId) => boolean> = {
   'request.create': (r) => r === 'commander',
+  'request.join': (r) => r === 'volunteer',
   'place.create': (r) => r === 'commander',
   'place.exactCoords': (r) => r === 'commander' || r === 'verifier',
   'place.confirmArchive': (r) => r === 'verifier',

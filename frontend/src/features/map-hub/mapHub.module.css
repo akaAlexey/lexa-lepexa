@@ -8,6 +8,11 @@
   overflow: hidden;
 }
 
+/* The map fallback must remain readable below the floating search field. */
+.hub :global([data-testid='hub-map-fallback']) {
+  margin-top: calc(var(--touch-min) + var(--space-3));
+}
+
 .search {
   position: absolute;
   z-index: 5;
@@ -159,7 +164,7 @@
   cursor: pointer;
 }
 
-.tab[aria-selected='true'] {
+.tab[aria-pressed='true'] {
   color: var(--color-ink);
   border-bottom-color: var(--color-accent);
 }

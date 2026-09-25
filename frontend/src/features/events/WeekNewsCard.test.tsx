@@ -43,7 +43,7 @@ describe('«Новости недели» сворачиваются', () => {
   it('пометка «Демо-данные» — у заголовка и видна в свёрнутом виде', async () => {
     renderApp('/events', { role: 'volunteer', stored: { 'events.weekNewsOpen': false } })
     await toggle()
-    const card = screen.getByTestId('week-news')
-    expect(within(card).getByText('Демо-данные')).toBeVisible()
+    const header = screen.getByTestId('week-news').querySelector('header') as HTMLElement
+    expect(within(header).getByText('Демо-данные')).toBeVisible()
   })
 })
