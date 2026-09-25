@@ -58,11 +58,7 @@ export function Layout() {
               {region.appTitle}
             </Link>
             {/* Кнопка аккаунта: «Вход» до входа, «Профиль» после; роль — рядом, меняется в «Другом» */}
-            <Link
-              to={account ? paths.other() : otherSection('account')}
-              className={s.account}
-              data-testid="nav-role"
-            >
+            <Link to={otherSection('account')} className={s.account} data-testid="nav-role">
               <Icon name="user" size={1.1} />
               <span>{account ? 'Профиль' : 'Вход'}</span>
               {role && (
@@ -85,9 +81,6 @@ export function Layout() {
               <Link to={paths.about()}>О нас</Link>
               <Link to={paths.privacy()}>Политика конфиденциальности</Link>
               <Link to={paths.terms()}>Пользовательские условия</Link>
-              <Link to={paths.newStory()} className={s.footerAccent}>
-                Есть история?
-              </Link>
             </nav>
             <p className={s.footerNote}>
               © {new Date().getFullYear()} {region.appTitle}

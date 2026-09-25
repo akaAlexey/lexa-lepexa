@@ -71,3 +71,13 @@ describe('проверка истории краеведом', () => {
     expect(toggleCheck(['source', 'archive'], 'source')).toEqual(['archive'])
   })
 })
+
+it('не отправляет неподписанный комментарий, сохраняет имя без крайних пробелов', async () => {
+  const deps = createTestDeps()
+  const call = vi.spyOn(deps.api, 'reviewStory')
+  const result = await reviewStory(deps, input({ reviewer: '  ' }))
+  expect(result.ok).toBe(false)
+  expect(call).not.toHaveBeenCalled()
+  const signed = await reviewStory(deps, input({ reviewer: '  Ирина Иванова  ' }))
+  expect(signed.ok && signed.story.verifiedBy).toBe('Ирина Иванова')
+})

@@ -1,3 +1,4 @@
+import { SubscribeFinds } from '../last-battle/SubscribeFinds.tsx'
 import { useEffect, useId, useMemo, useRef, useState, type PointerEvent } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useRole } from '../../app/RoleContext.tsx'
@@ -15,8 +16,6 @@ import { questStatus } from '../../domain/trail.ts'
 import { paths } from '../../functions/core/paths.ts'
 import { can } from '../../functions/core/permissions.ts'
 import { useMapHub } from '../../functions/mapHub/useMapHub.ts'
-import { useNearbySubscription } from '../../functions/nearbyAlerts/index.ts'
-import { NOTIFY_RADIUS_KM } from '../../domain/lastBattle.ts'
 import { POINT_ICON, useQuestProgress } from '../../functions/quest/index.ts'
 import { MapView, type MapMarker } from '../../map/MapView.tsx'
 import { tokens } from '../../theme/tokens.ts'
@@ -480,36 +479,6 @@ function Overview({
           ))}
         </ul>
       </section>
-    </>
-  )
-}
-
-/** Подписка на находки рядом (перенесена с бывшего экрана «Последний бой»). */
-function SubscribeFinds() {
-  const { subscribed, busy, failed, subscribe } = useNearbySubscription()
-  if (subscribed) {
-    return (
-      <p className={s.muted} data-testid="subscribe-done">
-        Вы подписаны: сообщим о находках в радиусе {NOTIFY_RADIUS_KM} км
-      </p>
-    )
-  }
-  return (
-    <>
-      <button
-        type="button"
-        className={ui.button}
-        onClick={() => void subscribe()}
-        disabled={busy}
-        data-testid="last-battle-subscribe"
-      >
-        <Icon name="bell" size={1.1} /> Сообщать о находках рядом
-      </button>
-      {failed && (
-        <p className={s.muted} role="alert" data-testid="subscribe-error">
-          Не удалось подписаться: проверьте доступ к геопозиции и связь
-        </p>
-      )}
     </>
   )
 }

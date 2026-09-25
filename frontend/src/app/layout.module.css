@@ -151,11 +151,6 @@
   color: var(--color-ink);
 }
 
-.footerLinks .footerAccent {
-  color: var(--color-accent);
-  font-weight: 700;
-}
-
 .footerNote {
   margin: var(--space-2) 0 0;
   color: var(--color-ink-muted);
