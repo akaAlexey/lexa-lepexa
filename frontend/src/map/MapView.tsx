@@ -79,12 +79,6 @@ export function MapView({
   useEffect(() => {
     let disposed = false
     let instance: MlMap | undefined
-    const timeout = window.setTimeout(() => {
-      if (disposed) return
-      disposed = true
-      instance?.remove()
-      setFailed(true)
-    }, 10_000)
     // Воркер MapLibre собирается Vite отдельно: сам пакет ищет его рядом с чанком и не находит.
     Promise.all([
       import('maplibre-gl'),
@@ -103,7 +97,6 @@ export function MapView({
         })
         instance.on('load', () => {
           if (disposed || !instance) return
-          window.clearTimeout(timeout)
           setMap(instance)
           const grid = gridLayer()
           instance.addSource('grid', grid.source)
@@ -113,14 +106,9 @@ export function MapView({
           )
         })
       })
-      .catch(() => {
-        if (disposed) return
-        window.clearTimeout(timeout)
-        setFailed(true)
-      })
+      .catch(() => !disposed && setFailed(true))
     return () => {
       disposed = true
-      window.clearTimeout(timeout)
       instance?.remove()
     }
   }, [])
@@ -216,7 +204,7 @@ export function MapView({
   if (failed) {
     return (
       <div className={s.fallback} data-testid={`${testID}-fallback`} role="note">
-        Карта недоступна на этом устройстве. Точки можно открыть из списка на этой странице.
+        Карта недоступна на этом устройстве. Все точки есть в списке ниже.
       </div>
     )
   }
