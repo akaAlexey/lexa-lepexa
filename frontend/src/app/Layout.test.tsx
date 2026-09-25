@@ -31,4 +31,11 @@ describe('шапка и меню', () => {
     const card = await screen.findByTestId('request-card-R01')
     expect(within(card).getByText(/Демо/)).toBeInTheDocument()
   })
+
+  it('выбор роли относится к разделу «Другое»', async () => {
+    renderApp('/roles')
+    await screen.findByTestId('role-family')
+    expect(screen.getByTestId('tab-other')).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByTestId('tab-events')).not.toHaveAttribute('aria-current')
+  })
 })

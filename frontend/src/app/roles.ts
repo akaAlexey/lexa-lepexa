@@ -31,7 +31,8 @@ export const TABS: Record<TabId, { path: string; label: string; icon: IconName; 
       path: paths.other(),
       label: 'Другое',
       icon: 'menu',
-      section: /^\/(other|demo)?(\/|$)/,
+      // выбор роли (/roles) — часть «Другого», как и «Другое → Роль»
+      section: /^\/(other|demo|roles)?(\/|$)/,
     },
   }
 
