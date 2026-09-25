@@ -43,14 +43,14 @@ function sectionsFor(signedIn: boolean): Section[] {
     },
     {
       id: 'archive',
-      title: 'Семейный архив (в разработке)',
+      title: 'Семейный архив',
       hint: 'Пока доступен рассказ в «Историях»',
       icon: 'archive',
       requiresAccount: true,
     },
     {
       id: 'ar',
-      title: 'AR-режим (позже)',
+      title: 'AR-режим',
       hint: 'Совмещение снимков пока недоступно',
       icon: 'target',
       requiresAccount: true,
