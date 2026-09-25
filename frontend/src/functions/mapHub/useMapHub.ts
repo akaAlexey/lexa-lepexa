@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { collectPlaces } from '../../domain/mapHub.ts'
 import { qk } from '../core/queryKeys.ts'
 import { useDeps } from '../core/useDeps.ts'
-import { useWhereAmI } from '../whereAmI/useWhereAmI.ts'
+import { useCurrentPosition } from '../whereAmI/useWhereAmI.ts'
 
 /**
  * Данные карты-хаба. Каждый слой грузится сам: без захоронений или хроники
@@ -11,8 +11,8 @@ import { useWhereAmI } from '../whereAmI/useWhereAmI.ts'
  */
 export function useMapHub() {
   const { api } = useDeps()
-  // Геопозицию запрашиваем только после явного действия пользователя на карте.
-  const whereAmI = useWhereAmI()
+  // При открытии карты браузер сам запрашивает доступ к геопозиции.
+  const position = useCurrentPosition()
   const routes = useQuery({
     queryKey: qk.routes,
     queryFn: api.listRoutes,
@@ -44,8 +44,6 @@ export function useMapHub() {
     routes: routes.data,
     sites: sites.data,
     battles: battles.data,
-    position: whereAmI.me ?? null,
-    locationFailed: whereAmI.failed,
-    requestLocation: whereAmI.locate,
+    position: position ?? null,
   }
 }
