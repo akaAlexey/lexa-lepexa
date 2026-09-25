@@ -39,6 +39,7 @@ describe('шапка и меню', () => {
     expect(screen.getByTestId('tab-other')).toHaveAttribute('aria-current', 'page')
     expect(screen.getByTestId('tab-events')).not.toHaveAttribute('aria-current')
   })
+
   it('в шапке гость видит «Войти», а вошедший пользователь — своё имя без роли', async () => {
     const guest = renderApp('/events', { role: 'volunteer' })
     expect(await screen.findByTestId('nav-role')).toHaveTextContent('Войти')
@@ -59,5 +60,4 @@ describe('шапка и меню', () => {
     expect(screen.getByTestId('nav-role')).not.toHaveTextContent('Профиль')
     expect(screen.getByTestId('nav-role')).not.toHaveTextContent('Волонтёр')
   })
-
 })
