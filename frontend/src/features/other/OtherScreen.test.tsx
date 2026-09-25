@@ -17,23 +17,30 @@ describe('Другое, профиль и личные функции', () => {
       expect(await screen.findByTestId('signin-form')).toBeInTheDocument()
       expect(screen.queryByTestId(`other-${section}`)).not.toBeInTheDocument()
       expect(router.state.location.search).toBe('?section=account')
-      expect(screen.getByTestId('other-last-battle')).toHaveAttribute('href', '/last-battle')
+      expect(screen.getByTestId('other-back')).toHaveAttribute('href', '/other')
+      expect(screen.queryByTestId('other-last-battle')).not.toBeInTheDocument()
     },
   )
 
-  it('список разделов остаётся видимым при выборе и после выхода', async () => {
-    renderApp('/other?section=account')
+  it('выбранный раздел открывается отдельно и возвращается к списку кнопкой Назад', async () => {
+    renderApp('/other')
+    await userEvent.click(screen.getByTestId('other-account'))
+    expect(await screen.findByTestId('signin-form')).toBeVisible()
+    expect(screen.getByTestId('other-back')).toHaveAttribute('href', '/other')
+    expect(screen.queryByTestId('other-last-battle')).not.toBeInTheDocument()
+
     await login()
-    for (const id of ['ar', 'archive', 'photo'])
+    expect(screen.getByTestId('profile')).toBeVisible()
+    expect(screen.queryByTestId('other-role')).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByTestId('other-back'))
+    for (const id of ['ar', 'archive', 'photo']) {
       expect(screen.getByTestId(`other-${id}`)).toBeVisible()
+    }
+
     await userEvent.click(screen.getByTestId('other-ar'))
     expect(screen.getByTestId('other-panel-ar')).toBeVisible()
-    expect(screen.getByTestId('other-account')).toBeVisible()
-    await userEvent.click(screen.getByTestId('nav-role'))
-    expect(screen.getByTestId('profile')).toBeVisible()
-    await userEvent.click(screen.getByTestId('profile-signout'))
-    for (const id of ['ar', 'archive', 'photo'])
-      expect(screen.queryByTestId(`other-${id}`)).not.toBeInTheDocument()
+    expect(screen.queryByTestId('other-account')).not.toBeInTheDocument()
   })
 
   it('профиль сохраняется после повторного входа и не смешивается с таким же скрытым логином', async () => {
