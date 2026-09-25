@@ -231,7 +231,6 @@
   overflow-wrap: anywhere;
 }
 
-
 .cameraPanel {
   display: grid;
   gap: var(--space-4);
