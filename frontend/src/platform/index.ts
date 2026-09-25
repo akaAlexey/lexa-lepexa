@@ -34,6 +34,7 @@ export function createWebPlatform(): Platform {
 }
 
 export { readAsDataUrl } from './web/images.ts'
+export { registerOffline } from './web/offline.ts'
 export type {
   Platform,
   GeoService,
