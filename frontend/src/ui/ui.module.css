@@ -94,11 +94,16 @@
 .screenHead {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
   padding-bottom: var(--space-2);
   border-bottom: 3px double var(--color-ink);
+}
+
+.screenHead > div {
+  min-width: 0;
+  flex: 1 1 20rem;
 }
 
 .screenHead h1 {
@@ -122,10 +127,11 @@
   }
 }
 
+/* Заголовок получает фокус после перехода для скринридера, но не должен выглядеть как кнопка. */
 .screenTitle:focus,
 .screenTitle:focus-visible {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 3px;
+  outline: none;
+  box-shadow: none;
 }
 
 .lead {
