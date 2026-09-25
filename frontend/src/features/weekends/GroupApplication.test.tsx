@@ -10,7 +10,7 @@ describe('коллективные заявки на выезд', () => {
   })
 
   it('школа подаёт заявку — возврат в карточку выезда, статус «На рассмотрении»', async () => {
-    const { router } = renderApp('/weekends/W01/group', { role: 'family' })
+    const { router } = renderApp('/weekends/W01/group', { role: 'family', signedIn: true })
     expect(await screen.findByTestId('group-trip')).toHaveTextContent('Раскопки у д. Семенково')
     await userEvent.type(screen.getByTestId('group-organization'), 'Школа № 5, 7 «А»')
     await userEvent.type(screen.getByTestId('group-contact-name'), 'Мария Петровна')
@@ -27,7 +27,7 @@ describe('коллективные заявки на выезд', () => {
   })
 
   it('больше 100 человек — ошибка, заявка не уходит', async () => {
-    const { router } = renderApp('/weekends/W01/group', { role: 'family' })
+    const { router } = renderApp('/weekends/W01/group', { role: 'family', signedIn: true })
     const count = await screen.findByTestId('group-count')
     await userEvent.clear(count)
     await userEvent.type(count, '150')
@@ -56,5 +56,12 @@ describe('коллективные заявки на выезд', () => {
     renderApp('/weekends/W01', { role: 'volunteer' })
     expect(await screen.findByTestId('trip-date')).toBeInTheDocument()
     expect(screen.queryByTestId('group-G01')).not.toBeInTheDocument()
+  })
+
+  it('гость не может отправить заявку группы', async () => {
+    const { router } = renderApp('/weekends/W01/group', { role: 'family' })
+    expect(await screen.findByTestId('signin-form')).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/other')
+    expect(router.state.location.search).toBe('?section=account&next=%2Fweekends%2FW01%2Fgroup')
   })
 })
