@@ -19,9 +19,16 @@ const site = (lat: number, lon: number): NewLastBattleSite => ({
 
 describe('подписка на находки рядом', () => {
   it('подписка на 20 км от текущей позиции запоминается на устройстве под прежним ключом', async () => {
-    const deps = createTestDeps({ position: { lat: 52.97, lon: 36.07 } })
+    const requestPermission = vi.fn(async () => 'granted' as const)
+    const deps = createTestDeps({
+      position: { lat: 52.97, lon: 36.07 },
+      platform: {
+        notify: { permission: () => 'default', requestPermission, show: () => undefined },
+      },
+    })
     expect(isSubscribed(deps)).toBe(false)
     const sub = await subscribeNearby(deps)
+    expect(requestPermission).toHaveBeenCalledTimes(1)
     expect(sub).toEqual({ lat: 52.97, lon: 36.07, radiusKm: 20, topics: ['search'] })
     expect(isSubscribed(deps)).toBe(true)
     expect(deps.platform.storage.get('subscription')).toEqual(sub)
