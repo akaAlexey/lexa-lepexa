@@ -22,12 +22,13 @@ const isNotFound = (e: unknown) => e instanceof ApiError && e.status === 404
 
 type Mode = 'intro' | 'camera' | 'video'
 
+/** Что сделано с кадром. Ролики собраны командой заранее, а не создаются на телефоне в момент показа. */
 const ANIMATION_NOTE: Record<LivePhoto['animation'], string> = {
-  lip_sync: 'Голос синтезирован, лицо оживлено нейросетью, губы совпадают с речью.',
+  lip_sync:
+    'Ролик подготовлен командой заранее: голос синтезирован, лицо оживлено нейросетью, губы совпадают с речью.',
   neural_motion:
-    'Голоса синтезированы, кадр оживлён нейросетью: бойцы говорят и переглядываются. Губы точно под слова не подогнаны — это общий план.',
-  draft:
-    'Черновик: голос синтезирован, кадр пока без нейросети. Версия с движением лица и губ — следующим обновлением.',
+    'Ролик подготовлен командой заранее: голоса синтезированы, кадр оживлён нейросетью — бойцы говорят и переглядываются. Губы точно под слова не подогнаны — это общий план.',
+  draft: 'Черновик, подготовленный заранее: голос синтезирован, кадр пока без нейросети.',
 }
 
 function LivePhotoCard({ photo }: { photo: LivePhoto }) {
@@ -36,8 +37,17 @@ function LivePhotoCard({ photo }: { photo: LivePhoto }) {
   // Элемент ролика в состоянии: камере он нужен уже смонтированным
   const [video, setVideo] = useState<HTMLVideoElement | null>(null)
 
+  // Согласие сняли — камера и плеер закрываются, ролик останавливается
+  const toggleConsent = (checked: boolean) => {
+    setAgreed(checked)
+    if (!checked) {
+      setMode('intro')
+      video?.pause()
+    }
+  }
+
   const openCamera = () => {
-    if (!video) return
+    if (!agreed || !video) return
     // Нажатие — жест пользователя: «разблокируем» звук, чтобы ролик заговорил, когда камера найдёт снимок
     void video
       .play()
@@ -46,6 +56,9 @@ function LivePhotoCard({ photo }: { photo: LivePhoto }) {
     setMode('camera')
   }
   const close = useCallback(() => setMode('intro'), [])
+  // Номер запуска камеры: «Включить камеру снова» пересоздаёт экран камеры с новой сессией
+  const [arRun, setArRun] = useState(0)
+  const retry = useCallback(() => setArRun((n) => n + 1), [])
   const fallback = useCallback(() => setMode('video'), [])
 
   return (
@@ -80,7 +93,7 @@ function LivePhotoCard({ photo }: { photo: LivePhoto }) {
         <input
           type="checkbox"
           checked={agreed}
-          onChange={(e) => setAgreed(e.target.checked)}
+          onChange={(e) => toggleConsent(e.target.checked)}
           data-testid="live-consent"
         />
         <span>Понимаю, что это реконструкция нейросетью, а не подлинная запись голоса</span>
@@ -90,7 +103,7 @@ function LivePhotoCard({ photo }: { photo: LivePhoto }) {
         Навести камеру на снимок
       </BigButton>
       <Button
-        onClick={() => setMode('video')}
+        onClick={() => agreed && setMode('video')}
         disabled={!agreed}
         icon="check"
         testID="live-watch-video"
@@ -105,7 +118,8 @@ function LivePhotoCard({ photo }: { photo: LivePhoto }) {
           src={assetUrl(photo.videoUrl)}
           controls={mode === 'video'}
           playsInline
-          preload="metadata"
+          // До согласия ролик не подгружаем
+          preload={agreed ? 'metadata' : 'none'}
           crossOrigin="anonymous"
           className={s.video}
           aria-label={`Ролик-реконструкция: ${photo.title}`}
@@ -120,7 +134,7 @@ function LivePhotoCard({ photo }: { photo: LivePhoto }) {
           />
         </video>
         {mode === 'video' && (
-          <span className={s.aiLabelOnVideo} aria-hidden="true">
+          <span className={s.aiLabelOnVideo} data-testid="live-video-ai-label">
             Реконструкция с помощью ИИ
           </span>
         )}
@@ -137,7 +151,14 @@ function LivePhotoCard({ photo }: { photo: LivePhoto }) {
       </p>
 
       {mode === 'camera' && video && (
-        <ArView photo={photo} video={video} onClose={close} onFallback={fallback} />
+        <ArView
+          key={arRun}
+          photo={photo}
+          video={video}
+          onClose={close}
+          onFallback={fallback}
+          onRetry={retry}
+        />
       )}
     </>
   )
