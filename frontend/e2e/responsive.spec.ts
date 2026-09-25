@@ -149,4 +149,13 @@ test.describe('Адаптив и доступность каждого экра�
     await expect(form.getByRole('textbox', { name: 'Телефон или почта' })).toBeVisible()
     await expect(form.getByRole('button', { name: 'Зарегистрироваться' })).toHaveCount(0)
   })
+
+  test('пустой результат поиска мероприятий предлагает вернуться к ленте', async ({ page }) => {
+    await page.goto('/events')
+    await page.getByTestId('events-search').fill('несуществующий запрос')
+    await expect(page.getByTestId('events-empty')).toContainText('Ничего не нашли')
+    await page.getByTestId('events-empty').getByRole('button', { name: 'покажите все мероприятия' }).click()
+    await expect(page.getByTestId('events-search')).toHaveValue('')
+    await expect(page.getByTestId('events-empty')).toHaveCount(0)
+  })
 })
