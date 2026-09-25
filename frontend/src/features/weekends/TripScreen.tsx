@@ -6,6 +6,8 @@ import type { Trip } from '../../contract/schemas.ts'
 import { formatDayRu } from '../../domain/format.ts'
 import { isNotFound } from '../../functions/core/errors.ts'
 import { paths } from '../../functions/core/paths.ts'
+import { otherSection } from '../../functions/core/paths.ts'
+import { useAccount } from '../../functions/account/useAccount.ts'
 import { moscowTime, useSignups, type SignupTarget } from '../../functions/signup/index.ts'
 import { freeSpots, spotsText, useChecklist, useTrip } from '../../functions/trips/index.ts'
 import { isGroupSentState } from '../../functions/groupApplications/index.ts'
@@ -65,6 +67,7 @@ export function TripScreen() {
 
 function TripDetails({ trip }: { trip: Trip }) {
   const location = useLocation()
+  const { account } = useAccount()
   const { isSignedUp } = useSignups()
   const target: SignupTarget = { kind: 'trip', trip }
   const registered = isSignedUp(target)
@@ -126,14 +129,27 @@ function TripDetails({ trip }: { trip: Trip }) {
         {trip.demo && <DemoBadge />}
       </Card>
 
-      <BigButton
-        onClick={() => setSigningUp(true)}
-        disabled={registered || full}
-        icon="calendar"
-        testID="trip-register"
-      >
-        {registered ? 'Вы записаны' : 'Записаться на выезд'}
-      </BigButton>
+      {account ? (
+        <BigButton
+          onClick={() => setSigningUp(true)}
+          disabled={registered || full}
+          icon="calendar"
+          testID="trip-register"
+        >
+          {registered ? 'Вы записаны' : 'Записаться на выезд'}
+        </BigButton>
+      ) : (
+        <BigButton
+          to={otherSection(
+            'account',
+            `next=${encodeURIComponent(location.pathname + location.search)}`,
+          )}
+          icon="user"
+          testID="trip-signin"
+        >
+          Войти, чтобы записаться
+        </BigButton>
+      )}
       {registered && (
         <Notice tone="success" testID="trip-registered">
           Вы записаны на выезд {formatDayRu(trip.date)}
