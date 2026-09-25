@@ -147,7 +147,10 @@ export function ProfilePanel({ account }: { account: Account }) {
         </>
       )}
       <nav className={s.links} aria-label="Личные разделы">
-        <Link to={otherSection('archive')}>Семейный архив</Link>
+        {/* тот же testID, что у пункта меню: после входа меню скрыто, путь в архив — отсюда */}
+        <Link to={otherSection('archive')} data-testid="other-archive">
+          Семейный архив
+        </Link>
         <Link to={paths.livePhotos()}>Мои живые фото</Link>
       </nav>
       <p className={s.muted}>
