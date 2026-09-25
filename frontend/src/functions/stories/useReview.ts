@@ -7,6 +7,8 @@ import { useDeps } from '../core/useDeps.ts'
 import { reviewProblem, reviewStory, toggleCheck, type ReviewDecision } from './review.ts'
 
 export interface ReviewState {
+  reviewer: string
+  setReviewer(name: string): void
   checks: readonly ReviewCheckId[]
   toggle(id: ReviewCheckId): void
   note: string
@@ -20,9 +22,10 @@ export interface ReviewState {
 }
 
 /** Проверка истории краеведом: чек-лист, комментарий, решение и обновление кэша. */
-export function useReview(story: ArchiveStory, reviewer: string): ReviewState {
+export function useReview(story: ArchiveStory, initialReviewer: string): ReviewState {
   const deps = useDeps()
   const queryClient = useQueryClient()
+  const [reviewer, setReviewer] = useState(initialReviewer)
   const [checks, setChecks] = useState<ReviewCheckId[]>([])
   const [note, setNote] = useState('')
   const [blocker, setBlocker] = useState<string>()
@@ -51,6 +54,8 @@ export function useReview(story: ArchiveStory, reviewer: string): ReviewState {
   }
 
   return {
+    reviewer,
+    setReviewer,
     checks,
     toggle: (id) => setChecks((prev) => toggleCheck(prev, id)),
     note,
