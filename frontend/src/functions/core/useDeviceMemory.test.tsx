@@ -20,7 +20,10 @@ function setup(children: React.ReactNode) {
     },
     storage,
     share: { share: async () => 'copied' },
-    ar: { trackImage: async () => ({ stop: () => undefined }) },
+    ar: {
+      openCamera: () => Promise.reject(new Error('не используется')),
+      trackImage: async () => ({ stop: () => undefined }),
+    },
   }
   const services = createServices(createMockApi({ latencyMs: 0, channelName: null }), platform)
   const utils = render(<ServicesProvider value={services}>{children}</ServicesProvider>)
