@@ -35,7 +35,7 @@ describe('условия в окне записи', () => {
       kind: 'request',
       id: 'R01',
       date: '2026-10-03',
-      meetingPoint: 'Мценск, площадь у автостанции (демо)',
+      meetingPoint: 'Мценск, площадь у автостанции',
       minAge: 16,
     })
     expect(moscowTime(terms.startsAt)).toBe('09:00')

@@ -18,7 +18,7 @@ test.describe('Выходные с поисковиком', () => {
     await page.getByTestId('trip-register').click()
     // запись — через окно с условиями; без подтверждённых 18+ — с согласием родителя
     const dialog = page.getByTestId('signup-dialog')
-    await expect(dialog).toContainText('Орёл, ж/д вокзал, у главного входа (демо)')
+    await expect(dialog).toContainText('Орёл, ж/д вокзал, у главного входа')
     await page.getByTestId('signup-fullName').fill('Петров Иван Сергеевич')
     await page.getByTestId('signup-phone').fill('89001234567')
     await page.getByTestId('signup-agreed').check()
