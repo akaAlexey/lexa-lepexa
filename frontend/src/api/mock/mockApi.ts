@@ -88,8 +88,7 @@ export function createMockApi(options: MockOptions = {}): ApiClient {
   /** Подтянуть сохранённое: своё после перезагрузки и созданное в соседних вкладках. */
   function load() {
     const snap = storage?.load() as
-      | { v?: number; data?: Partial<Record<(typeof MUTABLE)[number], unknown>> }
-      | undefined
+      { v?: number; data?: Partial<Record<(typeof MUTABLE)[number], unknown>> } | undefined
     if (!snap || snap.v !== MOCK_DB_VERSION || !snap.data) return
     const target = db as Record<(typeof MUTABLE)[number], unknown>
     for (const key of MUTABLE) if (Array.isArray(snap.data[key])) target[key] = snap.data[key]
@@ -144,6 +143,19 @@ export function createMockApi(options: MockOptions = {}): ApiClient {
     return result
   }
 
+  /**
+   * Запись — как на сервере: условия приняты; без подтверждённых 18+ — согласие родителя (422);
+   * известный возраст младше минимального — 409.
+   */
+  function checkSignup(body: unknown, minAge: number | undefined): void {
+    const input = endpoints.joinRequest.body.safeParse(body)
+    if (!input.success)
+      throw new ApiError(input.error.issues[0]?.message ?? 'Запись не прошла проверку', 422)
+    const { age } = input.data
+    if (minAge !== undefined && age !== undefined && age < minAge)
+      throw new ApiError(`Участвовать можно с ${minAge} лет`, 409)
+  }
+
   function find<T extends { id: string }>(items: T[], id: string, what: string): T {
     const item = items.find((i) => i.id === id)
     if (!item) throw new ApiError(`${what} ${id} не найден`, 404)
@@ -183,9 +195,10 @@ export function createMockApi(options: MockOptions = {}): ApiClient {
         db.requests.push(created)
         return created
       }),
-    joinRequest: ({ id }) =>
+    joinRequest: ({ id, body }) =>
       respond(() => {
         const r = find(db.requests, id, 'Заявка')
+        checkSignup(body, r.minAge)
         r.joined += 1
         return r
       }),
@@ -199,9 +212,10 @@ export function createMockApi(options: MockOptions = {}): ApiClient {
       }),
     listTrips: () => respond(() => [...db.trips].sort((a, b) => a.date.localeCompare(b.date))),
     getTrip: ({ id }) => respond(() => find(db.trips, id, 'Выезд')),
-    registerTrip: ({ id }) =>
+    registerTrip: ({ id, body }) =>
       respond(() => {
         const t = find(db.trips, id, 'Выезд')
+        checkSignup(body, t.minAge)
         if (t.spotsTaken >= t.spotsTotal) throw new ApiError('Мест нет', 409)
         t.spotsTaken += 1
         return t

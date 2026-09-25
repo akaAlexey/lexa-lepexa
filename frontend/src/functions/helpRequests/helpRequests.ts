@@ -1,5 +1,5 @@
 import { region } from '../../config/region.ts'
-import type { Team, VolunteerRequest } from '../../contract/schemas.ts'
+import type { SignupRequest, Team, VolunteerRequest } from '../../contract/schemas.ts'
 import type { Deps } from '../core/deps.ts'
 import { memory, readMemory, updateMemory } from '../core/deviceMemory.ts'
 
@@ -15,8 +15,9 @@ export function joinedRequests({ platform }: Pick<Deps, 'platform'>): string[] {
 export async function joinRequest(
   { api, platform }: Pick<Deps, 'api' | 'platform'>,
   id: string,
+  body: SignupRequest,
 ): Promise<string[]> {
-  await api.joinRequest({ id })
+  await api.joinRequest({ id, body })
   return updateMemory(platform.storage, memory.joinedRequests, (prev) => [
     ...prev.filter((j) => j !== id),
     id,

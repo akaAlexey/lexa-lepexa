@@ -1,4 +1,4 @@
-import type { Trip } from '../../contract/schemas.ts'
+import type { SignupRequest, Trip } from '../../contract/schemas.ts'
 import { todayIso } from '../../domain/dates.ts'
 import type { Deps } from '../core/deps.ts'
 
@@ -12,9 +12,16 @@ export function getTrip({ api }: Pick<Deps, 'api'>, tripId: string): Promise<Tri
   return api.getTrip({ id: tripId })
 }
 
-/** Записаться на выезд: сервер возвращает выезд с занятым местом. Мест нет — ошибка 409. */
-export function registerTrip({ api }: Pick<Deps, 'api'>, tripId: string): Promise<Trip> {
-  return api.registerTrip({ id: tripId })
+/**
+ * Записаться на выезд после окна с условиями: сервер возвращает выезд с занятым местом.
+ * Мест нет или возраст младше минимального — 409; без согласия родителя до 18+ — 422.
+ */
+export function registerTrip(
+  { api }: Pick<Deps, 'api'>,
+  tripId: string,
+  body: SignupRequest,
+): Promise<Trip> {
+  return api.registerTrip({ id: tripId, body })
 }
 
 export const freeSpots = (t: Trip) => Math.max(0, t.spotsTotal - t.spotsTaken)

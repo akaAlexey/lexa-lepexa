@@ -51,7 +51,10 @@ describe('live-адаптер API', () => {
       .fn<typeof globalThis.fetch>()
       .mockResolvedValue(json({ detail: { message: 'Мест нет' } }, 409))
     const api = createLiveApi({ baseUrl: '/api/v1', fetch })
-    await expect(api.registerTrip({ id: 'W01' })).rejects.toEqual(new ApiError('Мест нет', 409))
+    const body = { termsAccepted: true, adultVerified: true } as const
+    await expect(api.registerTrip({ id: 'W01', body })).rejects.toEqual(
+      new ApiError('Мест нет', 409),
+    )
   })
 
   it('нет сети — понятная ошибка со статусом 0', async () => {

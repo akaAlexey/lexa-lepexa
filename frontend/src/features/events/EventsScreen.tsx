@@ -15,7 +15,8 @@ import { can } from '../../functions/core/permissions.ts'
 import { useDeps } from '../../functions/core/useDeps.ts'
 import { useEventsFeed, type FeedState } from '../../functions/events/useEvents.ts'
 import { pendingByTrip, useGroupApplications } from '../../functions/groupApplications/index.ts'
-import { isPublishedState, useJoinRequest } from '../../functions/helpRequests/index.ts'
+import { isPublishedState } from '../../functions/helpRequests/index.ts'
+import { useSignups, type SignupTarget } from '../../functions/signup/index.ts'
 import { nearestTrip } from '../../functions/trips/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Icon } from '../../ui/Icon.tsx'
@@ -24,6 +25,7 @@ import { Screen } from '../../ui/Screen.tsx'
 import { DonateDialog } from '../search-hq/DonateDialog.tsx'
 import s from './events.module.css'
 import { FeedCard } from './FeedCard.tsx'
+import { SignupDialog } from './SignupDialog.tsx'
 import { WeekNewsCard } from './WeekNewsCard.tsx'
 
 const NO_ITEMS: FeedItem[] = []
@@ -38,7 +40,9 @@ export function EventsScreen() {
   const { role } = useRole()
   const location = useLocation()
   const feed = useEventsFeed()
-  const { joined, joining, failed, join } = useJoinRequest()
+  const { isSignedUp } = useSignups()
+  const [signupFor, setSignupFor] = useState<SignupTarget>()
+  const closeSignup = useCallback(() => setSignupFor(undefined), [])
   const [params, setParams] = useSearchParams()
   const filter = eventFilterOf(params.get('show'))
   const setFilter = (f: EventFilter) =>
@@ -87,9 +91,6 @@ export function EventsScreen() {
           </Notice>
         </div>
       )}
-      {failed && (
-        <Notice tone="error">Не удалось записаться. Проверьте связь и попробуйте ещё раз.</Notice>
-      )}
 
       <div className={s.tools} role="search">
         <label className={s.search}>
@@ -136,19 +137,21 @@ export function EventsScreen() {
             </button>
           </li>
         )}
-        {shown.map((item) => (
-          <li key={`${item.kind}-${item.id}`}>
-            <FeedCard
-              item={item}
-              canJoin={!isCommander}
-              joined={joined.includes(item.id)}
-              joining={joining === item.id}
-              onJoin={(id) => void join(id)}
-              onDonate={setDonateTo}
-              pendingGroups={item.kind === 'trip' ? pending.get(item.id) : undefined}
-            />
-          </li>
-        ))}
+        {shown.map((item) => {
+          const target = signupTarget(item)
+          return (
+            <li key={`${item.kind}-${item.id}`}>
+              <FeedCard
+                item={item}
+                canSignUp={!isCommander}
+                signedUp={target ? isSignedUp(target) : false}
+                onSignUp={() => target && setSignupFor(target)}
+                onDonate={setDonateTo}
+                pendingGroups={item.kind === 'trip' ? pending.get(item.id) : undefined}
+              />
+            </li>
+          )
+        })}
         {feed.status === 'ready' && shown.length === 0 && (
           <li className={s.empty} data-testid="events-empty">
             Ничего не нашли. Попробуйте другое слово или покажите все мероприятия.
@@ -156,6 +159,7 @@ export function EventsScreen() {
         )}
       </ul>
       {donateTo && <DonateDialog fundraiser={donateTo} onClose={closeDonate} />}
+      {signupFor && <SignupDialog target={signupFor} onClose={closeSignup} />}
     </Screen>
   )
 }
@@ -180,4 +184,11 @@ function NearestTripButton({ feed }: { feed: FeedState }) {
       Ближайший выезд — {formatDayRu(trip.date)}
     </BigButton>
   )
+}
+
+/** Запись — на заявку или выезд; у сбора записи нет. */
+function signupTarget(item: FeedItem): SignupTarget | undefined {
+  if (item.kind === 'request') return { kind: 'request', request: item.request }
+  if (item.kind === 'trip') return { kind: 'trip', trip: item.trip }
+  return undefined
 }

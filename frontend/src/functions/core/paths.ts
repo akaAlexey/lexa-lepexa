@@ -42,7 +42,9 @@ export const paths = {
   map: () => patterns.map,
   /** «Мероприятия»; `show` — фильтр ленты (trip, request, fund), ссылкой можно поделиться. */
   events: (show?: string) => (show ? `${patterns.events}?show=${seg(show)}` : patterns.events),
-  other: () => patterns.other,
+  /** «Другое»; `section` — сразу открытый раздел (account, profile, role…). */
+  other: (section?: string) =>
+    section ? `${patterns.other}?section=${seg(section)}` : patterns.other,
   trail: () => patterns.trail,
   point: (routeId: string, pointId: string) => `/trail/${seg(routeId)}/point/${seg(pointId)}`,
   finish: (routeId: string) => `/trail/${seg(routeId)}/finish`,

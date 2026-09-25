@@ -15,5 +15,4 @@ export {
   type RequestValues,
 } from './publishRequest.ts'
 export { useRequests, useTeams } from './useHelpFeed.ts'
-export { useJoinRequest } from './useJoinRequest.ts'
 export { usePublishRequest } from './usePublishRequest.ts'

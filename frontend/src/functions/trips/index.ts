@@ -14,5 +14,5 @@ export {
   toggleChecklist,
   type ChecklistProgress,
 } from './checklist.ts'
-export { useRegisterTrip, useTrip, useTrips } from './useTrips.ts'
+export { useTrip, useTrips } from './useTrips.ts'
 export { useChecklist, type ChecklistState } from './useChecklist.ts'
