@@ -44,6 +44,7 @@ describe('«Живое фото» по QR-коду', () => {
       signedIn: true,
       platform: {
         ar: {
+          openCamera: () => Promise.reject(new Error('не используется')),
           trackImage: async (o) => {
             options = o
             return { stop }
