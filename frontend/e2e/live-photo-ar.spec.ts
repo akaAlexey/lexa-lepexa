@@ -10,6 +10,9 @@ const camera = process.env.LIVE_AR_CAMERA
 const photoId = process.env.LIVE_AR_PHOTO ?? 'soldier'
 test.skip(!camera, 'нужен LIVE_AR_CAMERA — видеопоток со снимком')
 test.use({
+  // Service worker сайта сам запрашивает цель .mind — перехват page.route его не видит,
+  // и сценарий «цель не загрузилась» не воспроизводится. В этих тестах он не нужен.
+  serviceWorkers: 'block',
   permissions: ['camera'],
   launchOptions: {
     args: [
