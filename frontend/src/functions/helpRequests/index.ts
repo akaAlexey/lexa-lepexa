@@ -1,12 +1,5 @@
-/** Функция «Помочь поисковикам» (H1–H3, H6): счётчик, лента заявок, запись, дефицит бюджета, заявка командира. */
-export {
-  budgetProgress,
-  commanderTeam,
-  joinedRequests,
-  joinRequest,
-  teamsShortOfBudget,
-  type SearchStats,
-} from './helpRequests.ts'
+/** Функция «Помочь поисковикам» (H2, H3): заявки отрядов, запись из карточки, заявка командира. */
+export { commanderTeam, joinedRequests, joinRequest } from './helpRequests.ts'
 export {
   isPublishedState,
   publishedState,
@@ -21,6 +14,6 @@ export {
   type RequestFormContext,
   type RequestValues,
 } from './publishRequest.ts'
-export { useRequests, useSearchStats, useTeams } from './useHelpFeed.ts'
+export { useRequests, useTeams } from './useHelpFeed.ts'
 export { useJoinRequest } from './useJoinRequest.ts'
 export { usePublishRequest } from './usePublishRequest.ts'

@@ -7,6 +7,7 @@ import {
   decideGroupApplication,
   groupState,
   listGroupApplications,
+  pendingByTrip,
   prependApplication,
   replaceApplication,
   submitGroupApplication,
@@ -114,5 +115,20 @@ describe('«Мои заявки групп» и кэш', () => {
       'confirmed',
     ])
     expect(replaceApplication(undefined, updated)).toBeUndefined()
+  })
+})
+
+describe('заявки групп, ждущие решения, по выездам', () => {
+  it('считаются только «На рассмотрении», по своему выезду; выездов без таких заявок нет', () => {
+    const other = { ...application('c', 'pending'), tripId: 'W02' }
+    const counts = pendingByTrip([
+      application('a', 'pending'),
+      application('b', 'pending'),
+      application('d', 'confirmed'),
+      application('e', 'clarify'),
+      other,
+    ])
+    expect(Object.fromEntries(counts)).toEqual({ W01: 2, W02: 1 })
+    expect(pendingByTrip([application('d', 'confirmed')]).size).toBe(0)
   })
 })

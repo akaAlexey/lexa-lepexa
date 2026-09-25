@@ -1,26 +1,9 @@
 // @vitest-environment node
 import { describe, expect, it, vi } from 'vitest'
-import type { Team } from '../../contract/schemas.ts'
 import { createTestDeps } from '../../test/testDeps.ts'
-import {
-  budgetProgress,
-  commanderTeam,
-  joinedRequests,
-  joinRequest,
-  teamsShortOfBudget,
-} from './helpRequests.ts'
+import { commanderTeam, joinedRequests, joinRequest } from './helpRequests.ts'
 
-describe('счётчик «Найдено бойцов за месяц»', () => {
-  it('сумма находок отрядов за текущий месяц', async () => {
-    const deps = createTestDeps()
-    const teams = await deps.api.listTeams()
-    const stats = await deps.api.getSearchStats()
-    expect(stats.foundThisMonth).toBe(teams.reduce((sum, t) => sum + t.foundThisMonth, 0))
-    expect(stats.foundThisMonth).toBeGreaterThan(0)
-  })
-})
-
-describe('«Стать частью команды»', () => {
+describe('запись в заявку отряда', () => {
   it('запись в заявку запоминается на устройстве под прежним ключом, без дублей', async () => {
     const deps = createTestDeps()
     expect(joinedRequests(deps)).toEqual([])
@@ -41,21 +24,6 @@ describe('«Стать частью команды»', () => {
     vi.spyOn(deps.api, 'joinRequest').mockRejectedValue(new Error('сеть'))
     await expect(joinRequest(deps, 'R01')).rejects.toThrow('сеть')
     expect(joinedRequests(deps)).toEqual([])
-  })
-})
-
-describe('дефицит бюджета отрядов', () => {
-  const team = (id: string, collected: number, goal: number) =>
-    ({ id, budgetCollectedRub: collected, budgetGoalRub: goal }) as Team
-
-  it('показываются только отряды, которым не хватает, в прежнем порядке', () => {
-    const teams = [team('a', 10, 100), team('b', 100, 100), team('c', 0, 50), team('d', 120, 100)]
-    expect(teamsShortOfBudget(teams).map((t) => t.id)).toEqual(['a', 'c'])
-  })
-
-  it('прогресс бюджета — проценты 0…100', () => {
-    expect(budgetProgress(team('a', 25, 100))).toBe(25)
-    expect(budgetProgress(team('b', 150, 100))).toBe(100)
   })
 })
 

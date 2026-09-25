@@ -40,7 +40,8 @@ export const paths = {
   home: () => patterns.home,
   roles: () => patterns.roles,
   map: () => patterns.map,
-  events: () => patterns.events,
+  /** «Мероприятия»; `show` — фильтр ленты (trip, request, fund), ссылкой можно поделиться. */
+  events: (show?: string) => (show ? `${patterns.events}?show=${seg(show)}` : patterns.events),
   other: () => patterns.other,
   trail: () => patterns.trail,
   point: (routeId: string, pointId: string) => `/trail/${seg(routeId)}/point/${seg(pointId)}`,

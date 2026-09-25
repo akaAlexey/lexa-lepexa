@@ -29,4 +29,23 @@ describe('выезд «Выходные с поисковиком»', () => {
     expect(await screen.findByTestId('trip-registered')).toHaveTextContent('Вы записаны')
     expect(screen.getByTestId('trip-spots')).toHaveTextContent('Свободно мест: 6 из 12')
   })
+
+  it('все пункты отмечены — «Вы готовы к выезду»', async () => {
+    renderApp('/weekends/W01', { role: 'volunteer' })
+    // отмечаем только неотмеченные: память чек-листа общая для тестов этого файла
+    for (const box of await screen.findAllByRole<HTMLInputElement>('checkbox'))
+      if (!box.checked) await userEvent.click(box)
+    expect(screen.getByTestId('checklist-progress')).toHaveTextContent('Готово 4 из 4')
+    expect(screen.getByTestId('checklist-ready')).toHaveTextContent('Вы готовы к выезду')
+  })
+
+  it('несуществующий выезд — «Выезд не найден» и ссылка к выездам в ленте', async () => {
+    const { router } = renderApp('/weekends/NOPE', { role: 'volunteer' })
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Выезд не найден' }),
+    ).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('link', { name: 'Все выезды в ленте' }))
+    expect(await screen.findByTestId('feed-trip-W01')).toBeInTheDocument()
+    expect(router.state.location.search).toBe('?show=trip')
+  })
 })

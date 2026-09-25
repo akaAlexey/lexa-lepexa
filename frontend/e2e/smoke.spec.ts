@@ -44,8 +44,12 @@ test('прямые ссылки открывают экраны, разделы 
   await expectNoA11yViolations(page)
   await snap(page, testInfo, '04-events')
 
-  await page.getByTestId('events-search-hq').click()
-  await expect(page.getByTestId('found-counter')).toContainText('Найдено бойцов за месяц')
+  await expect(page.getByTestId('events-search-hq')).toHaveCount(0)
+  await page.getByTestId('events-filter-trip').click()
+  await expect(page).toHaveURL(/\/events\?show=trip$/)
+  await expect(page.getByTestId('request-card-R01')).toHaveCount(0)
+  await page.goto('/search')
+  await expect(page).toHaveURL(/\/events\?show=request$/)
   await expect(page.getByTestId('tab-events')).toHaveAttribute('aria-current', 'page')
 
   await page.getByTestId('tab-map').click()

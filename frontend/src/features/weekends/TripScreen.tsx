@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router'
+import { Link, useLocation, useParams } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
 import { ShareButton } from '../../app/ShareButton.tsx'
 import type { Trip } from '../../contract/schemas.ts'
@@ -12,12 +12,14 @@ import {
   useRegisterTrip,
   useTrip,
 } from '../../functions/trips/index.ts'
+import { isGroupSentState } from '../../functions/groupApplications/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
+import { GroupList } from './GroupList.tsx'
 import s from './weekends.module.css'
 
 export function TripScreen() {
@@ -37,8 +39,8 @@ export function TripScreen() {
       >
         <p>Такого выезда нет или его уже убрали из расписания.</p>
         <p>
-          <Link to={paths.weekends()} className={s.tripLink}>
-            К списку выездов
+          <Link to={paths.events('trip')} className={s.tripLink}>
+            Все выезды в ленте
           </Link>
         </p>
       </Screen>
@@ -65,6 +67,7 @@ export function TripScreen() {
 }
 
 function TripDetails({ trip }: { trip: Trip }) {
+  const location = useLocation()
   const register = useRegisterTrip(trip.id)
   const full = freeSpots(trip) === 0
   const registered = register.isSuccess
@@ -79,6 +82,11 @@ function TripDetails({ trip }: { trip: Trip }) {
       }
       testID="screen-trip"
     >
+      {isGroupSentState(location.state) && (
+        <Notice tone="success" testID="group-sent">
+          Заявка группы отправлена. Командир отряда рассмотрит её и уточнит подготовку.
+        </Notice>
+      )}
       <Card as="section" aria-labelledby="trip-about">
         <h2 id="trip-about" className="visually-hidden">
           О выезде
@@ -114,7 +122,8 @@ function TripDetails({ trip }: { trip: Trip }) {
       )}
       {!registered && full && (
         <Notice testID="trip-full">
-          Свободных мест на этот выезд нет. <Link to={paths.weekends()}>Выберите другую дату</Link>
+          Свободных мест на этот выезд нет.{' '}
+          <Link to={paths.events('trip')}>Выберите другую дату</Link>
         </Notice>
       )}
       {register.isError && (
@@ -129,6 +138,7 @@ function TripDetails({ trip }: { trip: Trip }) {
         </Link>
       </p>
 
+      <GroupList trip={trip} />
       <Checklist trip={trip} />
       <ShareButton
         title={`Выезд с поисковиками: ${trip.title}`}

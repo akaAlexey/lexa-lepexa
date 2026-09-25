@@ -5,7 +5,7 @@ import type { Trip } from '../../contract/schemas.ts'
 import { formatDayRu } from '../../domain/format.ts'
 import { GROUP_MAX, GROUP_MIN } from '../../domain/groupApplications.ts'
 import { paths } from '../../functions/core/paths.ts'
-import { useGroupApplicationForm } from '../../functions/groupApplications/index.ts'
+import { groupSentState, useGroupApplicationForm } from '../../functions/groupApplications/index.ts'
 import { useTrip } from '../../functions/trips/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { TextAreaField, TextField } from '../../ui/Field.tsx'
@@ -14,11 +14,7 @@ import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import s from './weekends.module.css'
 
-/** Переход к списку выездов после подачи — показать «Заявка отправлена». */
-export interface GroupSentState {
-  groupSent: string
-}
-
+/** Заявка группы на выезд; после подачи — обратно в карточку выезда с «Заявка отправлена». */
 export function GroupApplicationScreen() {
   const { tripId = '' } = useParams()
   const trip = useTrip(tripId)
@@ -27,8 +23,8 @@ export function GroupApplicationScreen() {
       title="Заявка группы"
       lead="Школа, клуб или семейная группа — одной заявкой. Командир отряда подтвердит состав и подготовку"
       back={
-        <BackLink to={paths.events()} testID="back-link">
-          К мероприятиям
+        <BackLink to={paths.trip(tripId)} testID="back-link">
+          К выезду
         </BackLink>
       }
       testID="screen-group-application"
@@ -43,7 +39,7 @@ export function GroupApplicationScreen() {
 function GroupForm({ trip }: { trip: Trip }) {
   const navigate = useNavigate()
   const form = useGroupApplicationForm(trip.id, (created) =>
-    navigate(paths.weekends(), { state: { groupSent: created.id } satisfies GroupSentState }),
+    navigate(paths.trip(trip.id), { state: groupSentState(created.id) }),
   )
   const formRef = useRef<HTMLFormElement>(null)
   const { values, set, errors } = form

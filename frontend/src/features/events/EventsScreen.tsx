@@ -1,13 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useLocation } from 'react-router'
+import { useLocation, useSearchParams } from 'react-router'
 import { useRole } from '../../app/RoleContext.tsx'
 import type { Fundraiser } from '../../contract/schemas.ts'
-import { EVENT_FILTERS, filterFeed, type EventFilter, type FeedItem } from '../../domain/events.ts'
+import {
+  EVENT_FILTERS,
+  eventFilterOf,
+  filterFeed,
+  type EventFilter,
+  type FeedItem,
+} from '../../domain/events.ts'
 import { formatDayRu } from '../../domain/format.ts'
 import { paths } from '../../functions/core/paths.ts'
 import { can } from '../../functions/core/permissions.ts'
 import { useDeps } from '../../functions/core/useDeps.ts'
 import { useEventsFeed, type FeedState } from '../../functions/events/useEvents.ts'
+import { pendingByTrip, useGroupApplications } from '../../functions/groupApplications/index.ts'
 import { isPublishedState, useJoinRequest } from '../../functions/helpRequests/index.ts'
 import { nearestTrip } from '../../functions/trips/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
@@ -20,21 +27,31 @@ import { FeedCard } from './FeedCard.tsx'
 import { WeekNewsCard } from './WeekNewsCard.tsx'
 
 const NO_ITEMS: FeedItem[] = []
+const NO_PENDING: ReadonlyMap<string, number> = new Map()
 
 /**
- * «Мероприятия» (ADR 0012): «Новости недели» первой строкой, затем одна лента заявок,
- * выездов и сборов по дате публикации. Поиск и простой фильтр вместо счётчика.
+ * «Мероприятия» (ADR 0012) — главная страница: «Новости недели» первой строкой, затем одна лента
+ * заявок, выездов и сборов по дате публикации. Поиск и фильтр; фильтр — в адресе (?show=trip),
+ * поэтому бывшие страницы /weekends и /search ведут сюда с нужным фильтром.
  */
 export function EventsScreen() {
   const { role } = useRole()
   const location = useLocation()
   const feed = useEventsFeed()
   const { joined, joining, failed, join } = useJoinRequest()
-  const [filter, setFilter] = useState<EventFilter>('all')
+  const [params, setParams] = useSearchParams()
+  const filter = eventFilterOf(params.get('show'))
+  const setFilter = (f: EventFilter) =>
+    setParams(f === 'all' ? {} : { show: f }, { replace: true, preventScrollReset: true })
   const [query, setQuery] = useState('')
   const [donateTo, setDonateTo] = useState<Fundraiser>()
   const closeDonate = useCallback(() => setDonateTo(undefined), [])
   const isCommander = can(role?.id, 'request.create')
+  const groups = useGroupApplications()
+  const pending = useMemo(
+    () => (can(role?.id, 'group.decide') && groups.data ? pendingByTrip(groups.data) : NO_PENDING),
+    [role?.id, groups.data],
+  )
   const published = isPublishedState(location.state)
   const publishedRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -102,15 +119,6 @@ export function EventsScreen() {
         </div>
       </div>
 
-      <nav className={s.more} aria-label="Ещё в разделе">
-        <Link to={paths.weekends()} data-testid="events-weekends">
-          Все выезды и заявки групп
-        </Link>
-        <Link to={paths.search()} data-testid="events-search-hq">
-          Отряды и находки за месяц
-        </Link>
-      </nav>
-
       <ul className={s.feed} aria-label="Лента мероприятий">
         <li>
           <WeekNewsCard />
@@ -137,6 +145,7 @@ export function EventsScreen() {
               joining={joining === item.id}
               onJoin={(id) => void join(id)}
               onDonate={setDonateTo}
+              pendingGroups={item.kind === 'trip' ? pending.get(item.id) : undefined}
             />
           </li>
         ))}

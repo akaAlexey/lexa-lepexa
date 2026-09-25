@@ -52,6 +52,16 @@ export async function startAs(page: Page, role: Role) {
   await page.getByTestId(`role-${role}`).click()
 }
 
+/**
+ * «Тропа» из раздела «Карта» — переходом внутри приложения, без перезагрузки страницы:
+ * домашний экран всех ролей — «Мероприятия», а сценарии без сети требуют уже загруженного приложения.
+ */
+export async function openTrail(page: Page) {
+  await page.getByTestId('tab-map').click()
+  await page.getByRole('link', { name: 'Маршрут и задания для ребёнка' }).click()
+  await expect(page).toHaveURL(/\/trail$/)
+}
+
 /** Нет горизонтальной прокрутки: вёрстка помещается в ширину экрана. */
 export async function expectNoHorizontalScroll(page: Page) {
   const overflow = await page.evaluate(

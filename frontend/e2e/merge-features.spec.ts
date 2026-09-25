@@ -2,6 +2,7 @@ import { expect } from '@playwright/test'
 import {
   expectNoA11yViolations,
   expectNoHorizontalScroll,
+  openTrail,
   snap,
   startAs,
   test,
@@ -79,9 +80,8 @@ test('коллективная заявка: школа записывается
 }, testInfo) => {
   await useDemoDate(page)
   await startAs(page, 'family')
-  await page.getByTestId('tab-events').click()
-  await page.getByTestId('events-weekends').click()
-  await page.getByTestId('weekends-register').click()
+  await page.getByTestId('events-nearest-trip').click()
+  await expect(page).toHaveURL(/\/weekends\/W01$/)
   await page.getByTestId('trip-group').click()
   await page.getByTestId('group-organization').fill('Школа № 5, 7 «А» класс')
   await page.getByTestId('group-contact-name').fill('Мария Петровна')
@@ -91,11 +91,13 @@ test('коллективная заявка: школа записывается
   await page.getByTestId('group-consent').check()
   await page.getByTestId('group-send').click()
   await expect(page.getByTestId('group-sent')).toBeVisible()
+  await expect(page).toHaveURL(/\/weekends\/W01$/)
   await page.getByRole('heading', { name: 'Мои заявки групп' }).scrollIntoViewIfNeeded()
   await snap(page, testInfo, 'merge-07-group-sent')
 
   await startAs(page, 'commander')
-  await page.getByTestId('events-weekends').click()
+  await page.getByTestId('events-filter-trip').click()
+  await page.getByTestId('feed-trip-groups-W01').click()
   const card = page.getByTestId('group-G01')
   await card.scrollIntoViewIfNeeded()
   await expectNoA11yViolations(page)
@@ -106,7 +108,7 @@ test('коллективная заявка: школа записывается
 
 test('«Где я?» на карте тропы: метка и расстояние до точки', async ({ page }, testInfo) => {
   await startAs(page, 'family')
-  await page.goto('/trail')
+  await openTrail(page)
   await page.getByTestId('trail-locate').click()
   await expect(page.getByTestId('marker-me')).toBeVisible()
   await expect(page.getByTestId('trail-distance')).toContainText('Рубеж десантников')

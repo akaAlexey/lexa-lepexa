@@ -25,6 +25,8 @@ interface Props {
   joining: boolean
   onJoin: (id: string) => void
   onDonate: (f: Fundraiser) => void
+  /** Командиру: сколько заявок групп на этот выезд ждут решения. */
+  pendingGroups?: number
 }
 
 function Progress({ id, f }: { id: string; f: Fundraiser }) {
@@ -44,7 +46,15 @@ function Progress({ id, f }: { id: string; f: Fundraiser }) {
 }
 
 /** Запись ленты «Мероприятия»: надстрочник, штамп типа, заголовок, условия и действие. */
-export function FeedCard({ item, canJoin, joined, joining, onJoin, onDonate }: Props) {
+export function FeedCard({
+  item,
+  canJoin,
+  joined,
+  joining,
+  onJoin,
+  onDonate,
+  pendingGroups,
+}: Props) {
   const headingId = `feed-title-${item.id}`
   const kick = [
     item.postedAt ? posted.format(new Date(item.postedAt)) : undefined,
@@ -130,6 +140,13 @@ export function FeedCard({ item, canJoin, joined, joining, onJoin, onDonate }: P
               </span>
             )}
           </p>
+          {pendingGroups !== undefined && (
+            <p className={s.meta}>
+              <Link to={paths.trip(item.trip.id)} data-testid={`feed-trip-groups-${item.trip.id}`}>
+                Заявки групп ждут решения: {pendingGroups}
+              </Link>
+            </p>
+          )}
           <div className={s.actions}>
             <Link
               to={paths.trip(item.trip.id)}

@@ -9,16 +9,17 @@ describe('коллективные заявки на выезд', () => {
     expect(await screen.findByTestId('trip-group')).toHaveAttribute('href', '/weekends/W01/group')
   })
 
-  it('школа подаёт заявку — статус «На рассмотрении» в «Моих заявках групп»', async () => {
+  it('школа подаёт заявку — возврат в карточку выезда, статус «На рассмотрении»', async () => {
     const { router } = renderApp('/weekends/W01/group', { role: 'family' })
     expect(await screen.findByTestId('group-trip')).toHaveTextContent('Раскопки у д. Семенково')
     await userEvent.type(screen.getByTestId('group-organization'), 'Школа № 5, 7 «А»')
     await userEvent.type(screen.getByTestId('group-contact-name'), 'Мария Петровна')
     await userEvent.type(screen.getByTestId('group-contact'), '+7 900 555-44-33')
+    await userEvent.click(screen.getByTestId('group-consent'))
     await userEvent.click(screen.getByTestId('group-send'))
 
     expect(await screen.findByTestId('group-sent')).toBeInTheDocument()
-    expect(router.state.location.pathname).toBe('/weekends')
+    expect(router.state.location.pathname).toBe('/weekends/W01')
     const mine = screen.getByRole('list', { name: 'Мои заявки групп' })
     expect(within(mine).getByText('Школа № 5, 7 «А»')).toBeInTheDocument()
     expect(within(mine).getByText('На рассмотрении')).toBeInTheDocument()
@@ -35,8 +36,8 @@ describe('коллективные заявки на выезд', () => {
     expect(router.state.location.pathname).toBe('/weekends/W01/group')
   })
 
-  it('командир видит заявки групп с контактами и подтверждает', async () => {
-    renderApp('/weekends', { role: 'commander' })
+  it('командир видит в карточке выезда заявки групп с контактами и подтверждает', async () => {
+    renderApp('/weekends/W01', { role: 'commander' })
     const card = await screen.findByTestId('group-G01')
     expect(card).toHaveTextContent('+7 900 000-00-00')
     await userEvent.click(within(card).getByTestId('group-confirm-G01'))
@@ -44,9 +45,15 @@ describe('коллективные заявки на выезд', () => {
     expect(within(card).queryByTestId('group-confirm-G01')).not.toBeInTheDocument()
   })
 
+  it('заявки на другой выезд в карточке не показываются', async () => {
+    renderApp('/weekends/W02', { role: 'commander' })
+    expect(await screen.findByTestId('trip-date')).toBeInTheDocument()
+    expect(screen.queryByTestId('group-G01')).not.toBeInTheDocument()
+  })
+
   it('чужие заявки и контакты волонтёр не видит', async () => {
-    renderApp('/weekends', { role: 'volunteer' })
-    expect(await screen.findByTestId('trip-W01')).toBeInTheDocument()
+    renderApp('/weekends/W01', { role: 'volunteer' })
+    expect(await screen.findByTestId('trip-date')).toBeInTheDocument()
     expect(screen.queryByTestId('group-G01')).not.toBeInTheDocument()
   })
 })

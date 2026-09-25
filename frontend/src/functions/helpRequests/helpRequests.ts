@@ -1,12 +1,7 @@
-import type { ApiClient } from '../../api/index.ts'
 import { region } from '../../config/region.ts'
 import type { Team, VolunteerRequest } from '../../contract/schemas.ts'
-import { progressPercent } from '../../domain/fundraising.ts'
 import type { Deps } from '../core/deps.ts'
 import { memory, readMemory, updateMemory } from '../core/deviceMemory.ts'
-
-/** Счётчик «Найдено бойцов за месяц» и его месяц. */
-export type SearchStats = Awaited<ReturnType<ApiClient['getSearchStats']>>
 
 /** Заявки, в которые пользователь записался на этом устройстве. */
 export function joinedRequests({ platform }: Pick<Deps, 'platform'>): string[] {
@@ -26,16 +21,6 @@ export async function joinRequest(
     ...prev.filter((j) => j !== id),
     id,
   ])
-}
-
-/** Отряды, которым не хватает на экспедиции (дефицит бюджета), в прежнем порядке. */
-export function teamsShortOfBudget(teams: readonly Team[]): Team[] {
-  return teams.filter((t) => t.budgetCollectedRub < t.budgetGoalRub)
-}
-
-/** Сколько собрано на экспедиции отряда, % 0…100 для шкалы. */
-export function budgetProgress(team: Pick<Team, 'budgetCollectedRub' | 'budgetGoalRub'>): number {
-  return progressPercent(team.budgetCollectedRub, team.budgetGoalRub)
 }
 
 /** Отряд командира (демо) и его последняя заявка — шаблон новой. Список заявок — свежие первыми. */

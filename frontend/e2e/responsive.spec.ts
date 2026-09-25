@@ -6,8 +6,6 @@ const SCREENS = [
   { url: '/roles', main: 'role-family' },
   { url: '/trail', main: 'trail-start' },
   { url: '/trail/park-3km/point/rubezh', main: 'task-option-0' },
-  { url: '/search', main: 'search-join' },
-  { url: '/weekends', main: 'weekends-register' },
   { url: '/weekends/W01', main: 'trip-register' },
   { url: '/last-battle', main: 'last-battle-subscribe' },
   { url: '/last-battle/S01', main: 'site-help' },
