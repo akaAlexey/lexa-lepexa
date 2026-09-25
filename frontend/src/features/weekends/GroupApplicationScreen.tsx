@@ -50,13 +50,12 @@ function GroupForm({ trip }: { trip: Trip }) {
   // 152-ФЗ: телефон или почту берём только с согласием на обработку для связи по выезду
   const [consent, setConsent] = useState(false)
   const [consentError, setConsentError] = useState(false)
+  const consentRef = useRef<HTMLInputElement>(null)
+  // Ошибки полей и отсутствие согласия показываем вместе, одним нажатием
   const submit = (e: FormEvent<HTMLFormElement>) => {
-    if (!consent) {
-      e.preventDefault()
-      setConsentError(true)
-      return
-    }
-    form.submit(e)
+    setConsentError(!consent)
+    const fieldsOk = form.submit(e, { hold: !consent })
+    if (fieldsOk && !consent) consentRef.current?.focus()
   }
 
   return (
@@ -113,6 +112,7 @@ function GroupForm({ trip }: { trip: Trip }) {
       />
       <label className={s.consent}>
         <input
+          ref={consentRef}
           type="checkbox"
           checked={consent}
           onChange={(e) => {

@@ -41,9 +41,9 @@ export function useNewPlaceForm(
     }
   })
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = (event: FormEvent<HTMLFormElement>, options?: { hold?: boolean }) => {
     setProblem(null)
-    form.submit(event)
+    return form.submit(event, options)
   }
 
   const fillMyPosition = async () => {
