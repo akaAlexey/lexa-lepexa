@@ -17,7 +17,7 @@ from .timeutil import now
 class User(Base):
     __tablename__ = "users"
     id: Mapped[str] = mapped_column(String(50), primary_key=True)
-    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    email: Mapped[str | None] = mapped_column(String(255), unique=True, index=True)
     username: Mapped[str] = mapped_column(String(100), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(Text)
     first_name: Mapped[str | None] = mapped_column(String(100))
