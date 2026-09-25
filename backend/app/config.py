@@ -15,6 +15,17 @@ class Settings(BaseSettings):
     seed_demo: bool = True
     # Как часто поток уведомлений проверяет новые записи, секунд.
     sse_poll_seconds: float = 2.0
+    # ЮKassa (тестовый магазин). Только из окружения сервера: YOOKASSA_SHOP_ID и YOOKASSA_SECRET_KEY.
+    # Секретный ключ никогда не кладётся в репозиторий и не попадает во фронт.
+    yookassa_shop_id: str = ""
+    yookassa_secret_key: str = ""
+    yookassa_api_url: str = "https://api.yookassa.ru/v3"
+    # Куда ЮKassa вернёт пользователя после оплаты (адрес сайта).
+    site_url: str = "https://marshrutypobedy.ru"
+
+    @property
+    def yookassa_enabled(self) -> bool:
+        return bool(self.yookassa_shop_id and self.yookassa_secret_key)
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

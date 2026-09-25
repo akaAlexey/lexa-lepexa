@@ -4,7 +4,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .routers import jury, reference, search_hq, sites, stories, trail, trips
+from .routers import jury, payments, reference, search_hq, sites, stories, trail, trips
 
 app = FastAPI(
     title="Тропа памяти — API",
@@ -29,6 +29,6 @@ async def health():
 
 
 api = APIRouter(prefix="/api/v1")
-for module in (jury, trail, search_hq, trips, stories, sites, reference):
+for module in (jury, trail, search_hq, payments, trips, stories, sites, reference):
     api.include_router(module.router)
 app.include_router(api)
