@@ -103,7 +103,11 @@
   color: var(--color-ink-muted);
 }
 
-/* Шторка: газетная бумага, тонкая линейка сверху, ручка для сворачивания */
+/*
+ * Шторка: газетная бумага, тонкая линейка сверху, ручка для перетаскивания (замечание #14).
+ * Высота всегда полная (82 % экрана, но не выше поиска), видимая часть — сдвиг вниз: так перетаскивание
+ * двигает только transform. Переменные выставляет useSheetDrag.
+ */
 .sheet {
   position: absolute;
   z-index: 4;
@@ -112,31 +116,50 @@
   bottom: 0;
   display: flex;
   flex-direction: column;
-  max-height: 3.4rem;
+  height: var(--sheet-full, 40dvh);
+  transform: translateY(var(--sheet-offset, 0px));
+  transition: transform 250ms ease-out;
   border-top: 1px solid var(--color-ink);
   background: var(--color-surface);
   box-shadow: 0 -4px 14px rgb(0 0 0 / 0.25);
 }
 
-.sheet[data-open] {
-  max-height: 45dvh;
-  height: 45dvh;
+.sheet[data-dragging] {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet {
+    transition: none;
+  }
+}
+
+/* Тянуть можно за ручку и заголовок: только здесь браузер не прокручивает страницу пальцем */
+.sheetHead {
+  position: relative;
+  touch-action: none;
+  user-select: none;
 }
 
 .handle {
   position: absolute;
-  /* зона нажатия 28 px (WCAG 2.2, 2.5.8): выступает над панелью, полоска остаётся на месте */
-  top: -0.65rem;
+  z-index: 1;
+  /* зона нажатия 48 px: наполовину выступает над шторкой, полоска остаётся у края */
+  top: calc(var(--touch-min) / -2);
   left: 50%;
   translate: -50% 0;
   display: grid;
   place-items: center;
-  width: 5rem;
-  height: 1.75rem;
-  padding-top: 0.65rem;
+  width: 6rem;
+  height: var(--touch-min);
   border: 0;
   background: transparent;
-  cursor: pointer;
+  cursor: grab;
+  touch-action: none;
+}
+
+.sheet[data-dragging] .handle {
+  cursor: grabbing;
 }
 
 .grip {
@@ -154,7 +177,7 @@
 }
 
 .tab {
-  min-height: 2.3rem;
+  min-height: var(--touch-min);
   padding: 0 var(--space-1);
   border: 0;
   border-bottom: 3px solid transparent;
@@ -177,7 +200,8 @@
   /* Строки по содержимому: иначе блоки с overflow: hidden сжимаются в прокручиваемой панели */
   grid-auto-rows: max-content;
   gap: var(--space-4);
-  padding: var(--space-3) var(--space-4) var(--space-6);
+  /* Снизу — место под скрытую часть шторки: при любой высоте прокрутка доходит до конца */
+  padding: var(--space-3) var(--space-4) calc(var(--space-6) + var(--sheet-offset, 0px));
   overflow: auto;
   overscroll-behavior: contain;
 }
@@ -356,21 +380,21 @@
     width: 26rem;
   }
 
-  .sheet,
-  .sheet[data-open] {
+  .sheet {
     top: calc(var(--touch-min) + 2 * var(--space-3));
     left: var(--space-3);
     right: auto;
     bottom: var(--space-3);
     width: 26rem;
     height: auto;
-    max-height: none;
+    transform: none;
+    transition: none;
     border: 1px solid var(--color-ink);
     box-shadow: var(--shadow-panel);
   }
 
-  /* На ноутбуке панель не сворачивается: места хватает */
-  .handle {
-    display: none;
+  /* На ноутбуке — боковая панель без перетаскивания */
+  .sheetHead {
+    touch-action: auto;
   }
 }

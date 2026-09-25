@@ -14,7 +14,9 @@ import { PLACE_KIND_LABEL, searchPlaces, type Place } from '../../domain/mapHub.
 import { questStatus } from '../../domain/trail.ts'
 import { paths } from '../../functions/core/paths.ts'
 import { can } from '../../functions/core/permissions.ts'
+import { sheetLabel } from '../../functions/mapHub/sheet.ts'
 import { useMapHub } from '../../functions/mapHub/useMapHub.ts'
+import { useSheetDrag } from '../../functions/mapHub/useSheetDrag.ts'
 import { POINT_ICON, useQuestProgress } from '../../functions/quest/index.ts'
 import { MapView, type MapMarker } from '../../map/MapView.tsx'
 import { tokens } from '../../theme/tokens.ts'
@@ -104,21 +106,17 @@ export function MapHubScreen() {
   const year: YearFilter = CHRONICLE_YEARS.find((y) => y === yearParam) ?? 'all'
   const selectedKey = params.get('place') ?? undefined
   const selected = hub.places.find((p) => p.key === selectedKey)
-  const [sheetOpen, setSheetOpen] = useState(true)
-  const [viewportHeight, setViewportHeight] = useState(() => window.innerHeight)
   const h1 = useRef<HTMLHeadingElement>(null)
+  const statusId = useId()
+  // Шторка не закрывает поле поиска
+  const sheet = useSheetDrag('[data-testid="hub-search"]')
+  const { attach, style: sheetStyle, snap, dragProps, onHandleClick, onHandleKeyDown } = sheet
 
   useEffect(() => {
     document.title = `Карта — ${region.appTitle}`
     document
       .querySelector<HTMLInputElement>('[data-testid="hub-search"]')
       ?.focus({ preventScroll: true })
-  }, [])
-
-  useEffect(() => {
-    const updateHeight = () => setViewportHeight(window.innerHeight)
-    window.addEventListener('resize', updateHeight)
-    return () => window.removeEventListener('resize', updateHeight)
   }, [])
 
   const update = (next: Record<string, string | undefined>, replace = true) => {
@@ -131,7 +129,6 @@ export function MapHubScreen() {
   }
   const select = (key: string | undefined) => {
     update({ place: key }, false)
-    if (key) setSheetOpen(true)
   }
 
   // На вкладке «История края» на карте — бои выбранных лет, на «Местах» — маршруты и поиск
@@ -161,10 +158,11 @@ export function MapHubScreen() {
         : {
             top: 90,
             right: 32,
-            bottom: sheetOpen ? Math.round(viewportHeight * 0.45) + 40 : 110,
+            // Фактическая видимая высота шторки (аудит P1-3), а не доля window.innerHeight
+            bottom: sheet.visibleHeight + tokens.map.sheetClearance,
             left: 32,
           },
-    [wide, sheetOpen, viewportHeight],
+    [wide, sheet.visibleHeight],
   )
 
   return (
@@ -187,47 +185,54 @@ export function MapHubScreen() {
       />
       <SearchBox places={hub.places} onPick={(p) => select(p.key)} />
       <section
+        ref={attach}
         className={s.sheet}
-        data-open={sheetOpen || undefined}
+        style={wide ? undefined : sheetStyle}
+        data-snap={wide ? undefined : snap}
         aria-label="Панель карты"
         data-testid="hub-sheet"
       >
-        <button
-          type="button"
-          className={s.handle}
-          aria-expanded={sheetOpen}
-          onClick={() => setSheetOpen((v) => !v)}
-          data-testid="hub-sheet-toggle"
-        >
-          <span className={s.grip} aria-hidden="true" />
-          <span className="visually-hidden">
-            {sheetOpen ? 'Свернуть панель' : 'Развернуть панель'}
-          </span>
-        </button>
-        <div className={s.tabs} role="group" aria-label="Что показать">
-          <button
-            type="button"
-            aria-pressed={tab === 'places'}
-            className={s.tab}
-            onClick={() => update({ tab: undefined, year: undefined })}
-            data-testid="hub-tab-places"
-          >
-            Места
-          </button>
-          <button
-            type="button"
-            aria-pressed={tab === 'history'}
-            className={s.tab}
-            onClick={() => {
-              update({ tab: 'history', place: undefined })
-              setSheetOpen(true)
-            }}
-            data-testid="hub-tab-history"
-          >
-            История края
-          </button>
+        <div className={s.sheetHead} {...(wide ? {} : dragProps)}>
+          {!wide && (
+            <>
+              <button
+                type="button"
+                className={s.handle}
+                aria-label="Изменить высоту панели"
+                aria-describedby={statusId}
+                onClick={onHandleClick}
+                onKeyDown={onHandleKeyDown}
+                data-testid="hub-sheet-handle"
+              >
+                <span className={s.grip} aria-hidden="true" />
+              </button>
+              <span id={statusId} role="status" className="visually-hidden">
+                {sheetLabel(snap)}
+              </span>
+            </>
+          )}
+          <div className={s.tabs} role="group" aria-label="Что показать">
+            <button
+              type="button"
+              aria-pressed={tab === 'places'}
+              className={s.tab}
+              onClick={() => update({ tab: undefined, year: undefined })}
+              data-testid="hub-tab-places"
+            >
+              Места
+            </button>
+            <button
+              type="button"
+              aria-pressed={tab === 'history'}
+              className={s.tab}
+              onClick={() => update({ tab: 'history', place: undefined })}
+              data-testid="hub-tab-history"
+            >
+              История края
+            </button>
+          </div>
         </div>
-        <div className={s.body} hidden={!sheetOpen && !wide}>
+        <div className={s.body} data-testid="hub-sheet-body">
           {hub.pending && (
             <p role="status" data-testid="loading">
               Загружаем карту…
