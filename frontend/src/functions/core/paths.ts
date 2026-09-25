@@ -30,6 +30,8 @@ export const patterns = {
   newLivePhoto: '/live/new',
   livePhoto: '/live/:photoId',
   demo: '/demo',
+  /** Сюда ЮKassa возвращает после оплаты (YOOKASSA_RETURN_URL на сервере). */
+  payment: '/payment',
   about: '/about',
   privacy: '/privacy',
   terms: '/terms',
@@ -72,6 +74,7 @@ export const paths = {
   newLivePhoto: () => patterns.newLivePhoto,
   livePhoto: (photoId: string) => `/live/${seg(photoId)}`,
   demo: () => patterns.demo,
+  payment: () => patterns.payment,
   about: () => patterns.about,
   privacy: () => patterns.privacy,
   terms: () => patterns.terms,

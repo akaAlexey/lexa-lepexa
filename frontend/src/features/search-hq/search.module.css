@@ -7,3 +7,9 @@
 .team {
   font-weight: 700;
 }
+
+/* Подпись под кнопкой оплаты: тестовый режим ЮKassa */
+.caption {
+  margin: 0;
+  color: var(--color-ink-muted);
+}

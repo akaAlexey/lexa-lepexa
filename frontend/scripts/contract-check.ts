@@ -161,7 +161,7 @@ const fundraiser = await first('listFundraisers')
 if (fundraiser) {
   await call('donate', { body: { fundraiserId: fundraiser.id, amountRub: 100 } })
   const started = (await callOptional('startPayment', {
-    body: { fundraiserId: fundraiser.id, amountRub: 100, returnPath: '/events' },
+    body: { fundraiserId: fundraiser.id, amountRub: 100 },
   })) as { paymentId?: string } | undefined
   // без ключей платежа нет — статус проверяем на правильном по форме id, сервер ответит 503
   await callOptional('paymentStatus', {

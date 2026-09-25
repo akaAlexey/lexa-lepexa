@@ -5,6 +5,7 @@ import { Button } from '../../ui/Button.tsx'
 import { ChoiceChips } from '../../ui/ChoiceChips.tsx'
 import { Dialog } from '../../ui/Dialog.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import s from './search.module.css'
 
 /** Пожертвование через ЮKassa (тестовый магазин): оплата на странице ЮKassa, деньги не списываются. */
 export function DonateDialog({
@@ -39,16 +40,26 @@ export function DonateDialog({
       ) : status === 'redirect' ? (
         <Notice testID="donate-redirect">Переходим на страницу оплаты ЮKassa…</Notice>
       ) : (
-        <Button
-          onClick={() => void confirm()}
-          disabled={status === 'sending'}
-          testID="donate-confirm"
-        >
-          Оплатить {formatRub(amount)} через ЮKassa
-        </Button>
+        <>
+          <Button
+            onClick={() => void confirm()}
+            disabled={status === 'sending'}
+            testID="donate-confirm"
+          >
+            {status === 'sending'
+              ? 'Создаём платёж…'
+              : `Оплатить ${formatRub(amount)} через ЮKassa`}
+          </Button>
+          <p className={s.caption} data-testid="donate-test-caption">
+            Тестовый платёж — деньги не списываются
+          </p>
+        </>
       )}
       {status === 'error' && (
-        <Notice tone="error">Не удалось начать оплату. Попробуйте ещё раз.</Notice>
+        <Notice tone="error" testID="donate-error">
+          Не удалось начать оплату: сервер или ЮKassa сейчас не отвечают. Попробуйте ещё раз чуть
+          позже.
+        </Notice>
       )}
     </Dialog>
   )

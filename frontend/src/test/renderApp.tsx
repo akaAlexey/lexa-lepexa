@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react'
 import { createMemoryRouter } from 'react-router'
+import type { ApiClient } from '../api/index.ts'
 import { createMockApi } from '../api/mock/mockApi.ts'
 import { App } from '../app/App.tsx'
 import type { RoleId } from '../app/roles.ts'
@@ -17,12 +18,20 @@ interface RenderOptions {
   /** Пользователь уже вошёл на этом устройстве («Живое фото» — только после входа). */
   signedIn?: boolean
   platform?: Partial<Platform>
+  /** Подмена отдельных запросов mock-API (например, ответов ЮKassa). */
+  api?: Partial<ApiClient>
 }
 
 /** Рендер всего приложения на нужном URL с mock-API без задержек и хранилищем в памяти. */
 export function renderApp(
   url = '/',
-  { role, stored = {}, signedIn = false, platform: overrides = {} }: RenderOptions = {},
+  {
+    role,
+    stored = {},
+    signedIn = false,
+    platform: overrides = {},
+    api: apiOverrides = {},
+  }: RenderOptions = {},
 ) {
   const storage = createWebStorage(undefined)
   const account = signedIn
@@ -30,7 +39,7 @@ export function renderApp(
     : {}
   for (const [key, value] of Object.entries({ ...stored, ...account, ...(role ? { role } : {}) }))
     storage.set(key, value)
-  const api = createMockApi({ latencyMs: 0, channelName: null })
+  const api: ApiClient = { ...createMockApi({ latencyMs: 0, channelName: null }), ...apiOverrides }
   const platform: Platform = {
     geo: createDemoGeo({ lat: 52.97, lon: 36.07 }),
     notify: {
