@@ -4,6 +4,7 @@ import {
   expectNoHorizontalScroll,
   openTrail,
   snap,
+  signInOnDevice,
   startAs,
   test,
   useDemoDate,
@@ -23,6 +24,7 @@ test.describe('Новые экраны: адаптив, доступность, 
   for (const { url, main } of SCREENS) {
     test(`${url}: помещается по ширине, WCAG AA, одна главная кнопка`, async ({ page }) => {
       await useDemoDate(page)
+      await signInOnDevice(page)
       await startAs(page, 'family')
       await page.goto(url)
       await expect(page.getByTestId(main)).toBeVisible()
@@ -85,6 +87,7 @@ test('коллективная заявка: школа записывается
   page,
 }, testInfo) => {
   await useDemoDate(page)
+  await signInOnDevice(page)
   await startAs(page, 'family')
   await page.getByTestId('events-nearest-trip').click()
   await expect(page).toHaveURL(/\/weekends\/W01$/)
