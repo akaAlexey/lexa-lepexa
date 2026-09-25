@@ -112,6 +112,10 @@ export const memory = {
   checklist: perId((tripId) => memorySlot<string[]>(`checklist:${tripId}`, [], stringList)),
   /** Заявки отрядов, в которые пользователь записался. */
   joinedRequests: memorySlot<string[]>('search.joinedRequests', []),
+  /** «Новости недели» раскрыты (по умолчанию) или свёрнуты. */
+  weekNewsOpen: memorySlot<boolean>('events.weekNewsOpen', true, (raw) =>
+    typeof raw === 'boolean' ? raw : undefined,
+  ),
   /** Заявки групп, поданные с этого устройства. */
   myGroups: memorySlot<string[]>('groups:mine', []),
   /** Истории, отправленные с этого устройства. */

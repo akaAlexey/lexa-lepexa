@@ -2,8 +2,10 @@ import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import type { Trip, VolunteerRequest } from '../../contract/schemas.ts'
 import { buildFeed, type FeedItem } from '../../domain/events.ts'
+import { memory } from '../core/deviceMemory.ts'
 import { qk } from '../core/queryKeys.ts'
 import { useDeps } from '../core/useDeps.ts'
+import { useDeviceMemory } from '../core/useDeviceMemory.ts'
 import { weekNews } from './weekNews.ts'
 
 export type FeedState =
@@ -53,4 +55,10 @@ export function useWeekNews() {
   const { now } = useDeps()
   const [news] = useState(() => weekNews(now()))
   return news
+}
+
+/** «Новости недели» раскрыты или свёрнуты — выбор запоминается на устройстве. */
+export function useWeekNewsOpen(): [boolean, () => void] {
+  const [open, setOpen] = useDeviceMemory(memory.weekNewsOpen)
+  return [open, () => setOpen((prev) => !prev)]
 }

@@ -228,21 +228,70 @@
 }
 
 .weekHead {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0 var(--space-3);
-  padding: var(--space-3) var(--space-4) var(--space-2);
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4) var(--space-2);
   border-bottom: 3px double var(--color-ink);
 }
 
-.weekHead h2 {
+.weekTitle {
   margin: 0;
+}
+
+/* Заголовок — кнопка «свернуть/развернуть» во всю ширину: большая зона нажатия */
+.weekToggle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0 var(--space-3);
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
   font-size: 1.3rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  text-align: left;
+  cursor: pointer;
+}
+
+.weekHint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-ink-muted);
+}
+
+.weekHint svg {
+  transition: transform 0.2s ease;
+}
+
+.weekToggle[aria-expanded='true'] .weekHint svg {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weekHint svg {
+    transition: none;
+  }
+}
+
+.weekMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
 }
 
 .weekItem {
@@ -256,9 +305,4 @@
 
 .weekText {
   margin-top: var(--space-1);
-}
-
-.weekFoot {
-  margin: 0;
-  padding: var(--space-2) var(--space-4);
 }
