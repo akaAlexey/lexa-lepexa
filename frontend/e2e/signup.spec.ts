@@ -3,6 +3,7 @@ import {
   expectNoA11yViolations,
   expectNoHorizontalScroll,
   snap,
+  signInOnDevice,
   startAs,
   test,
   useDemoDate,
@@ -24,6 +25,7 @@ test.describe('Запись с условиями и согласием роди
   test('заявка отряда: условия → без согласия нельзя → с согласием «Вы записаны»', async ({
     page,
   }, testInfo) => {
+    await signInOnDevice(page)
     await startAs(page, 'volunteer')
     await page.getByTestId('request-join-R01').click()
     const dialog = page.getByTestId('signup-dialog')
@@ -57,6 +59,7 @@ test.describe('Запись с условиями и согласием роди
     await page.addInitScript(() =>
       localStorage.setItem('tropa:profile.age', JSON.stringify({ adultVerified: true, age: 25 })),
     )
+    await signInOnDevice(page)
     await startAs(page, 'volunteer')
     await page.getByTestId('events-nearest-trip').click()
     await page.getByTestId('trip-register').click()
@@ -74,6 +77,7 @@ test.describe('Запись с условиями и согласием роди
     page,
   }, testInfo) => {
     test.skip(testInfo.project.name === 'phone', 'клавиатурный проход проверяем на ноутбуке')
+    await signInOnDevice(page)
     await startAs(page, 'volunteer')
     const join = page.getByTestId('request-join-R01')
     await join.focus()

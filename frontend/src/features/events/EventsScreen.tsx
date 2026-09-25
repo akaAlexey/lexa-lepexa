@@ -11,6 +11,8 @@ import {
 } from '../../domain/events.ts'
 import { formatDayRu } from '../../domain/format.ts'
 import { paths } from '../../functions/core/paths.ts'
+import { otherSection } from '../../functions/core/paths.ts'
+import { useAccount } from '../../functions/account/useAccount.ts'
 import { can } from '../../functions/core/permissions.ts'
 import { useDeps } from '../../functions/core/useDeps.ts'
 import { useEventsFeed, type FeedState } from '../../functions/events/useEvents.ts'
@@ -39,6 +41,7 @@ const NO_PENDING: ReadonlyMap<string, number> = new Map()
  */
 export function EventsScreen() {
   const { role } = useRole()
+  const { account } = useAccount()
   const location = useLocation()
   const feed = useEventsFeed()
   const { isSignedUp } = useSignups()
@@ -148,7 +151,12 @@ export function EventsScreen() {
             <li key={`${item.kind}-${item.id}`}>
               <FeedCard
                 item={item}
-                canSignUp={can(role?.id, 'request.join')}
+                canSignUp={Boolean(account) && can(role?.id, 'request.join')}
+                signedIn={Boolean(account)}
+                signInPath={otherSection(
+                  'account',
+                  `next=${encodeURIComponent(location.pathname + location.search)}`,
+                )}
                 signedUp={target ? isSignedUp(target) : false}
                 onSignUp={() => target && setSignupFor(target)}
                 onDonate={setDonateTo}

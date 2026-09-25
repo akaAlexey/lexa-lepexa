@@ -1,5 +1,6 @@
 import { Navigate, type RouteObject } from 'react-router'
 import { paths, patterns } from '../../functions/core/paths.ts'
+import { SignedInOnly } from '../live-photo/SignedInOnly.tsx'
 import { NewRequestScreen } from './NewRequestScreen.tsx'
 
 /**
@@ -8,5 +9,12 @@ import { NewRequestScreen } from './NewRequestScreen.tsx'
  */
 export const routes: RouteObject[] = [
   { path: patterns.search, element: <Navigate to={paths.events('request')} replace /> },
-  { path: patterns.newRequest, element: <NewRequestScreen /> },
+  {
+    path: patterns.newRequest,
+    element: (
+      <SignedInOnly>
+        <NewRequestScreen />
+      </SignedInOnly>
+    ),
+  },
 ]

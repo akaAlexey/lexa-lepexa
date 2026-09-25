@@ -49,8 +49,18 @@ describe('«Мероприятия»: главная кнопка по роли'
   )
 
   it('записаться можно только из карточки заявки', async () => {
-    renderApp('/events', { role: 'volunteer' })
+    renderApp('/events', { role: 'volunteer', signedIn: true })
     const card = await screen.findByTestId('request-card-R01')
     expect(within(card).getByTestId('request-join-R01')).toHaveTextContent('Записаться')
+  })
+
+  it('гость видит вход вместо записи в заявку', async () => {
+    renderApp('/events', { role: 'volunteer' })
+    const card = await screen.findByTestId('request-card-R01')
+    expect(within(card).getByTestId('request-signin-R01')).toHaveAttribute(
+      'href',
+      '/other?section=account&next=%2Fevents',
+    )
+    expect(within(card).queryByTestId('request-join-R01')).not.toBeInTheDocument()
   })
 })
