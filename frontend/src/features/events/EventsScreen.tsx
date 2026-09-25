@@ -51,14 +51,30 @@ export function EventsScreen() {
     <BigButton to={paths.newRequest()} icon="flag" testID="search-create-request">
       Набрать волонтёров
     </BigButton>
-  ) : (
+  ) : can(role?.id, 'request.join') && target ? (
     <BigButton
-      onClick={() => target && void join(target.id)}
-      disabled={!target || joining !== undefined}
+      onClick={() => void join(target.id)}
+      disabled={joining !== undefined}
       icon="shovel"
       testID="search-join"
     >
-      {feed.status === 'ready' && !target ? 'Вы в команде' : 'Стать частью команды'}
+      Стать частью команды
+    </BigButton>
+  ) : can(role?.id, 'request.join') && feed.status === 'pending' ? (
+    <BigButton onClick={() => undefined} disabled testID="search-join">
+      Загружаем заявки…
+    </BigButton>
+  ) : can(role?.id, 'request.join') && feed.status === 'error' ? (
+    <BigButton onClick={feed.retry} testID="search-join">
+      Повторить загрузку заявок
+    </BigButton>
+  ) : can(role?.id, 'story.verify') ? (
+    <BigButton to={paths.archive()} icon="book" testID="events-archive">
+      Проверить истории
+    </BigButton>
+  ) : (
+    <BigButton to={paths.weekends()} icon="calendar" testID="search-join">
+      Посмотреть выезды
     </BigButton>
   )
 
@@ -122,23 +138,27 @@ export function EventsScreen() {
           <WeekNewsCard />
         </li>
         {feed.status === 'pending' && (
-          <li role="status" data-testid="loading">
-            Загружаем мероприятия…
+          <li>
+            <div role="status" className={s.feedState} data-testid="loading">
+              Загружаем мероприятия…
+            </div>
           </li>
         )}
         {feed.status === 'error' && (
-          <li role="alert" data-testid="error">
-            <p>Не удалось загрузить мероприятия. Проверьте связь и попробуйте ещё раз.</p>
-            <button type="button" className={s.retry} onClick={feed.retry}>
-              Повторить
-            </button>
+          <li>
+            <div role="alert" className={s.feedState} data-testid="error">
+              <p>Не удалось загрузить мероприятия. Проверьте связь и попробуйте ещё раз.</p>
+              <button type="button" className={s.retry} onClick={feed.retry}>
+                Повторить
+              </button>
+            </div>
           </li>
         )}
         {shown.map((item) => (
           <li key={`${item.kind}-${item.id}`}>
             <FeedCard
               item={item}
-              canJoin={!isCommander}
+              canJoin={can(role?.id, 'request.join')}
               joined={joined.includes(item.id)}
               joining={joining === item.id}
               onJoin={(id) => void join(id)}
@@ -148,7 +168,24 @@ export function EventsScreen() {
         ))}
         {feed.status === 'ready' && shown.length === 0 && (
           <li className={s.empty} data-testid="events-empty">
-            Ничего не нашли. Попробуйте другое слово или покажите все мероприятия.
+            {query || filter !== 'all' ? (
+              <>
+                Ничего не нашли. Попробуйте другое слово или{' '}
+                <button
+                  type="button"
+                  className={s.retry}
+                  onClick={() => {
+                    setQuery('')
+                    setFilter('all')
+                  }}
+                >
+                  покажите все мероприятия
+                </button>
+                .
+              </>
+            ) : (
+              'Мероприятий пока нет. Загляните позже.'
+            )}
           </li>
         )}
       </ul>

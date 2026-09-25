@@ -7,6 +7,7 @@ const ROLES: RoleId[] = ['family', 'volunteer', 'commander', 'verifier']
 /** Таблица прав: действие → роли, которым оно доступно. Совпадает с тем, что экраны делают сейчас. */
 const EXPECTED: Record<Action, RoleId[]> = {
   'request.create': ['commander'],
+  'request.join': ['volunteer'],
   'place.create': ['commander'],
   'place.exactCoords': ['commander', 'verifier'],
   'place.confirmArchive': ['verifier'],
