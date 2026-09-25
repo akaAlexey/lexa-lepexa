@@ -1,10 +1,18 @@
 import { expect } from '@playwright/test'
-import { expectNoA11yViolations, snap, startAs, test, useDemoDate } from './helpers.ts'
+import {
+  expectNoA11yViolations,
+  signInOnDevice,
+  snap,
+  startAs,
+  test,
+  useDemoDate,
+} from './helpers.ts'
 
 test.describe('Выходные с поисковиком', () => {
   test.beforeEach(async ({ page }) => useDemoDate(page))
 
   test('список дат → карточка выезда → чек-лист → запись', async ({ page }, testInfo) => {
+    await signInOnDevice(page)
     await startAs(page, 'volunteer')
     await page.getByTestId('tab-events').click()
     await page.getByTestId('feed-trip-open-W01').click()
