@@ -23,6 +23,14 @@ describe('Другое, профиль и личные функции', () => {
     },
   )
 
+  it('названия разделов без пометок о разработке и сроках', async () => {
+    renderApp('/other', { signedIn: true })
+    expect(await screen.findByTestId('other-archive')).toHaveTextContent('Семейный архив')
+    expect(screen.getByTestId('other-archive')).not.toHaveTextContent('в разработке')
+    expect(screen.getByTestId('other-ar')).toHaveTextContent('AR-режим')
+    expect(screen.getByTestId('other-ar')).not.toHaveTextContent('позже')
+  })
+
   it('выбранный раздел открывается отдельно и возвращается к списку кнопкой Назад', async () => {
     renderApp('/other')
     await userEvent.click(screen.getByTestId('other-account'))
