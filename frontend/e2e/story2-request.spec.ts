@@ -10,8 +10,8 @@ test.describe('История 2: заявка на 10 волонтёров на 
 
   test('три нажатия от домашнего экрана командира', async ({ page }, testInfo) => {
     await startAs(page, 'commander')
-    await expect(page).toHaveURL(/\/search$/)
-    await snap(page, testInfo, 'story2-01-search-commander')
+    await expect(page).toHaveURL(/\/events$/)
+    await snap(page, testInfo, 'story2-01-events-commander')
 
     await page.getByTestId('search-create-request').click() // 1
     await expect(page).toHaveURL(/\/search\/requests\/new$/)
@@ -24,11 +24,12 @@ test.describe('История 2: заявка на 10 волонтёров на 
     await page.getByTestId('count-10').click() // 2
     await page.getByTestId('request-publish').click() // 3
 
-    await expect(page).toHaveURL(/\/search$/)
+    await expect(page).toHaveURL(/\/events$/)
     await expect(page.getByTestId('request-published')).toContainText('Заявка опубликована')
     const card = page.getByTestId(/^request-card-/).first()
     await expect(card).toContainText('Высота')
-    await expect(card).toContainText('Требуется: 10 землекопов')
+    await expect(card).toContainText('Требуются волонтёры: 10')
+    await expect(card).toContainText('16+')
     await expect(card).toContainText('3 октября, суббота')
     await snap(page, testInfo, 'story2-03-published')
   })
@@ -38,19 +39,19 @@ test.describe('История 2: заявка на 10 волонтёров на 
     const card = page.getByTestId('request-card-R01')
     await expect(card).toContainText('Вахта Памяти (Орловская обл.)')
     await expect(card).toContainText(/Собрано: 15\s000 из 50\s000 ₽/)
-    await expect(page.getByTestId('found-counter')).toContainText('Найдено бойцов за месяц')
+    await expect(page.getByTestId('week-news')).toContainText('Новости недели')
     await page.getByTestId('search-join').click()
     await expect(page.getByTestId('request-joined-R01')).toContainText('Вы в команде')
   })
 
-  test('только клавиатура: от «Поисковикам» до опубликованной заявки', async ({
+  test('только клавиатура: от «Мероприятий» до опубликованной заявки', async ({
     page,
   }, testInfo) => {
     test.skip(testInfo.project.name === 'phone', 'клавиатурный проход проверяем на ноутбуке')
     await page.goto('/')
     await page.getByTestId('role-commander').focus()
     await page.keyboard.press('Enter')
-    await expect(page).toHaveURL(/\/search$/)
+    await expect(page).toHaveURL(/\/events$/)
 
     const tabTo = async (testId: string) => {
       for (let i = 0; i < 40; i++) {

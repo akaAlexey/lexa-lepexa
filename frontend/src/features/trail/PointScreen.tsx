@@ -17,6 +17,7 @@ import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Icon } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { SourceList } from '../../ui/SourceList.tsx'
 import s from './trail.module.css'
@@ -69,7 +70,15 @@ function PointCard({ route, point, index }: { route: Route; point: RoutePoint; i
   }
 
   return (
-    <Screen title={point.title} testID="screen-point">
+    <Screen
+      title={point.title}
+      back={
+        <BackLink to={paths.trail()} testID="back-link">
+          К маршруту
+        </BackLink>
+      }
+      testID="screen-point"
+    >
       <p className={s.step}>
         <Icon name={kind.icon} label={kind.label} />
         <span data-testid="point-step">
@@ -161,7 +170,15 @@ function PointCard({ route, point, index }: { route: Route; point: RoutePoint; i
 
 function PointNotFound() {
   return (
-    <Screen title="Точка не найдена" testID="screen-point-not-found">
+    <Screen
+      title="Точка не найдена"
+      back={
+        <BackLink to={paths.trail()} testID="back-link">
+          К маршруту
+        </BackLink>
+      }
+      testID="screen-point-not-found"
+    >
       <p>Такой точки на маршруте нет. Вернитесь к карте и выберите точку там.</p>
       <BigButton to={paths.trail()} icon="route" testID="point-back">
         К маршруту

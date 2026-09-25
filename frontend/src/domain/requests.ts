@@ -11,16 +11,6 @@ export const ROLE_FORMS: Record<VolunteerRole, readonly [string, string, string]
   any: ['волонтёр', 'волонтёра', 'волонтёров'],
 }
 
-/** Подписи ролей для выбора в форме. */
-export const ROLE_LABELS: Record<VolunteerRole, string> = {
-  digger: 'Землекопы',
-  prober: 'Щуповые',
-  cook: 'Повара',
-  driver: 'Водители',
-  medic: 'Медики',
-  any: 'Любые волонтёры',
-}
-
 /** «10 землекопов», «1 повар и 2 водителя», «1 повар, 2 водителя и 3 медика». */
 export function describeRoles(roles: VolunteerRequest['roles']): string {
   const parts = roles.map(({ role, count }) => pluralRu(count, ROLE_FORMS[role]))

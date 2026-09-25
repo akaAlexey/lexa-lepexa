@@ -11,6 +11,11 @@ const SCREENS = [
   { url: '/weekends/W01', main: 'trip-register' },
   { url: '/last-battle', main: 'last-battle-subscribe' },
   { url: '/last-battle/S01', main: 'site-help' },
+  // Разделы дизайна «Стол и газета» (ADR 0012)
+  { url: '/map', main: 'hub-route-start' },
+  { url: '/events', main: 'search-join' },
+  { url: '/archive', main: 'archive-new' },
+  { url: '/other?section=account', main: 'signin-submit' },
 ] as const
 
 test.describe('Адаптив и доступность каждого экрана', () => {
@@ -48,5 +53,26 @@ test.describe('Адаптив и доступность каждого экра�
       await expect(page.getByTestId('screen-not-implemented')).toHaveCount(0)
       await expect(page.locator('[data-main-action]'), url).toHaveCount(1)
     }
+  })
+
+  test('поиск по карте объявляет список только когда он существует', async ({ page }) => {
+    await page.goto('/map')
+    const search = page.getByTestId('hub-search')
+    await expect(search).not.toHaveAttribute('aria-controls', /.+/)
+    await search.fill('несуществующее место')
+    const listId = await search.getAttribute('aria-controls')
+    expect(listId).toBeTruthy()
+    await expect(page.locator(`[id="${listId}"]`)).toBeVisible()
+  })
+
+  test('главное действие мероприятий зависит от роли', async ({ page }) => {
+    await page.goto('/')
+    await page.getByTestId('role-family').click()
+    await page.goto('/events')
+    await expect(page.getByTestId('search-join')).toHaveText('Посмотреть выезды')
+    await page.goto('/')
+    await page.getByTestId('role-verifier').click()
+    await page.goto('/events')
+    await expect(page.getByTestId('events-archive')).toHaveText('Проверить истории')
   })
 })

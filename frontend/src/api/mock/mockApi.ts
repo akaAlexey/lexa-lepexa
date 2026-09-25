@@ -26,7 +26,32 @@ export interface MockOptions {
   random?: () => number
   /** Канал между вкладками для показа «командир → волонтёр» без бэкенда. */
   channelName?: string | null
+  /**
+   * Где хранить созданное в демо (заявки, истории, места…). Без хранилища всё живёт до перезагрузки
+   * вкладки; с ним — переживает перезагрузку и видно в других вкладках этого браузера.
+   */
+  storage?: MockStorage | null
 }
+
+export interface MockStorage {
+  load(): unknown
+  save(snapshot: unknown): void
+  clear(): void
+}
+
+/** Изменяемые коллекции демо-базы: только их сохраняем, справочники (захоронения, бои) — из сборки. */
+const MUTABLE = [
+  'requests',
+  'fundraisers',
+  'trips',
+  'groupApplications',
+  'stories',
+  'sites',
+  'subscriptions',
+] as const
+
+/** Меняется вместе с фикстурами: снимок старой демо-базы после выкладки не подхватываем. */
+export const MOCK_DB_VERSION = 1
 
 type StoredSubscription = Required<Pick<Subscription, 'radiusKm'>> & LatLon
 
@@ -55,9 +80,23 @@ export function createMockApi(options: MockOptions = {}): ApiClient {
     now = () => new Date(),
     random = Math.random,
     channelName = 'tropa-pamyati-demo',
+    storage = null,
   } = options
   let db = createDb()
   let seq = 0
+
+  /** Подтянуть сохранённое: своё после перезагрузки и созданное в соседних вкладках. */
+  function load() {
+    const snap = storage?.load() as
+      { v?: number; data?: Partial<Record<(typeof MUTABLE)[number], unknown>> } | undefined
+    if (!snap || snap.v !== MOCK_DB_VERSION || !snap.data) return
+    const target = db as Record<(typeof MUTABLE)[number], unknown>
+    for (const key of MUTABLE) if (Array.isArray(snap.data[key])) target[key] = snap.data[key]
+  }
+  function save() {
+    if (!storage) return
+    storage.save({ v: MOCK_DB_VERSION, data: Object.fromEntries(MUTABLE.map((k) => [k, db[k]])) })
+  }
   const nextId = (prefix: string) => `${prefix}-${now().getTime().toString(36)}-${++seq}`
 
   const listeners = new Set<(n: AppNotification) => void>()
@@ -98,7 +137,10 @@ export function createMockApi(options: MockOptions = {}): ApiClient {
   async function respond<T>(produce: () => T): Promise<T> {
     if (latencyMs > 0) await new Promise((r) => setTimeout(r, latencyMs))
     if (random() < failRate) throw new ApiError('Демо-сбой сервера (mock)', 503)
-    return structuredClone(produce())
+    load()
+    const result = structuredClone(produce())
+    save()
+    return result
   }
 
   function find<T extends { id: string }>(items: T[], id: string, what: string): T {
@@ -110,6 +152,7 @@ export function createMockApi(options: MockOptions = {}): ApiClient {
   return {
     reset() {
       db = createDb()
+      storage?.clear()
     },
     listGraves: () => respond(() => db.graves),
     // Настоящие данные OSM, не демо: только чтение, в демо-базу не копируем

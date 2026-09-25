@@ -19,6 +19,7 @@ import { ChoiceChips, ToggleChips } from '../../ui/ChoiceChips.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import type { IconName } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import s from './chronicle.module.css'
 
@@ -217,6 +218,11 @@ export function ChronicleScreen() {
     <Screen
       title="Хроника"
       lead="Бои за Орловщину 1941–1943 годов и памятники войны на одной карте"
+      back={
+        <BackLink to={paths.map()} testID="back-link">
+          К карте
+        </BackLink>
+      }
       testID="screen-chronicle"
     >
       <BigButton to="/archive/new" icon="story" testID="chronicle-tell">

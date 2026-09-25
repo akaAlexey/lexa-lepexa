@@ -4,7 +4,7 @@ import { expectNoA11yViolations, snap, startAs, test } from './helpers.ts'
 /**
  * User story 3. Командир «Высоты» добавляет место гибели трёх десантников 9-й бригады (5-й ВДК, октябрь 1941).
  * Подписчики в радиусе 20 км получают уведомление «В N км от вас обнаружено место гибели бойца…».
- * Главный сценарий от домашнего экрана командира: «Последний бой» → «Отметить место гибели» → «Опубликовать».
+ * Главный сценарий от домашнего экрана командира: «Карта» → «Отметить место гибели» → «Опубликовать».
  */
 test.describe('История 3: место гибели и уведомление подписчикам', () => {
   test('командир публикует находку — волонтёр во второй вкладке получает уведомление', async ({
@@ -13,15 +13,16 @@ test.describe('История 3: место гибели и уведомлени
     // Волонтёр подписан на поиск рядом (демо-геопозиция — Орёл)
     const volunteer = await context.newPage()
     await startAs(volunteer, 'volunteer')
-    await volunteer.getByTestId('tab-lastBattle').click()
+    await volunteer.getByTestId('tab-map').click()
+    await volunteer.getByTestId('hub-last-battle').click()
     await volunteer.getByTestId('last-battle-subscribe').click()
     await expect(volunteer.getByTestId('subscribe-done')).toContainText('в радиусе 20 км')
 
     // Командир в соседней вкладке
     const commander = await context.newPage()
     await startAs(commander, 'commander')
-    await commander.getByTestId('tab-lastBattle').click() // 1
-    await snap(commander, testInfo, 'story3-01-last-battle-commander')
+    await commander.getByTestId('tab-map').click() // 1 — на карте у командира главная кнопка «Отметить место гибели»
+    await snap(commander, testInfo, 'story3-01-map-commander')
     await commander.getByTestId('last-battle-add').click() // 2
     await expect(commander).toHaveURL(/\/last-battle\/new$/)
     await expect(commander.getByTestId('site-fighters-count')).toHaveValue('3')
@@ -56,7 +57,8 @@ test.describe('История 3: место гибели и уведомлени
     page,
   }, testInfo) => {
     await startAs(page, 'volunteer')
-    await page.getByTestId('tab-lastBattle').click()
+    await page.getByTestId('tab-map').click()
+    await page.getByTestId('hub-last-battle').click()
     await expect(page.getByTestId('marker-site-S01')).toHaveAttribute(
       'aria-label',
       /требуется проверка/,

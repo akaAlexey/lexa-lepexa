@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
 import { useRole } from '../../app/RoleContext.tsx'
 import type { ArchiveStory } from '../../contract/schemas.ts'
+import { storyYears } from '../../domain/archive.ts'
 import { paths } from '../../functions/core/paths.ts'
 import { can } from '../../functions/core/permissions.ts'
 import {
@@ -13,7 +14,6 @@ import {
   useStories,
 } from '../../functions/stories/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
-import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Icon } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
@@ -21,23 +21,27 @@ import { Screen } from '../../ui/Screen.tsx'
 import { StatePill } from '../../ui/StatePill.tsx'
 import s from './archive.module.css'
 
+/** «Книга памяти» (ADR 0012): строка — год, название, место и подпись, статус справа. */
 function StoryList({ label, stories }: { label: string; stories: ArchiveStory[] }) {
   return (
-    <ul aria-label={label} className="stack-list">
+    <ul aria-label={label} className={s.book}>
       {stories.map((story) => {
         const state = storyState(story)
         return (
-          <Card as="li" key={story.id} testID={`story-${story.id}`}>
-            <Link to={paths.story(story.id)} className={s.storyLink}>
-              <h3>{story.title}</h3>
-            </Link>
-            <p className={s.meta}>
-              {story.place} · {story.author}
-            </p>
-            <p className={s.badges}>
+          <li key={story.id} className={s.row} data-testid={`story-${story.id}`}>
+            <span className={s.year}>{storyYears(story)}</span>
+            <span className={s.rowMain}>
+              <Link to={paths.story(story.id)} className={s.storyLink}>
+                <h3>{story.title}</h3>
+              </Link>
+              <span className={s.meta}>
+                {story.place} · {story.author}
+              </span>
+            </span>
+            <span className={s.badges}>
               <StatePill label={state.label} tone={state.tone} /> {story.demo && <DemoBadge />}
-            </p>
-          </Card>
+            </span>
+          </li>
         )
       })}
     </ul>
@@ -55,8 +59,8 @@ export function ArchiveScreen() {
   const mine = useMyStories()
   return (
     <Screen
-      title="Истории"
-      lead="Семейные рассказы и воспоминания о войне на Орловщине. Каждую историю проверяет краевед по источникам"
+      title="Книга памяти"
+      lead="Истории семей и краеведов об Орловщине в войну. Каждую проверяет краевед или поисковый отряд"
       testID="screen-archive"
     >
       <QueryState query={stories} what="истории">
@@ -118,7 +122,13 @@ export function ArchiveScreen() {
               )}
               <section aria-labelledby="archive-published">
                 <h2 id="archive-published">Проверенные истории</h2>
-                <StoryList label="Проверенные истории" stories={published} />
+                {published.length > 0 ? (
+                  <StoryList label="Проверенные истории" stories={published} />
+                ) : (
+                  <Notice>
+                    Проверенных историй пока нет. Вы можете рассказать историю своей семьи.
+                  </Notice>
+                )}
               </section>
             </>
           )

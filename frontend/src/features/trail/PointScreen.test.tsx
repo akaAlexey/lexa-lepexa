@@ -56,7 +56,9 @@ describe('карточка точки маршрута (user story 1)', () => {
   it('несуществующая точка — понятное сообщение и путь назад', async () => {
     renderApp('/trail/park-3km/point/nope', { role: 'family' })
     expect(await screen.findByText(/Точка не найдена/)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /К маршруту/ })).toHaveAttribute('href', '/trail')
+    for (const link of screen.getAllByRole('link', { name: /К маршруту/ })) {
+      expect(link).toHaveAttribute('href', '/trail')
+    }
   })
 })
 

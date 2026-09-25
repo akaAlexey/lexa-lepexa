@@ -1,12 +1,175 @@
+/* «Книга памяти»: строки как в реестре — год, название, статус */
+.book {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--color-ink);
+  background: rgb(251 246 236 / 0.82);
+}
+
+.row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-1) var(--space-3);
+  align-items: center;
+  padding: var(--space-2) var(--space-4) var(--space-3);
+}
+
+.row + .row {
+  border-top: 1px solid var(--color-line-strong);
+}
+
+@media (min-width: 40rem) {
+  .row {
+    grid-template-columns: 5.5rem minmax(0, 1fr) auto;
+  }
+
+  .row .badges {
+    justify-content: flex-end;
+  }
+}
+
+/* На телефоне год — надстрочником над названием; без года строка не пустеет */
+@media (max-width: 39.99rem) {
+  .year {
+    margin-top: var(--space-1);
+    font-size: 1rem;
+  }
+
+  .year:empty {
+    display: none;
+  }
+}
+
+.year {
+  color: var(--color-accent-text);
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.rowMain {
+  display: grid;
+}
+
+.rowMain .meta {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
 .storyLink {
   display: inline-flex;
   align-items: center;
   min-height: var(--touch-min);
-  color: var(--color-olive);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.storyLink:hover h3 {
+  text-decoration: underline;
+}
+
+/* Вся строка «Книги памяти» открывает историю: на телефоне палец попадает не только в название */
+.storyLink::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.row:hover {
+  background: color-mix(in srgb, var(--color-ink) 4%, transparent);
 }
 
 .storyLink h3 {
   margin: 0;
+}
+
+.yearInline {
+  color: var(--color-accent-text);
+  font-weight: 700;
+}
+
+/* Фото к истории: сетка миниатюр, по нажатию — крупно */
+.images {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+}
+
+.imagesTitle {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.gallery {
+  justify-self: stretch;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.figure {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.thumb {
+  display: block;
+  aspect-ratio: 4 / 3;
+  padding: 0;
+  border: 1px solid var(--color-ink);
+  background: var(--color-surface);
+  cursor: zoom-in;
+  overflow: hidden;
+}
+
+.thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: sepia(0.15);
+}
+
+.caption {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-ink-muted);
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-ink-muted);
+}
+
+.full {
+  display: block;
+  max-width: 100%;
+  max-height: 60dvh;
+  margin: 0 auto;
+  border: 1px solid var(--color-ink);
+}
+
+.captionField {
+  display: grid;
+  gap: var(--space-1);
+  font-weight: 700;
+}
+
+.captionField input {
+  min-height: var(--touch-min);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  font-weight: 400;
 }
 
 .meta {
@@ -64,9 +227,9 @@
   gap: var(--space-3);
   min-height: var(--touch-min);
   padding: var(--space-2) var(--space-3);
-  border: 2px solid var(--color-control-border);
+  border: 1px solid var(--color-control-border);
   border-radius: var(--radius-control);
-  background: var(--color-surface);
+  background: rgb(251 246 236 / 0.85);
   cursor: pointer;
 }
 

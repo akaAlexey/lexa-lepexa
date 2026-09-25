@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
 import type { Trip } from '../../contract/schemas.ts'
@@ -10,6 +10,7 @@ import { useTrip } from '../../functions/trips/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { TextAreaField, TextField } from '../../ui/Field.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import s from './weekends.module.css'
 
@@ -25,6 +26,11 @@ export function GroupApplicationScreen() {
     <Screen
       title="Заявка группы"
       lead="Школа, клуб или семейная группа — одной заявкой. Командир отряда подтвердит состав и подготовку"
+      back={
+        <BackLink to={paths.events()} testID="back-link">
+          К мероприятиям
+        </BackLink>
+      }
       testID="screen-group-application"
     >
       <QueryState query={trip} what="выезд">
@@ -41,9 +47,20 @@ function GroupForm({ trip }: { trip: Trip }) {
   )
   const formRef = useRef<HTMLFormElement>(null)
   const { values, set, errors } = form
+  // 152-ФЗ: телефон или почту берём только с согласием на обработку для связи по выезду
+  const [consent, setConsent] = useState(false)
+  const [consentError, setConsentError] = useState(false)
+  const submit = (e: FormEvent<HTMLFormElement>) => {
+    if (!consent) {
+      e.preventDefault()
+      setConsentError(true)
+      return
+    }
+    form.submit(e)
+  }
 
   return (
-    <form ref={formRef} className={s.form} onSubmit={form.submit} noValidate>
+    <form ref={formRef} className={s.form} onSubmit={submit} noValidate>
       <p className={s.tripTitle} data-testid="group-trip">
         {formatDayRu(trip.date)}. {trip.title}
       </p>
@@ -94,6 +111,28 @@ function GroupForm({ trip }: { trip: Trip }) {
         rows={3}
         testID="group-comment"
       />
+      <label className={s.consent}>
+        <input
+          type="checkbox"
+          checked={consent}
+          onChange={(e) => {
+            setConsent(e.target.checked)
+            if (e.target.checked) setConsentError(false)
+          }}
+          aria-invalid={consentError}
+          aria-describedby={consentError ? 'group-consent-error' : undefined}
+          data-testid="group-consent"
+        />
+        <span>
+          Согласен на обработку имени и контакта: их видит только командир отряда, чтобы связаться
+          по выезду
+        </span>
+      </label>
+      {consentError && (
+        <Notice tone="error" testID="group-consent-error">
+          <span id="group-consent-error">Без согласия командир не сможет с вами связаться.</span>
+        </Notice>
+      )}
       <Notice>
         Командир уточнит дату, состав группы и подготовку. Статус заявки — в «Выходных».
       </Notice>

@@ -8,6 +8,7 @@ import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { TextAreaField, TextField } from '../../ui/Field.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { assetUrl, CASE_PHRASE, ETHICS_NOTE, useLivePhotos } from './livePhotos.ts'
 import s from './livePhoto.module.css'
@@ -87,7 +88,15 @@ export function NewLivePhotoScreen() {
 
   if (sent) {
     return (
-      <Screen title="Фото принято" testID="screen-live-new">
+      <Screen
+        title="Фото принято"
+        back={
+          <BackLink to={paths.livePhotos()} testID="back-link">
+            К живым фото
+          </BackLink>
+        }
+        testID="screen-live-new"
+      >
         <Notice tone="success" testID="live-new-sent">
           Снимок сохранён в «Моих живых фото» на этом устройстве. Ролик по нему соберёт сервер
           генерации — это следующий этап проекта. Ниже — пример того, как будет выглядеть результат.
@@ -143,6 +152,11 @@ export function NewLivePhotoScreen() {
     <Screen
       title="Оживить своё фото"
       lead="Фото бойца из семейного архива, музея или «Памяти народа» — нейросеть оживит лицо и озвучит слова от первого лица"
+      back={
+        <BackLink to={paths.livePhotos()} testID="back-link">
+          К живым фото
+        </BackLink>
+      }
       testID="screen-live-new"
     >
       <Notice testID="live-new-ethics">

@@ -1,13 +1,13 @@
 import { useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
-import type { Team, VolunteerRequest, VolunteerRole } from '../../contract/schemas.ts'
+import type { Team, VolunteerRequest } from '../../contract/schemas.ts'
 import { formatDayRu } from '../../domain/format.ts'
-import { ROLE_LABELS } from '../../domain/requests.ts'
 import { paths } from '../../functions/core/paths.ts'
 import {
   commanderTeam,
   publishedState,
+  REQUEST_AGES,
   REQUEST_COUNTS,
   usePublishRequest,
   useRequests,
@@ -16,15 +16,11 @@ import {
 import { BigButton } from '../../ui/BigButton.tsx'
 import { ChoiceChips } from '../../ui/ChoiceChips.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
-import { SelectField, TextField } from '../../ui/Field.tsx'
+import { TextField } from '../../ui/Field.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import s from './search.module.css'
-
-const ROLE_OPTIONS = (Object.keys(ROLE_LABELS) as VolunteerRole[]).map((value) => ({
-  value,
-  label: ROLE_LABELS[value],
-}))
 
 export function NewRequestScreen() {
   const teams = useTeams()
@@ -33,6 +29,11 @@ export function NewRequestScreen() {
     <Screen
       title="Набрать волонтёров"
       lead="Всё заполнено по прошлой заявке — выберите, сколько людей нужно"
+      back={
+        <BackLink to={paths.events()} testID="back-link">
+          К мероприятиям
+        </BackLink>
+      }
       testID="screen-new-request"
     >
       <QueryState query={teams} what="отряд">
@@ -54,7 +55,7 @@ function RequestForm({ team, last }: { team: Team; last: VolunteerRequest | unde
   const navigate = useNavigate()
   const formRef = useRef<HTMLFormElement>(null)
   const form = usePublishRequest(team, last, (created) =>
-    navigate(paths.search(), { state: publishedState(created.id) }),
+    navigate(paths.events(), { state: publishedState(created.id) }),
   )
   const { values, errors, today, tomorrow } = form
   const countNumber = Number(values.count)
@@ -95,12 +96,11 @@ function RequestForm({ team, last }: { team: Team; last: VolunteerRequest | unde
         error={errors.count}
         testID="request-count"
       />
-      <SelectField
-        label="Кто нужен"
-        value={values.role}
-        options={ROLE_OPTIONS}
-        onChange={(v) => form.set('role', v)}
-        testID="request-role"
+      <ChoiceChips
+        legend="Возраст волонтёров"
+        options={REQUEST_AGES.map((n) => ({ value: n, label: `${n}+`, testID: `age-${n}` }))}
+        value={values.minAge}
+        onChange={(n) => form.set('minAge', n)}
       />
       <TextField
         label="Место сбора"

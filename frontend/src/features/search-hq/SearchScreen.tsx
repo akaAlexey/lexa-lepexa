@@ -23,6 +23,7 @@ import { ChoiceChips } from '../../ui/ChoiceChips.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { DonateDialog } from './DonateDialog.tsx'
 import { FundraiserCard } from './FundraiserCard.tsx'
@@ -64,6 +65,11 @@ export function SearchScreen() {
     <Screen
       title="Поисковикам"
       lead="Отрядам нужны люди и средства на экспедиции"
+      back={
+        <BackLink to={paths.events()} testID="back-link">
+          К мероприятиям
+        </BackLink>
+      }
       testID="screen-search"
     >
       {published && (
@@ -82,9 +88,7 @@ export function SearchScreen() {
           <p className={s.counter} data-testid="found-counter">
             <span className={s.counterLabel}>Найдено бойцов за месяц:</span>
             <strong className={s.counterValue}>{st.foundThisMonth}</strong>
-            <small className={s.counterSource}>
-              Источник: сводки поисковых отрядов региона (демо).
-            </small>
+            <small className={s.counterSource}>Вымышленное значение для демонстрации.</small>
           </p>
         )}
       </QueryState>
@@ -93,14 +97,22 @@ export function SearchScreen() {
         <BigButton to={paths.newRequest()} icon="flag" testID="search-create-request">
           Набрать волонтёров
         </BigButton>
-      ) : (
+      ) : can(role?.id, 'request.join') && target ? (
         <BigButton
-          onClick={() => target && void join(target.id)}
-          disabled={!target || joining !== undefined}
+          onClick={() => void join(target.id)}
+          disabled={joining !== undefined}
           icon="shovel"
           testID="search-join"
         >
-          {requests.data && !target ? 'Вы в команде' : 'Стать частью команды'}
+          Стать частью команды
+        </BigButton>
+      ) : (
+        <BigButton
+          to={can(role?.id, 'story.verify') ? paths.archive() : paths.weekends()}
+          icon="calendar"
+          testID="search-join"
+        >
+          {can(role?.id, 'story.verify') ? 'Проверить истории' : 'Посмотреть выезды'}
         </BigButton>
       )}
       {joinFailed && (

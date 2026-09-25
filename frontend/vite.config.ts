@@ -14,6 +14,9 @@ function buildId(): string {
   return `${commit}-${new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '')}`
 }
 
+// Адрес сайта для превью ссылок (og:image в index.html). На другом домене — задать VITE_SITE_URL.
+process.env.VITE_SITE_URL ??= 'https://marshrutypobedy.ru'
+
 export default defineConfig({
   plugins: [react()],
   define: { __BUILD_ID__: JSON.stringify(buildId()) },

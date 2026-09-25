@@ -12,6 +12,7 @@ import { BigButton } from '../../ui/BigButton.tsx'
 import { Button } from '../../ui/Button.tsx'
 import { TextField } from '../../ui/Field.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import s from './lastBattle.module.css'
 
@@ -136,6 +137,11 @@ export function NewSiteScreen() {
     <Screen
       title="Отметить место гибели"
       lead="Шаблон экспедиции уже заполнен — добавьте описание места и проверьте координаты"
+      back={
+        <BackLink to={paths.lastBattle()} testID="back-link">
+          К местам поиска
+        </BackLink>
+      }
       testID="screen-new-site"
     >
       {position === undefined ? (
