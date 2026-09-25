@@ -38,6 +38,11 @@ const LAYERS: { value: Layer; label: string; testID: string }[] = [
 const MEMORIAL = MEMORIAL_META
 
 const NONE_MEMORIALS: Memorial[] = []
+/**
+ * Музеи показываются на «Карте»; в хронике — только памятники войны. Функция вне компонента:
+ * с новой функцией на каждый рендер список пересобирался бы, и метки на карте мигали.
+ */
+const warMemorials = (all: Memorial[]) => all.filter((m) => m.kind !== 'museum')
 const NONE_GRAVES: Grave[] = []
 const MEMORIAL_PREFIX = 'mem:'
 const GRAVE_PREFIX = 'grave:'
@@ -205,11 +210,10 @@ export function ChronicleScreen() {
   const api = useApi()
   const battles = useQuery({ queryKey: ['battles'], queryFn: api.listBattles })
   // Фоновые слои: если не загрузились — хроника работает без них
-  // Музеи показываются на «Карте»; в хронике — только памятники войны
   const memorials = useQuery({
     queryKey: ['memorials'],
     queryFn: api.listMemorials,
-    select: (all) => all.filter((m) => m.kind !== 'museum'),
+    select: warMemorials,
   })
   const graves = useQuery({ queryKey: ['graves'], queryFn: api.listGraves })
   return (

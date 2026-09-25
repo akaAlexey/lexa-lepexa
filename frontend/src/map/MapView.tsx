@@ -7,6 +7,7 @@ import { env } from '../config/env.ts'
 import { tokens } from '../theme/tokens.ts'
 import { Icon, type IconName } from '../ui/Icon.tsx'
 import s from './map.module.css'
+import { markerScale } from './markerScale.ts'
 import { buildMapStyle, gridLayer } from './style.ts'
 import { tileSources } from './tiles.ts'
 
@@ -24,6 +25,8 @@ export interface MapMarker {
   shape?: 'pin' | 'zone'
   /** false — фоновая метка без действия: не кнопка, не в порядке фокуса, скринридер её пропускает. */
   interactive?: boolean
+  /** false — метка не участвует в подгонке кадра (фоновый слой: памятники и музеи региона). */
+  fit?: boolean
 }
 
 export interface MapViewProps {
@@ -137,6 +140,9 @@ export function MapView({
       if (cancelled) return
       const next = markers.map((marker) => {
         const el = document.createElement('div')
+        // Обёртка не ловит нажатия: значок уменьшается при отдалении (transform), а обёртка
+        // остаётся прежнего размера и иначе закрывала бы соседние метки. Нажимается сам значок.
+        el.style.pointerEvents = 'none'
         created.push(new Marker({ element: el }).setLngLat([marker.lon, marker.lat]).addTo(map))
         return { marker, el }
       })
@@ -189,13 +195,14 @@ export function MapView({
     })
   }, [map, route])
 
-  // Метки уменьшаются при отдалении: масштаб 0,45…1 между зумом 8 и 13
+  // Размер меток — от масштаба (map/markerScale): издалека мелкие, фоновые — точками,
+  // при приближении крупнее
   useEffect(() => {
     if (!map) return
     const apply = () => {
-      const z = map.getZoom()
-      const scale = Math.min(1, Math.max(0.45, 0.45 + ((z - 8) / 5) * 0.55))
-      frame.current?.style.setProperty('--marker-scale', scale.toFixed(3))
+      const { scale, detail } = markerScale(map.getZoom())
+      frame.current?.style.setProperty('--marker-scale', String(scale))
+      frame.current?.setAttribute('data-marker-detail', detail)
     }
     apply()
     map.on('zoom', apply)
@@ -228,7 +235,7 @@ export function MapView({
 
   useEffect(() => {
     if (!map || !fitToContent) return
-    const points = [...markers, ...(route ?? [])]
+    const points = [...markers.filter((m) => m.fit !== false), ...(route ?? [])]
     if (points.length < 2) return
     const lons = points.map((p) => p.lon)
     const lats = points.map((p) => p.lat)

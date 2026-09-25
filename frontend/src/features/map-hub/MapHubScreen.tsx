@@ -110,6 +110,8 @@ function markerFor(p: Place, routes: readonly Route[] | undefined): MapMarker {
         label: `${p.subtitle}: ${p.title}`,
         color: tokens.color.map.memorial,
         size: 'small',
+        // Фоновый слой всего региона: кадр подгоняется под маршрут и места поиска, как раньше
+        fit: false,
       }
   }
 }
@@ -216,6 +218,8 @@ export function MapHubScreen() {
               // Памятники и музеи — маленькими метками, их можно нажать.
               (p.kind !== 'battle' && p.kind !== 'grave') || p.key === selectedKey,
         )
+        // Памятники и музеи — первыми в DOM, то есть под метками маршрута и мест поиска
+        .sort((a, b) => Number(b.kind === 'memorial') - Number(a.kind === 'memorial'))
         .map((p) => markerFor(p, hub.routes)),
     [hub.places, hub.routes, tab, shownBattles, selectedKey],
   )

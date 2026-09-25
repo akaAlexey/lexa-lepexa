@@ -57,6 +57,8 @@
   border-radius: 50%;
   background: currentColor;
   cursor: pointer;
+  /* обёртка MapLibre — pointer-events: none (см. MapView), сам значок нажимается */
+  pointer-events: auto;
   box-shadow: 0 2px 5px rgb(0 0 0 / 0.3);
   /* Меньше при отдалении карты: --marker-scale ставит MapView по событию zoom */
   transform: scale(var(--marker-scale, 1));
@@ -76,12 +78,15 @@
   position: relative;
 }
 
-/* Выбранная метка — оранжевое кольцо (не только цвет: ещё и aria-pressed у кнопки) */
+/* Выбранная метка — оранжевое кольцо (не только цвет: ещё и aria-pressed у кнопки).
+   Издалека она не мельче обычного размера — видно, что выбрано. */
 .marker[data-selected],
-.markerZone[data-selected] {
+.markerZone[data-selected],
+.markerSmall[data-selected] {
   outline: 3px solid var(--color-map-selected);
   outline-offset: 2px;
   z-index: 2;
+  transform: scale(max(var(--marker-scale, 1), 1));
 }
 
 .markerZone::before {
@@ -114,9 +119,33 @@
   border-radius: 50%;
   background: var(--color-surface);
   opacity: 0.9;
+  pointer-events: auto;
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
   transform: scale(var(--marker-scale, 1));
   transition: transform 0.12s linear;
+}
+
+/* Обзор региона: фоновые метки — точки без значка, чтобы не закрывать главное */
+[data-marker-detail='dot'] .markerSmall {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-width: 2px;
+  background: currentColor;
+  transform: none;
+}
+
+[data-marker-detail='dot'] .markerSmall svg {
+  display: none;
+}
+
+[data-marker-detail='dot'] .markerSmall[data-selected] {
+  width: 2rem;
+  height: 2rem;
+  background: var(--color-surface);
+}
+
+[data-marker-detail='dot'] .markerSmall[data-selected] svg {
+  display: block;
 }
 
 /* «Я здесь»: синяя точка с пульсирующим кольцом */
@@ -144,5 +173,10 @@
 @media (prefers-reduced-motion: reduce) {
   .me {
     animation: none;
+  }
+
+  .marker,
+  .markerSmall {
+    transition: none;
   }
 }
