@@ -70,6 +70,8 @@ test('семейный архив: боец, поиск в базах, найд�
   await expect(page.getByTestId('family-records')).toContainText(
     'Донесение о безвозвратных потерях',
   )
+  // снимок карточки сверху: имя, заметка и ссылки поиска
+  await page.evaluate(() => window.scrollTo(0, 0))
   await checkScreen(page, testInfo, 'family-03-card')
 
   await page.reload()
