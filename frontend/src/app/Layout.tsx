@@ -1,12 +1,13 @@
 import { Link, Outlet, ScrollRestoration, useLocation } from 'react-router'
 import { region } from '../config/region.ts'
 import { useAccount } from '../functions/account/useAccount.ts'
-import { paths } from '../functions/core/paths.ts'
+import { otherSection, paths } from '../functions/core/paths.ts'
 import { Icon } from '../ui/Icon.tsx'
 import { Logo } from '../ui/Logo.tsx'
 import s from './layout.module.css'
 import { useRole } from './RoleContext.tsx'
 import { TAB_ORDER, TABS, tabOf } from './roles.ts'
+import { PaymentReturn } from './PaymentReturn.tsx'
 import { Toaster } from './Toaster.tsx'
 
 /**
@@ -54,12 +55,13 @@ export function Layout() {
           <header className={s.masthead}>
             <Link to={paths.home()} className={s.mastTitle}>
               {region.appTitle}
-              <span className={s.mastRegion}> · {region.regionName}</span>
-              {/* Этика: придуманное не выдаём за реальное */}
-              <span className={s.mastDemo}>Демо</span>
             </Link>
             {/* Кнопка аккаунта: «Вход» до входа, «Профиль» после; роль — рядом, меняется в «Другом» */}
-            <Link to={paths.other()} className={s.account} data-testid="nav-role">
+            <Link
+              to={account ? paths.other() : otherSection('account')}
+              className={s.account}
+              data-testid="nav-role"
+            >
               <Icon name="user" size={1.1} />
               <span>{account ? 'Профиль' : 'Вход'}</span>
               {role && (
@@ -73,8 +75,24 @@ export function Layout() {
           </header>
         )}
         <main id="main" className={s.main} tabIndex={-1}>
+          <PaymentReturn />
           <Outlet />
         </main>
+        {!fullBleed && (
+          <footer className={s.footer} data-testid="site-footer">
+            <nav aria-label="О проекте" className={s.footerLinks}>
+              <Link to={paths.about()}>О нас</Link>
+              <Link to={paths.privacy()}>Политика конфиденциальности</Link>
+              <Link to={paths.terms()}>Пользовательские условия</Link>
+              <Link to={paths.newStory()} className={s.footerAccent}>
+                Есть история?
+              </Link>
+            </nav>
+            <p className={s.footerNote}>
+              © {new Date().getFullYear()} {region.appTitle}
+            </p>
+          </footer>
+        )}
       </div>
       <Toaster />
       {/* Новый экран открывается сверху, «Назад» возвращает прежнюю прокрутку */}

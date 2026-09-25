@@ -3,6 +3,7 @@ export {
   freeSpots,
   getTrip,
   listTrips,
+  NEAR_TRIP_RADIUS_KM,
   nearestTrip,
   registerTrip,
   replaceTrip,

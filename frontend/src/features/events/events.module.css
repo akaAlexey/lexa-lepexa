@@ -228,12 +228,52 @@
 
 .weekHead {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4) var(--space-2);
+  border: 0;
+  border-bottom: 3px double var(--color-ink);
+  background: transparent;
+  color: var(--color-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.weekHeadText {
+  display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  justify-content: space-between;
   gap: 0 var(--space-3);
-  padding: var(--space-3) var(--space-4) var(--space-2);
-  border-bottom: 3px double var(--color-ink);
+}
+
+.weekArrow {
+  display: grid;
+  place-items: center;
+  flex: none;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.weekArrow[data-open] {
+  transform: rotate(180deg);
+}
+
+/* Свёрнуто по умолчанию: плавное раскрытие по высоте */
+.weekBody {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.weekBody[data-open] {
+  grid-template-rows: 1fr;
+}
+
+.weekInner {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .weekHead h2 {

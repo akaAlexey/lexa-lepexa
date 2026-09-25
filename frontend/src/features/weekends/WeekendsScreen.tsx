@@ -2,7 +2,13 @@ import { Link, useLocation } from 'react-router'
 import { QueryState } from '../../app/QueryState.tsx'
 import { formatDayRu } from '../../domain/format.ts'
 import { paths } from '../../functions/core/paths.ts'
-import { nearestTrip, spotsText, useTrips } from '../../functions/trips/index.ts'
+import {
+  NEAR_TRIP_RADIUS_KM,
+  nearestTrip,
+  spotsText,
+  useTrips,
+} from '../../functions/trips/index.ts'
+import { useCurrentPosition } from '../../functions/whereAmI/useWhereAmI.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
 import { DemoBadge } from '../../ui/DemoBadge.tsx'
@@ -19,6 +25,7 @@ const groupSent = (state: unknown) =>
 export function WeekendsScreen() {
   const location = useLocation()
   const trips = useTrips()
+  const me = useCurrentPosition()
   return (
     <Screen
       title="Выходные с поисковиком"
@@ -32,7 +39,7 @@ export function WeekendsScreen() {
     >
       <QueryState query={trips} what="выезды">
         {(list) => {
-          const nearest = nearestTrip(list, new Date())
+          const nearest = nearestTrip(list, new Date(), me)
           return (
             <>
               {groupSent(location.state) && (
@@ -42,7 +49,8 @@ export function WeekendsScreen() {
               )}
               {nearest ? (
                 <BigButton to={paths.trip(nearest.id)} icon="calendar" testID="weekends-register">
-                  Ближайший выезд — {formatDayRu(nearest.date)}
+                  <span className={s.nearTitle}>Ближайший выезд</span>{' '}
+                  <span className={s.nearDate}>{formatDayRu(nearest.date)}</span>
                 </BigButton>
               ) : (
                 <>
@@ -54,7 +62,11 @@ export function WeekendsScreen() {
                   >
                     Записаться на ближайший выезд
                   </BigButton>
-                  <Notice>Ближайших выездов пока нет. Загляните позже.</Notice>
+                  <Notice>
+                    {me
+                      ? `В радиусе ${NEAR_TRIP_RADIUS_KM} км от вас выездов пока нет. Все даты — ниже.`
+                      : 'Ближайших выездов пока нет. Загляните позже.'}
+                  </Notice>
                 </>
               )}
               <h2>Даты выездов</h2>

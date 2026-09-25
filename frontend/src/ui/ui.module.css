@@ -11,7 +11,8 @@
   border-radius: var(--radius-control);
   background: var(--color-accent);
   color: #fff;
-  font-size: 1.1rem;
+  font-size: 1rem;
+  line-height: 1.25;
   font-weight: 700;
   text-align: center;
   text-decoration: none;
@@ -325,6 +326,10 @@
   font-weight: 700;
   text-decoration: none;
   /* Кольцо «бумаги» вокруг: прилипшая кнопка не режет строки текста под собой */
+  /* Фолбэк для старых WebView без color-mix (Android < 12, iOS < 16.2) */
+  box-shadow:
+    0 0 0 0.5rem rgb(242 232 213 / 0.94),
+    var(--shadow-float);
   box-shadow:
     0 0 0 0.5rem color-mix(in srgb, var(--color-paper) 94%, transparent),
     var(--shadow-float);

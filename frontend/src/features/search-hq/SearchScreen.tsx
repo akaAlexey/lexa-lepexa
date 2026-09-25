@@ -21,7 +21,6 @@ import { BigButton } from '../../ui/BigButton.tsx'
 import { Button } from '../../ui/Button.tsx'
 import { ChoiceChips } from '../../ui/ChoiceChips.tsx'
 import { Card } from '../../ui/Card.tsx'
-import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
@@ -79,16 +78,11 @@ export function SearchScreen() {
           </Notice>
         </div>
       )}
-      {/* Одна пометка на экран вместо плашки на каждой карточке: данные честно помечены, экран не пестрит */}
-      <p className={s.demoNote} data-testid="search-demo-note">
-        <DemoBadge /> Отряды, заявки, сборы и счётчик на этом экране — демонстрационные
-      </p>
       <QueryState query={stats} what="счётчик">
         {(st) => (
           <p className={s.counter} data-testid="found-counter">
             <span className={s.counterLabel}>Найдено бойцов за месяц:</span>
             <strong className={s.counterValue}>{st.foundThisMonth}</strong>
-            <small className={s.counterSource}>Вымышленное значение для демонстрации.</small>
           </p>
         )}
       </QueryState>

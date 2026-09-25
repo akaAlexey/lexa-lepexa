@@ -17,7 +17,7 @@ import type {
 
 const demoText: Source = {
   kind: 'demo',
-  title: 'Демо-текст прототипа, требует проверки краеведом',
+  title: 'Текст требует проверки краеведом',
 }
 const desantBook: Source = {
   kind: 'literature',
@@ -305,8 +305,8 @@ export const groupApplications: GroupApplication[] = [
   {
     id: 'G01',
     tripId: 'W01',
-    organization: 'Школа № 1, 8 «Б» класс (демо)',
-    contactName: 'Классный руководитель (демо)',
+    organization: 'Школа № 1, 8 «Б» класс',
+    contactName: 'Классный руководитель',
     contact: '+7 900 000-00-00',
     peopleCount: 12,
     comment: '10 учеников и 2 взрослых, нужен вводный инструктаж',
@@ -325,34 +325,34 @@ export const stories: ArchiveStory[] = [
     story:
       'Мало кто знает, что возле села Крупышино стоит памятник подвигу моряков Тихоокеанского флота, сражавшихся за Орловскую землю. Пример истории из кейса хакатона.',
     sourceText: 'Кейс хакатона «Маршруты победы», раздел «Описание текущей ситуации»',
-    author: 'Краеведческий кружок (демо)',
+    author: 'Краеведческий кружок',
     status: 'verified',
-    verifiedBy: 'Краевед (демо)',
+    verifiedBy: 'Краевед',
     createdAt: '2026-09-12T10:00:00Z',
     demo: true,
   },
   {
     id: 'ST02',
-    title: 'Землянка у оврага (демо)',
+    title: 'Землянка у оврага',
     place: 'д. Семенково',
     story:
-      'Демо-пример: местные жители помнят землянку у оврага за деревней, где зимой 1942 года стояли бойцы. Нужна сверка с архивом.',
-    sourceText: 'Рассказ местного жителя (демо)',
-    author: 'Семья Петровых (демо)',
+      'местные жители помнят землянку у оврага за деревней, где зимой 1942 года стояли бойцы. Нужна сверка с архивом.',
+    sourceText: 'Рассказ местного жителя',
+    author: 'Семья Петровых',
     status: 'pending',
     createdAt: '2026-09-20T15:00:00Z',
     demo: true,
   },
   {
     id: 'ST03',
-    title: 'Письмо с фронта (демо)',
+    title: 'Письмо с фронта',
     place: 'Кромской район',
     story:
-      'Демо-пример: в семье хранится письмо прадеда, отправленное летом 1943 года перед наступлением на Орёл.',
+      'в семье хранится письмо прадеда, отправленное летом 1943 года перед наступлением на Орёл.',
     sourceText: '',
-    author: 'Внук бойца (демо)',
+    author: 'Внук бойца',
     status: 'clarify',
-    verifiedBy: 'Краевед (демо)',
+    verifiedBy: 'Краевед',
     reviewNote:
       'Пришлите, пожалуйста, фото письма или номер полевой почты — без источника подтвердить нельзя.',
     createdAt: '2026-09-18T12:00:00Z',
@@ -366,7 +366,7 @@ export const stories: ArchiveStory[] = [
  */
 const openArchivePhoto: Source = {
   kind: 'archive',
-  title: 'Архивный снимок из открытых публикаций (демо, требует атрибуции)',
+  title: 'Архивный снимок из открытых публикаций (требует атрибуции)',
 }
 
 export const livePhotos: LivePhoto[] = [
@@ -382,7 +382,7 @@ export const livePhotos: LivePhoto[] = [
     targetUrl: 'live/soldier.mind',
     photoAspect: 716 / 500,
     animation: 'lip_sync',
-    consent: 'Демо для хакатона. Для публикации нужно согласие родственников',
+    consent: 'Для публикации нужно согласие родственников',
     sources: [openArchivePhoto],
     demo: true,
   },
@@ -398,7 +398,7 @@ export const livePhotos: LivePhoto[] = [
     targetUrl: 'live/reichstag.mind',
     photoAspect: 689 / 959,
     animation: 'neural_motion',
-    consent: 'Демо для хакатона. Для публикации нужно согласие родственников',
+    consent: 'Для публикации нужно согласие родственников',
     sources: [openArchivePhoto],
     demo: true,
   },
@@ -432,7 +432,7 @@ export const sites: LastBattleSite[] = [
     dateText: 'октябрь 1941',
     circumstances: 'Место указано по рассказу местных жителей, сверено с донесением.',
     status: 'archive_confirmed',
-    sources: [{ kind: 'eyewitness', title: 'Рассказ местных жителей (демо)' }, demoText],
+    sources: [{ kind: 'eyewitness', title: 'Рассказ местных жителей' }, demoText],
     teamId: 'T03',
     volunteersReady: 6,
     createdAt: '2026-08-28T12:00:00Z',

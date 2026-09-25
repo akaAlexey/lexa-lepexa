@@ -25,13 +25,13 @@ export const TABS: Record<TabId, { path: string; label: string; icon: IconName; 
       path: paths.archive(),
       label: 'Истории',
       icon: 'book',
-      section: /^\/(archive|live)(\/|$)/,
+      section: /^\/archive(\/|$)/,
     },
     other: {
       path: paths.other(),
       label: 'Другое',
       icon: 'menu',
-      section: /^\/(other|demo)?(\/|$)/,
+      section: /^\/(other|demo|live|about|privacy|terms)?(\/|$)/,
     },
   }
 
@@ -57,8 +57,8 @@ export interface Role {
 export const ROLES: readonly Role[] = [
   {
     id: 'family',
-    label: 'Семья',
-    short: 'Семья',
+    label: 'Пользователь',
+    short: 'Пользователь',
     description: 'Прогулка-квест с ребёнком по местам боёв',
     icon: 'family',
     home: paths.trail(),

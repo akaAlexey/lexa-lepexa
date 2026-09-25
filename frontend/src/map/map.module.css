@@ -58,6 +58,9 @@
   background: currentColor;
   cursor: pointer;
   box-shadow: 0 2px 5px rgb(0 0 0 / 0.3);
+  /* Меньше при отдалении карты: --marker-scale ставит MapView по событию zoom */
+  transform: scale(var(--marker-scale, 1));
+  transition: transform 0.12s linear;
 }
 
 .marker svg {
@@ -87,6 +90,7 @@
   inset: -1.1rem;
   border: 2px dashed currentColor;
   border-radius: 50%;
+  background: rgb(0 0 0 / 0.06);
   background: color-mix(in srgb, currentColor 18%, transparent);
   pointer-events: none;
   z-index: -1;
@@ -111,4 +115,34 @@
   background: var(--color-surface);
   opacity: 0.9;
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+  transform: scale(var(--marker-scale, 1));
+  transition: transform 0.12s linear;
+}
+
+/* «Я здесь»: синяя точка с пульсирующим кольцом */
+.me {
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: #1e6fd9;
+  box-shadow:
+    0 0 0 0 rgb(30 111 217 / 0.45),
+    0 1px 4px rgb(0 0 0 / 0.35);
+  animation: me-pulse 2s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes me-pulse {
+  to {
+    box-shadow:
+      0 0 0 14px rgb(30 111 217 / 0),
+      0 1px 4px rgb(0 0 0 / 0.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .me {
+    animation: none;
+  }
 }

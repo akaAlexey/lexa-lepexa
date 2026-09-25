@@ -97,6 +97,19 @@ export const endpoints = {
     body: s.Donation,
     response: s.DonationResult,
   }),
+  startPayment: endpoint({
+    method: 'POST',
+    path: '/payments/yookassa',
+    summary: 'Создать платёж ЮKassa (тестовый магазин) и получить ссылку на оплату',
+    body: s.PaymentStart,
+    response: s.PaymentStarted,
+  }),
+  paymentStatus: endpoint({
+    method: 'GET',
+    path: '/payments/yookassa/{id}',
+    summary: 'Статус платежа ЮKassa; при succeeded сумма добавляется к сбору',
+    response: s.PaymentState,
+  }),
   listTrips: endpoint({
     method: 'GET',
     path: '/trips',

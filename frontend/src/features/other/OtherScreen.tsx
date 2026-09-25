@@ -1,8 +1,8 @@
-import { useId, useState, type FormEvent } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { useId, useState, type CSSProperties, type FormEvent, type ReactNode } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import { useRole } from '../../app/RoleContext.tsx'
 import type { FieldErrors } from '../../functions/core/form.ts'
-import { paths } from '../../functions/core/paths.ts'
+import { paths, type OtherSection } from '../../functions/core/paths.ts'
 import { useAccount } from '../../functions/account/useAccount.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Button } from '../../ui/Button.tsx'
@@ -12,7 +12,7 @@ import { Notice } from '../../ui/Notice.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import s from './other.module.css'
 
-type SectionId = 'account' | 'archive' | 'ar' | 'photo' | 'role'
+type SectionId = OtherSection
 
 interface Section {
   id: SectionId
@@ -27,8 +27,8 @@ function sectionsFor(signedIn: boolean): Section[] {
   return [
     {
       id: 'account',
-      title: signedIn ? 'Демо-профиль' : 'Демо-вход',
-      hint: signedIn ? 'Данные только на этом устройстве' : 'Пароль не проверяется',
+      title: signedIn ? 'Профиль' : 'Вход и регистрация',
+      hint: signedIn ? 'Ваш профиль на этом устройстве' : 'По телефону или почте',
       icon: 'user',
       locked: false,
     },
@@ -51,11 +51,11 @@ function sectionsFor(signedIn: boolean): Section[] {
       title: 'Живое фото',
       hint: 'Наведите камеру на снимок — и боец заговорит',
       icon: 'image',
-      locked: false,
+      locked: !signedIn,
     },
     {
       id: 'role',
-      title: 'Роль и демо',
+      title: 'Роль',
       hint: 'Кем вы пользуетесь приложением',
       icon: 'family',
       locked: false,
@@ -79,6 +79,12 @@ export function OtherScreen() {
   const active = sections.find((x) => x.id === activeId)
   const [listOpen, setListOpen] = useState(!active)
   const listId = useId()
+  // «Вход» в шапке ведёт сюда с ?section=account — раздел открывается сразу, даже если экран уже открыт
+  const [seenId, setSeenId] = useState(activeId)
+  if (seenId !== activeId) {
+    setSeenId(activeId)
+    if (activeId) setListOpen(false)
+  }
 
   const open = (id: SectionId) => {
     setParams({ section: id }, { replace: false })
@@ -102,36 +108,41 @@ export function OtherScreen() {
               {listOpen ? 'Выберите раздел' : 'Нажмите, чтобы выбрать другой раздел'}
             </span>
           </span>
-          {/* Стрелка вверх — список свёрнут, вниз — раскрыт */}
-          <Icon name="chevron" size={1.4} className={listOpen ? s.arrowDown : s.arrowUp} />
+          {/* Стрелка вниз — список можно раскрыть, вверх — раскрыт */}
+          <span className={s.arrow} data-open={listOpen || undefined}>
+            <Icon name="chevron" size={1.4} />
+          </span>
         </button>
-        <ul id={listId} className={s.list} hidden={!listOpen}>
-          {sections.map((x) => (
-            <li key={x.id}>
-              <button
-                type="button"
-                className={s.item}
-                aria-current={x.id === activeId ? 'true' : undefined}
-                onClick={() => open(x.id)}
-                data-testid={`other-${x.id}`}
-              >
-                <span className={s.itemIcon}>
-                  <Icon name={x.icon} size={1.2} />
-                </span>
-                <span className={s.itemText}>
-                  <span className={s.itemTitle}>{x.title}</span>
-                  <span className={s.itemHint}>{x.hint}</span>
-                </span>
-                {x.locked && (
-                  <span className={s.lock}>
-                    <Icon name="lock" size={1} />
-                    после входа
+        {/* Плавное раскрытие: высота списка анимируется через grid-template-rows 0fr → 1fr */}
+        <div className={s.listWrap} data-open={listOpen || undefined}>
+          <ul id={listId} className={s.list} inert={!listOpen} aria-hidden={!listOpen || undefined}>
+            {sections.map((x, i) => (
+              <li key={x.id} style={{ '--i': i } as CSSProperties}>
+                <button
+                  type="button"
+                  className={s.item}
+                  aria-current={x.id === activeId ? 'true' : undefined}
+                  onClick={() => open(x.id)}
+                  data-testid={`other-${x.id}`}
+                >
+                  <span className={s.itemIcon}>
+                    <Icon name={x.icon} size={1.2} />
                   </span>
-                )}
-              </button>
-            </li>
-          ))}
-        </ul>
+                  <span className={s.itemText}>
+                    <span className={s.itemTitle}>{x.title}</span>
+                    <span className={s.itemHint}>{x.hint}</span>
+                  </span>
+                  {x.locked && (
+                    <span className={s.lock}>
+                      <Icon name="lock" size={1} />
+                      после входа
+                    </span>
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
         {active && !listOpen && (
           <div className={s.body} data-testid={`other-panel-${active.id}`}>
             {active.locked ? <Locked onSignIn={() => open('account')} /> : <Panel id={active.id} />}
@@ -146,7 +157,7 @@ function Locked({ onSignIn }: { onSignIn: () => void }) {
   return (
     <>
       <Notice>
-        Раздел откроется после входа: в нём будут личные данные вашей семьи, поэтому он не виден без
+        Раздел откроется после входа: в нём ваши личные фото и данные, поэтому он не виден без
         профиля.
       </Notice>
       <BigButton onClick={onSignIn} icon="user" testID="other-locked-signin">
@@ -217,12 +228,20 @@ function RolePanel() {
 }
 
 function AccountPanel() {
-  const { account, signIn, signOut } = useAccount()
+  const { account, signIn, signUp, signOut } = useAccount()
   const { role } = useRole()
+  const [mode, setMode] = useState<'signin' | 'register'>('signin')
   const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
+  const [repeat, setRepeat] = useState('')
+  const [terms, setTerms] = useState(false)
+  const [privacy, setPrivacy] = useState(false)
   const [show, setShow] = useState(false)
   const [errors, setErrors] = useState<FieldErrors>({})
+  const [params] = useSearchParams()
+  const navigate = useNavigate()
+  // Пришли с закрытого экрана (?next=/live) — после входа возвращаем туда
+  const returnTo = params.get('next')
 
   if (account) {
     return (
@@ -231,10 +250,6 @@ function AccountPanel() {
           Вы вошли как <strong data-testid="profile-login">{account.login}</strong>.
         </p>
         <p className={s.muted}>Роль: {role ? role.label : 'не выбрана'}.</p>
-        <Notice>
-          Демо: вход живёт только на этом устройстве. Пароль никуда не отправляется и не
-          сохраняется.
-        </Notice>
         <Button onClick={signOut} testID="profile-signout">
           Выйти
         </Button>
@@ -242,22 +257,51 @@ function AccountPanel() {
     )
   }
 
+  const registering = mode === 'register'
   const submit = (e?: FormEvent) => {
     e?.preventDefault()
-    const result = signIn({ login, password })
+    const result = registering
+      ? signUp({ login, password, repeat, terms, privacy })
+      : signIn({ login, password })
     if (!result.ok) {
       setErrors(result.errors)
       return
     }
     setPassword('')
+    setRepeat('')
+    if (returnTo?.startsWith('/') && !returnTo.startsWith('//')) {
+      void navigate(returnTo, { replace: true })
+    }
+  }
+  const switchTo = (next: 'signin' | 'register') => {
+    setMode(next)
+    setErrors({})
   }
 
   return (
     <form className={s.form} onSubmit={submit} noValidate data-testid="signin-form">
-      <Notice>
-        Демо-вход только на этом устройстве: пароль не проверяется и не отправляется. Не вводите
-        свой настоящий пароль.
-      </Notice>
+      <div className={s.tabs} role="tablist" aria-label="Вход или регистрация">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={!registering}
+          className={s.tab}
+          onClick={() => switchTo('signin')}
+          data-testid="signin-tab"
+        >
+          Вход
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={registering}
+          className={s.tab}
+          onClick={() => switchTo('register')}
+          data-testid="register-tab"
+        >
+          Регистрация
+        </button>
+      </div>
       <TextField
         label="Телефон или почта"
         value={login}
@@ -274,7 +318,7 @@ function AccountPanel() {
           value={password}
           onChange={setPassword}
           error={errors.password}
-          autoComplete="current-password"
+          autoComplete={registering ? 'new-password' : 'current-password'}
           testID="signin-password"
         />
         <button
@@ -288,14 +332,96 @@ function AccountPanel() {
           {show ? 'Скрыть' : 'Показать'}
         </button>
       </div>
-      <BigButton onClick={() => submit()} icon="user" testID="signin-submit">
-        Войти
+      {registering && (
+        <>
+          <TextField
+            label="Повторите пароль"
+            type={show ? 'text' : 'password'}
+            value={repeat}
+            onChange={setRepeat}
+            error={errors.repeat}
+            autoComplete="new-password"
+            testID="register-repeat"
+          />
+          <Consent checked={terms} onChange={setTerms} error={errors.terms} testID="register-terms">
+            Принимаю <Link to={paths.terms()}>пользовательские условия</Link>
+          </Consent>
+          <Consent
+            checked={privacy}
+            onChange={setPrivacy}
+            error={errors.privacy}
+            testID="register-privacy"
+          >
+            Согласен с <Link to={paths.privacy()}>политикой конфиденциальности</Link> и обработкой
+            персональных данных
+          </Consent>
+        </>
+      )}
+      <BigButton
+        onClick={() => submit()}
+        icon="user"
+        testID={registering ? 'register-submit' : 'signin-submit'}
+      >
+        {registering ? 'Зарегистрироваться' : 'Войти'}
       </BigButton>
-      <p className={s.muted}>Регистрация и восстановление пароля пока недоступны.</p>
       <p className={s.muted}>
-        Демо: вход только на этом устройстве, пароль никуда не отправляется.{' '}
+        {registering ? (
+          <>
+            Уже есть профиль?{' '}
+            <button type="button" className={s.linkButton} onClick={() => switchTo('signin')}>
+              Войти
+            </button>
+          </>
+        ) : (
+          <>
+            Нет профиля?{' '}
+            <button type="button" className={s.linkButton} onClick={() => switchTo('register')}>
+              Зарегистрироваться
+            </button>
+          </>
+        )}
+        {' · '}
         <Link to={paths.home()}>Выбрать роль без входа</Link>
       </p>
     </form>
+  )
+}
+
+function Consent({
+  checked,
+  onChange,
+  error,
+  testID,
+  children,
+}: {
+  checked: boolean
+  onChange: (v: boolean) => void
+  error?: string
+  testID: string
+  children: ReactNode
+}) {
+  const id = useId()
+  return (
+    <div className={s.consent}>
+      <label className={s.check}>
+        <input
+          type="checkbox"
+          required
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? id : undefined}
+          data-testid={testID}
+        />
+        <span>
+          {children} <span aria-hidden="true">*</span>
+        </span>
+      </label>
+      {error && (
+        <span id={id} className={s.error}>
+          {error}
+        </span>
+      )}
+    </div>
   )
 }

@@ -28,9 +28,19 @@ export const patterns = {
   newLivePhoto: '/live/new',
   livePhoto: '/live/:photoId',
   demo: '/demo',
+  about: '/about',
+  privacy: '/privacy',
+  terms: '/terms',
 } as const
 
 export type ScreenId = keyof typeof patterns
+
+/** Раздел «Другого», открытый по ссылке (?section=). */
+export type OtherSection = 'account' | 'archive' | 'ar' | 'photo' | 'role'
+
+/** «Другое» с открытым разделом: «Вход» в шапке сразу открывает форму. */
+export const otherSection = (section: OtherSection, extra?: string) =>
+  `${patterns.other}?section=${section}${extra ? `&${extra}` : ''}`
 
 const seg = encodeURIComponent
 
@@ -58,4 +68,7 @@ export const paths = {
   newLivePhoto: () => patterns.newLivePhoto,
   livePhoto: (photoId: string) => `/live/${seg(photoId)}`,
   demo: () => patterns.demo,
+  about: () => patterns.about,
+  privacy: () => patterns.privacy,
+  terms: () => patterns.terms,
 } as const satisfies Record<ScreenId, (...ids: string[]) => string>

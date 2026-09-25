@@ -1,5 +1,9 @@
-import type { Trip } from '../../contract/schemas.ts'
+import type { LatLon, Trip } from '../../contract/schemas.ts'
 import { todayIso } from '../../domain/dates.ts'
+import { distanceKm } from '../../domain/geo.ts'
+
+/** «Ближайший выезд» ищем не дальше этого расстояния от пользователя, км. */
+export const NEAR_TRIP_RADIUS_KM = 50
 import type { Deps } from '../core/deps.ts'
 
 /** Все выезды «Выходных с поисковиком», по дате. */
@@ -26,9 +30,15 @@ export const spotsText = (t: Trip) => `Свободно мест: ${freeSpots(t)
  * Ближайший выезд, на который ещё можно записаться (список отсортирован по дате).
  * Все ближайшие заняты — первый из них; прошедшие не предлагаются.
  */
-export function nearestTrip(list: readonly Trip[], now: Date): Trip | undefined {
+export function nearestTrip(
+  list: readonly Trip[],
+  now: Date,
+  /** Где пользователь; не известно — без ограничения по расстоянию. */
+  near?: LatLon | null,
+  radiusKm = NEAR_TRIP_RADIUS_KM,
+): Trip | undefined {
   const today = todayIso(now)
-  const upcoming = list.filter((t) => t.date >= today)
+  const upcoming = list.filter((t) => t.date >= today && (!near || distanceKm(near, t) <= radiusKm))
   return upcoming.find((t) => freeSpots(t) > 0) ?? upcoming[0]
 }
 

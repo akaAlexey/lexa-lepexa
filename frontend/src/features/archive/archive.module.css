@@ -81,6 +81,7 @@
 }
 
 .row:hover {
+  background: rgb(43 42 38 / 0.04);
   background: color-mix(in srgb, var(--color-ink) 4%, transparent);
 }
 
@@ -294,4 +295,123 @@
 
 .tileText {
   color: var(--color-ink-muted);
+}
+
+/* Хроника: небольшая заметная плашка — тёмная полоса с акцентом */
+.chronicleBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius-control);
+  background: var(--color-ink);
+  color: var(--color-surface);
+  text-decoration: none;
+  transition: transform 0.15s;
+}
+
+.chronicleBar:hover {
+  transform: translateX(2px);
+}
+
+.chronicleBar > svg:first-child {
+  flex: none;
+  color: var(--color-accent-on-dark);
+}
+
+.chronicleBar > span {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.chronicleTitle {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.chronicleText {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.chronicleArrow {
+  flex: none;
+  transform: rotate(-90deg);
+}
+
+/* «Рассказать историю»: небольшое окно-предложение над меню, закрывается крестиком */
+.prompt {
+  position: fixed;
+  z-index: 30;
+  right: var(--space-3);
+  bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + var(--space-3));
+  width: min(20rem, calc(100vw - 2 * var(--space-3)));
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border: 1px solid var(--color-ink);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.28);
+  animation: prompt-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes prompt-in {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prompt {
+    animation: none;
+  }
+}
+
+@media (min-width: 64rem) {
+  .prompt {
+    right: var(--space-6);
+    bottom: var(--space-6);
+  }
+}
+
+.promptClose {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+  display: grid;
+  place-items: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border: 0;
+  background: transparent;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+}
+
+.promptTitle {
+  margin: 0 2.2rem var(--space-1) 0;
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.promptText {
+  margin: 0 0 var(--space-3);
+  color: var(--color-ink-muted);
+  font-size: 0.9rem;
+}
+
+.promptAction {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
 }

@@ -138,8 +138,8 @@ export function NewSiteScreen() {
       title="Отметить место гибели"
       lead="Шаблон экспедиции уже заполнен — добавьте описание места и проверьте координаты"
       back={
-        <BackLink to={paths.lastBattle()} testID="back-link">
-          К местам поиска
+        <BackLink to={paths.map()} testID="back-link">
+          К карте
         </BackLink>
       }
       testID="screen-new-site"
