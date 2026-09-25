@@ -59,6 +59,8 @@ test('«Истории»: семья рассказывает историю, к
   // Краевед — на своём устройстве; в демо без бэкенда проверяет историю из демо-очереди
   const verifier = await context.newPage()
   await startAs(verifier, 'verifier')
+  await expect(verifier).toHaveURL(/\/events$/)
+  await verifier.getByTestId('events-archive').click()
   await expect(verifier).toHaveURL(/\/archive$/)
   await verifier.getByTestId('archive-review-next').click()
   await verifier.getByTestId('review-verify').click()
@@ -104,6 +106,7 @@ test('коллективная заявка: школа записывается
 
 test('«Где я?» на карте тропы: метка и расстояние до точки', async ({ page }, testInfo) => {
   await startAs(page, 'family')
+  await page.goto('/trail')
   await page.getByTestId('trail-locate').click()
   await expect(page.getByTestId('marker-me')).toBeVisible()
   await expect(page.getByTestId('trail-distance')).toContainText('Рубеж десантников')

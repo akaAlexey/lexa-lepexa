@@ -3,7 +3,7 @@ import { expectNoA11yViolations, expectNoHorizontalScroll, test, useDemoDate } f
 
 /** Каждый экран P0 и его главное действие (одна большая красная кнопка). */
 const SCREENS = [
-  { url: '/', main: 'role-family' },
+  { url: '/roles', main: 'role-family' },
   { url: '/trail', main: 'trail-start' },
   { url: '/trail/park-3km/point/rubezh', main: 'task-option-0' },
   { url: '/search', main: 'search-join' },
@@ -21,7 +21,7 @@ const SCREENS = [
 test.describe('Адаптив и доступность каждого экрана', () => {
   test.beforeEach(async ({ page }) => {
     await useDemoDate(page)
-    await page.goto('/')
+    await page.goto('/roles')
     await page.getByTestId('role-volunteer').click()
   })
 

@@ -37,7 +37,7 @@ test.describe('Скрытый демо-пульт', () => {
 
     await page.getByTestId('demo-reset').click()
     await expect(page.getByTestId('demo-reset-done')).toContainText('Данные сброшены')
-    await page.goto('/')
+    await page.goto('/roles')
     await expect(page.getByTestId('role-family')).toHaveAttribute('aria-pressed', 'false')
   })
 })

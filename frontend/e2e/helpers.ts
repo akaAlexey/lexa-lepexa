@@ -46,9 +46,9 @@ export async function useDemoDate(page: Page) {
 
 type Role = 'family' | 'volunteer' | 'commander' | 'verifier'
 
-/** Старт сценария: выбор роли на стартовом экране — первое нажатие. */
+/** Старт сценария: выбор роли (/roles) — первое нажатие; дальше открываются «Мероприятия». */
 export async function startAs(page: Page, role: Role) {
-  await page.goto('/')
+  await page.goto('/roles')
   await page.getByTestId(`role-${role}`).click()
 }
 

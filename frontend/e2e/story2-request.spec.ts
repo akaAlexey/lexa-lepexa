@@ -48,7 +48,7 @@ test.describe('История 2: заявка на 10 волонтёров на 
     page,
   }, testInfo) => {
     test.skip(testInfo.project.name === 'phone', 'клавиатурный проход проверяем на ноутбуке')
-    await page.goto('/')
+    await page.goto('/roles')
     await page.getByTestId('role-commander').focus()
     await page.keyboard.press('Enter')
     await expect(page).toHaveURL(/\/events$/)

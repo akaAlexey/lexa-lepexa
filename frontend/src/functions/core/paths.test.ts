@@ -14,6 +14,7 @@ function routePaths(routes: RouteObject[], base = ''): string[] {
 
 const SAMPLE: Record<ScreenId, string> = {
   home: paths.home(),
+  roles: paths.roles(),
   map: paths.map(),
   events: paths.events(),
   other: paths.other(),
@@ -42,6 +43,7 @@ describe('адреса экранов', () => {
   it('прежние адреса из QR-кодов и «Поделиться» живы, у разделов ADR 0012 свои адреса', () => {
     expect(SAMPLE).toEqual({
       home: '/',
+      roles: '/roles',
       map: '/map',
       events: '/events',
       other: '/other',

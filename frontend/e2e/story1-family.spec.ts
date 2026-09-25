@@ -10,7 +10,8 @@ test.describe('История 1: семейная тропа', () => {
     page,
   }, testInfo) => {
     await startAs(page, 'family')
-    await expect(page).toHaveURL(/\/trail$/)
+    await expect(page).toHaveURL(/\/events$/)
+    await page.goto('/trail')
     await expect(page.getByTestId('trail-map')).toHaveAttribute('data-ready', 'true')
     await expect(page.getByText(/3 км/).first()).toBeVisible()
     for (const id of ['rubezh', 'okop', 'shtab', 'salut']) {
@@ -51,6 +52,7 @@ test.describe('История 1: семейная тропа', () => {
     page,
   }) => {
     await startAs(page, 'family')
+    await page.goto('/trail')
     await page.getByTestId('marker-shtab').click()
     await expect(page).toHaveURL(/\/trail\/park-3km\/point\/shtab$/)
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Полевой штаб')
@@ -66,6 +68,7 @@ test.describe('История 1: семейная тропа', () => {
     context,
   }) => {
     await startAs(page, 'family')
+    await page.goto('/trail')
     await expect(page.getByTestId('trail-map')).toHaveAttribute('data-ready', 'true')
     await context.setOffline(true)
     await page.getByTestId('marker-okop').click()

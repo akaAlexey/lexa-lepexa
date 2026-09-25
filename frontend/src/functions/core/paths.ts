@@ -3,9 +3,11 @@
  * `patterns` — шаблоны для роутера, `paths` — готовые ссылки для экранов, уведомлений и «Поделиться».
  * Шаг B (ADR 0012): новые разделы «Карта» (/map), «Мероприятия» (/events), «Другое» (/other);
  * прежние адреса остаются вложенными экранами этих разделов.
+ * Спринт v3.2: «/» — это «Мероприятия», выбор роли — /roles.
  */
 export const patterns = {
   home: '/',
+  roles: '/roles',
   map: '/map',
   events: '/events',
   other: '/other',
@@ -36,6 +38,7 @@ const seg = encodeURIComponent
 
 export const paths = {
   home: () => patterns.home,
+  roles: () => patterns.roles,
   map: () => patterns.map,
   events: () => patterns.events,
   other: () => patterns.other,

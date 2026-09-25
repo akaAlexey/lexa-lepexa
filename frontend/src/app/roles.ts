@@ -49,7 +49,7 @@ export interface Role {
   short: string
   description: string
   icon: IconName
-  /** Домашний экран роли: главный сценарий — не больше 3 нажатий отсюда (ADR 0010). */
+  /** Домашний экран роли: главный сценарий — не больше 3 нажатий отсюда (ADR 0010). У всех — «Мероприятия». */
   home: string
 }
 
@@ -61,7 +61,7 @@ export const ROLES: readonly Role[] = [
     short: 'Семья',
     description: 'Прогулка-квест с ребёнком по местам боёв',
     icon: 'family',
-    home: paths.trail(),
+    home: paths.events(),
   },
   {
     id: 'volunteer',
@@ -85,7 +85,7 @@ export const ROLES: readonly Role[] = [
     short: 'Краевед',
     description: 'Проверить истории и подтвердить данные',
     icon: 'book',
-    home: paths.archive(),
+    home: paths.events(),
   },
 ]
 
