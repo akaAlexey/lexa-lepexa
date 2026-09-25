@@ -110,6 +110,11 @@
   margin: 0;
 }
 
+.screenTitle {
+  width: 100%;
+  text-align: center;
+}
+
 .screenHead .lead {
   margin: var(--space-1) 0 0;
 }

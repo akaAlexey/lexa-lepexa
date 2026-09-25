@@ -8,6 +8,7 @@ import { BigButton } from '../../ui/BigButton.tsx'
 import { TextField } from '../../ui/Field.tsx'
 import { Icon, type IconName } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
+import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { ProfilePanel } from './ProfilePanel.tsx'
 import s from './other.module.css'
@@ -70,30 +71,49 @@ function sectionsFor(signedIn: boolean): Section[] {
   ]
 }
 
-/** Список разделов всегда виден, закрытые функции отсутствуют до входа. */
+/** «Другое»: корневой экран показывает меню, выбранный пункт — самостоятельную страницу. */
 export function OtherScreen() {
   const { account } = useAccount()
-  const [params, setParams] = useSearchParams()
+  const [params] = useSearchParams()
   const requested = params.get('section')
   const sections = sectionsFor(Boolean(account))
   const active = sections.find((x) => x.id === requested)
   if (active?.requiresAccount && !account) {
     return <Navigate to={otherSection('account')} replace />
   }
+
+  if (active) {
+    return (
+      <Screen
+        title={active.title}
+        back={
+          <BackLink to={paths.other()} testID="other-back">
+            Назад
+          </BackLink>
+        }
+        testID={`screen-other-${active.id}`}
+      >
+        <section
+          className={s.body}
+          aria-label={active.title}
+          data-testid={`other-panel-${active.id}`}
+        >
+          <Panel id={active.id} />
+        </section>
+      </Screen>
+    )
+  }
+
   const visible = sections.filter((x) => !x.requiresAccount || account)
   return (
     <Screen title="Другое" lead="Профиль, память семьи и поисковая работа" testID="screen-other">
       <div className={s.hub}>
-        <div className={s.hubHead}>
-          <span className={s.hubName}>Разделы</span>
-        </div>
         <ul className={s.list} aria-label="Разделы страницы Другое">
           {visible.map((x) => (
             <li key={x.id}>
               <Link
                 to={x.id === 'last-battle' ? paths.lastBattle() : otherSection(x.id)}
                 className={s.item}
-                aria-current={x.id === active?.id ? 'page' : undefined}
                 data-testid={`other-${x.id}`}
               >
                 <span className={s.itemIcon}>
@@ -107,24 +127,10 @@ export function OtherScreen() {
             </li>
           ))}
         </ul>
-        {active && (
-          <section
-            className={s.body}
-            aria-label={active.title}
-            data-testid={`other-panel-${active.id}`}
-          >
-            <h2>{active.title}</h2>
-            <Panel id={active.id} />
-          </section>
-        )}
-        {!account && !active && (
+        {!account && (
           <div className={s.body}>
             <Notice>Войдите, чтобы открыть личные функции.</Notice>
-            <BigButton
-              onClick={() => setParams({ section: 'account' })}
-              icon="user"
-              testID="other-signin"
-            >
+            <BigButton to={otherSection('account')} icon="user" testID="other-signin">
               Войти
             </BigButton>
           </div>
