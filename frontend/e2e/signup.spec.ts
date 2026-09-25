@@ -30,7 +30,7 @@ test.describe('Запись с условиями и согласием роди
     await expect(dialog).toBeVisible()
     await expect(dialog.getByTestId('signup-starts')).toHaveText('09:00')
     await expect(dialog.getByTestId('signup-ends')).toHaveText('18:00')
-    await expect(dialog).toContainText('Мценск, площадь у автостанции (демо)')
+    await expect(dialog).toContainText('Мценск, площадь у автостанции')
     await expect(dialog.getByTestId('signup-consent')).toContainText('Согласие родителя')
     await expectNoHorizontalScroll(page)
     await expectNoA11yViolations(page)

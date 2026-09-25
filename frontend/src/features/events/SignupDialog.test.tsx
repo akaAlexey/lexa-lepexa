@@ -28,7 +28,7 @@ describe('окно записи на заявку отряда', () => {
     expect(terms).toHaveTextContent('3 октября, суббота')
     expect(within(terms).getByTestId('signup-starts')).toHaveTextContent('09:00')
     expect(within(terms).getByTestId('signup-ends')).toHaveTextContent('18:00')
-    expect(terms).toHaveTextContent('Мценск, площадь у автостанции (демо)')
+    expect(terms).toHaveTextContent('Мценск, площадь у автостанции')
     expect(terms).toHaveTextContent('от 16 лет')
     expect(within(terms).getByText('Рабочие перчатки')).toBeInTheDocument()
   })
@@ -50,7 +50,7 @@ describe('окно записи на заявку отряда', () => {
     await fillParent()
     await userEvent.click(within(dialog).getByTestId('signup-confirm'))
     expect(await screen.findByTestId('signup-done')).toHaveTextContent(
-      'Вы записаны. 3 октября, суббота, сбор в 09:00 — Мценск, площадь у автостанции (демо).',
+      'Вы записаны. 3 октября, суббота, сбор в 09:00 — Мценск, площадь у автостанции.',
     )
     await userEvent.click(within(dialog).getByTestId('dialog-close'))
     expect(screen.getByTestId('request-joined-R01')).toHaveTextContent('Вы записаны')
