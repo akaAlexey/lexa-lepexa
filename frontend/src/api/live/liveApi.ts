@@ -1,5 +1,11 @@
 import { endpoints, notificationStream, type EndpointName } from '../../contract/endpoints.ts'
-import { ApiError, ContractError, type ApiClient, type AuthAccount, type EndpointMethods } from '../client.ts'
+import {
+  ApiError,
+  ContractError,
+  type ApiClient,
+  type AuthAccount,
+  type EndpointMethods,
+} from '../client.ts'
 
 interface LiveOptions {
   /** Абсолютный (https://…/api/v1) или относительный (/api/v1 — тот же домен) адрес API. */
@@ -72,10 +78,7 @@ export function createLiveApi({
     return parsed.data
   }
 
-  const authRequest = async (
-    path: string,
-    init: RequestInit = {},
-  ): Promise<Response> => {
+  const authRequest = async (path: string, init: RequestInit = {}): Promise<Response> => {
     let res: Response
     try {
       res = await fetchImpl(root + path, {
@@ -94,7 +97,8 @@ export function createLiveApi({
   }
 
   const parseAccount = (value: unknown): AuthAccount => {
-    if (!value || typeof value !== 'object') throw new ContractError('/auth', 'ожидался объект аккаунта')
+    if (!value || typeof value !== 'object')
+      throw new ContractError('/auth', 'ожидался объект аккаунта')
     const x = value as Record<string, unknown>
     if (
       typeof x.id !== 'string' ||
@@ -157,7 +161,9 @@ export function createLiveApi({
       if (!EventSourceImpl) return () => undefined
       // EventSource не умеет заголовки — ключ пользователя идёт параметром.
       const query = userKey ? `?user=${encodeURIComponent(userKey)}` : ''
-      const source = new EventSourceImpl(root + notificationStream.path + query, { withCredentials: true })
+      const source = new EventSourceImpl(root + notificationStream.path + query, {
+        withCredentials: true,
+      })
       source.onmessage = (msg: MessageEvent<string>) => {
         let data: unknown
         try {
