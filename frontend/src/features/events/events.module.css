@@ -1,6 +1,7 @@
 /* Лента «Мероприятия» (ADR 0012): газетные колонки, штампы, тонкие линейки */
 .tools {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-2);
 }
 
@@ -56,6 +57,15 @@
 
 .filter:first-child {
   border-left: 0;
+}
+
+/* Экран 320 px и крупный шрифт: подписи фильтров переносятся, а не вылезают за край */
+@media (max-width: 22.5rem) {
+  .filter {
+    white-space: normal;
+    font-size: 0.75rem;
+    line-height: 1.15;
+  }
 }
 
 .filter[aria-pressed='true'] {

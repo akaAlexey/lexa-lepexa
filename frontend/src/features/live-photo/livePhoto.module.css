@@ -193,6 +193,8 @@
 /* «Оживить своё фото»: выбор файла, вариант речи */
 .upload {
   display: grid;
+  /* узкий телефон: поле файла не раздвигает страницу вбок */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-2);
 }
 
@@ -202,6 +204,7 @@
 
 .upload input[type='file'] {
   min-height: 48px;
+  max-width: 100%;
   font: inherit;
 }
 

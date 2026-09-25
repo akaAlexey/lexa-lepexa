@@ -9,6 +9,7 @@
 }
 
 .row {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-1) var(--space-3);
@@ -70,6 +71,17 @@
 
 .storyLink:hover h3 {
   text-decoration: underline;
+}
+
+/* Вся строка «Книги памяти» открывает историю: на телефоне палец попадает не только в название */
+.storyLink::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.row:hover {
+  background: color-mix(in srgb, var(--color-ink) 4%, transparent);
 }
 
 .storyLink h3 {

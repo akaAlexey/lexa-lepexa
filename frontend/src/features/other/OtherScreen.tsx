@@ -209,7 +209,7 @@ function RolePanel() {
           'Роль не выбрана: выберите, чтобы на экранах была ваша главная кнопка.'
         )}
       </p>
-      <BigButton to={paths.home()} icon="family" testID="other-role">
+      <BigButton to={paths.home()} icon="family" testID="other-role-switch">
         {role ? 'Сменить роль' : 'Выбрать роль'}
       </BigButton>
     </>

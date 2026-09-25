@@ -86,6 +86,7 @@ test('коллективная заявка: школа записывается
   await page.getByTestId('group-contact').fill('+7 900 555-44-33')
   await page.getByTestId('group-comment').fill('8 детей и 2 взрослых, нужен гид')
   await snap(page, testInfo, 'merge-06-group-form')
+  await page.getByTestId('group-consent').check()
   await page.getByTestId('group-send').click()
   await expect(page.getByTestId('group-sent')).toBeVisible()
   await page.getByRole('heading', { name: 'Мои заявки групп' }).scrollIntoViewIfNeeded()

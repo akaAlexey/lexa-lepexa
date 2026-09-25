@@ -20,7 +20,8 @@ interface Props {
 export function Screen({ title, lead, back, aside, children, testID }: Props) {
   const h1 = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
-    document.title = `${title} — ${region.appTitle}`
+    // на стартовом экране заголовок совпадает с названием — не повторяем его дважды
+    document.title = title === region.appTitle ? title : `${title} — ${region.appTitle}`
     h1.current?.focus({ preventScroll: true })
   }, [title])
   return (
