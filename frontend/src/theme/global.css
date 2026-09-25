@@ -67,8 +67,13 @@ body {
   font-family: var(--font-body);
   line-height: 1.5;
   color: var(--color-ink, #2b2a26);
-  /* Стол под всем приложением; фон на случай, если картинка не загрузилась */
-  background: #3b2210 url('./textures/desk.jpg') center / cover;
+  /* Один и тот же деревянный стол на всех экранах независимо от высоты страницы. */
+  background-color: #3b2210;
+  background-image: url('./textures/desk.jpg');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   -webkit-text-size-adjust: 100%;
 }
 
