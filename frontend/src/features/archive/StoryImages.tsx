@@ -46,6 +46,7 @@ export function StoryImages({ storyId, canAdd }: { storyId: string; canAdd: bool
             ref={input}
             id={inputId}
             type="file"
+            aria-label="Добавить фото к истории"
             accept="image/*"
             multiple
             className="visually-hidden"
