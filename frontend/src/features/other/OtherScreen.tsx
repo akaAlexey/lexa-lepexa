@@ -275,25 +275,33 @@ function SignInPanel() {
   const [privacy, setPrivacy] = useState(false)
   const [show, setShow] = useState(false)
   const [errors, setErrors] = useState<FieldErrors>({})
+  const [submitting, setSubmitting] = useState(false)
   const [params] = useSearchParams()
   const navigate = useNavigate()
   // Пришли с закрытого экрана (?next=/live) — после входа возвращаем туда
   const returnTo = params.get('next')
 
   const registering = mode === 'register'
-  const submit = (e?: FormEvent) => {
+  const submit = async (e?: FormEvent) => {
     e?.preventDefault()
-    const result = registering
-      ? signUp({ login, password, repeat, terms, privacy, name })
-      : signIn({ login, password })
-    if (!result.ok) {
-      setErrors(result.errors)
-      return
-    }
-    setPassword('')
-    setRepeat('')
-    if (returnTo?.startsWith('/') && !returnTo.startsWith('//')) {
-      void navigate(returnTo, { replace: true })
+    if (submitting) return
+    setSubmitting(true)
+    try {
+      const result = registering
+        ? await signUp({ login, password, repeat, terms, privacy, name })
+        : await signIn({ login, password })
+      if (!result.ok) {
+        setErrors(result.errors)
+        return
+      }
+      setErrors({})
+      setPassword('')
+      setRepeat('')
+      if (returnTo?.startsWith('/') && !returnTo.startsWith('//')) {
+        void navigate(returnTo, { replace: true })
+      }
+    } finally {
+      setSubmitting(false)
     }
   }
   const switchTo = (next: 'signin' | 'register') => {
@@ -302,10 +310,9 @@ function SignInPanel() {
   }
 
   return (
-    <form className={s.form} onSubmit={submit} noValidate data-testid="signin-form">
+    <form className={s.form} onSubmit={(e) => void submit(e)} noValidate data-testid="signin-form">
       <Notice>
-        Профиль сохраняется в этом браузере. Серверный вход и синхронизация между устройствами пока
-        не подключены.
+        Вход и регистрация проверяются сервером. Сессия хранится в защищённой cookie браузера.
       </Notice>
       <div className={s.tabs} role="tablist" aria-label="Вход или регистрация">
         <button
@@ -395,11 +402,11 @@ function SignInPanel() {
         </>
       )}
       <BigButton
-        onClick={() => submit()}
+        onClick={() => void submit()}
         icon="user"
         testID={registering ? 'register-submit' : 'signin-submit'}
       >
-        {registering ? 'Зарегистрироваться' : 'Войти'}
+        {submitting ? 'Проверяем…' : registering ? 'Зарегистрироваться' : 'Войти'}
       </BigButton>
       <p className={s.muted}>
         {registering ? (
