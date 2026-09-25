@@ -141,4 +141,12 @@ test.describe('Адаптив и доступность каждого экра�
       await expect(items.nth(index).getByText('Демо-данные')).toBeVisible()
     }
   })
+
+  test('демо-вход предупреждает до ввода данных и не обещает регистрацию', async ({ page }) => {
+    await page.goto('/other?section=account')
+    const form = page.getByTestId('signin-form')
+    await expect(form.getByRole('status')).toContainText('Не вводите свой настоящий пароль')
+    await expect(form.getByRole('textbox', { name: 'Телефон или почта' })).toBeVisible()
+    await expect(form.getByRole('button', { name: 'Зарегистрироваться' })).toHaveCount(0)
+  })
 })
