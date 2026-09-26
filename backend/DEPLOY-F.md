@@ -52,21 +52,22 @@ Cookie входа: `AUTH_COOKIE_SECURE=1` (по умолчанию) и `AUTH_COO
 `https://localhost` (Android) и `capacitor://localhost` (iOS).
 Пароль базы в git не кладём.
 
-Платежи ЮKassa (только тестовый магазин) — добавить в переменные приложения, значения передаются владельцу лично:
+Платежи ЮKassa (только тестовый магазин) — добавить в переменные приложения. Ключи тестового магазина
+опубликованы открыто по решению команды: реальные деньги не участвуют.
 
 ```text
-YOOKASSA_SHOP_ID=<shopId тестового магазина>
-YOOKASSA_SECRET_KEY=<секретный ключ тестового магазина, test_…>
-YOOKASSA_RETURN_URL=https://marshrutypobedy.ru/payment
+YOOKASSA_SHOP_ID=1476293
+YOOKASSA_SECRET_KEY=test_n1FpeUe_gfwVSGrV1ZMIudDtSsekAwQECR57icQaiJs
+YOOKASSA_RETURN_URL=http://marshrutypobedy.ru/payment
 YOOKASSA_PAYOUT_AGENT_ID=<agentId тестового шлюза выплат>        # на будущее, кодом не используется
 YOOKASSA_PAYOUT_SECRET_KEY=<ключ тестового шлюза выплат, test_…>  # на будущее, кодом не используется
 ```
 
 - Ключ не с `test_` — сервер отказывается создавать платёж (503). Без ключей сайт работает, платёж отвечает 503.
-- `YOOKASSA_RETURN_URL` — страница результата на сайте. Пока на домене нет HTTPS, ставьте
-  `http://marshrutypobedy.ru/payment`; если сайт снова на `team-shpilit.github.io` —
-  `https://team-shpilit.github.io/lexa-lepexa/payment`. Прямой заход открывает страницу через `404.html` (SPA).
-- Ключи — только здесь и в локальном `.env`. Не в `VITE_*`, не в переменных GitHub Actions: сборка Pages публичная.
+- `YOOKASSA_RETURN_URL` — страница результата на сайте. Сейчас `http://`: на `marshrutypobedy.ru` ещё нет
+  сертификата. Когда в Pages включат Enforce HTTPS — заменить на `https://marshrutypobedy.ru/payment`.
+  Прямой заход открывает страницу через `404.html` (SPA).
+- Ключи — только в окружении бэкенда. Не в `VITE_*` и не во фронте.
 
 ## 3. База: создать, дополнить, пересоздать
 

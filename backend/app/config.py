@@ -51,7 +51,7 @@ class Settings(BaseSettings):
 
     @property
     def payment_return_url(self) -> str:
-        return self.yookassa_return_url or "https://marshrutypobedy.ru/payment"
+        return self.yookassa_return_url or "http://marshrutypobedy.ru/payment"
 
     @property
     def yookassa_test_key(self) -> bool:
