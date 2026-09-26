@@ -54,6 +54,7 @@ export const SourceKind = entity(
     'literature',
     'eyewitness',
     'demo',
+    'test',
   ]),
 )
 
