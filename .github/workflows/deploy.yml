@@ -42,10 +42,19 @@ jobs:
           SITE_URL: ${{ vars.SITE_URL || 'https://marshrutypobedy.ru' }}
         run: |
           echo "API: $API_URL"
-          curl -fsS --retry 5 --retry-delay 10 --retry-all-errors --max-time 20 "$API_URL/health" | grep -q '"ok":true'
+          # Бэкенд мог перезапускаться с этим же push (Deploy-F из main) — ждём до 10 минут
+          for i in $(seq 1 40); do
+            if curl -fsS --max-time 15 "$API_URL/health" | grep -q '"ok":true'; then break; fi
+            if [ "$i" = 40 ]; then
+              echo "::error title=API недоступен::$API_URL/health не отвечает 10 минут. Сайт не выложен — на домене прежняя версия. Поднимите бэкенд по backend/DEPLOY-F.md и нажмите Re-run jobs."
+              exit 1
+            fi
+            echo "API ещё не отвечает ($i/40), ждём 15 с"; sleep 15
+          done
           # CORS: сервер разрешает запросы со страниц сайта (и с cookie входа)
           curl -fsS --max-time 20 -o /dev/null -D headers.txt -H "Origin: $SITE_URL" "$API_URL/health"
-          grep -qi "access-control-allow-origin: $SITE_URL" headers.txt
+          grep -qi "access-control-allow-origin: $SITE_URL" headers.txt || {
+            echo "::error title=CORS::API не разрешает запросы с $SITE_URL — добавьте адрес в CORS_ORIGINS (backend/DEPLOY-F.md)"; exit 1; }
           grep -qi "access-control-allow-credentials: true" headers.txt
           # Все GET контракта отвечают по схемам фронта (ничего не пишет в боевую базу)
           npm run contract:check -- "$API_URL" --read-only
