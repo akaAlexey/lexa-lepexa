@@ -15,7 +15,7 @@ function buildId(): string {
 }
 
 // Адрес сайта для превью ссылок (og:image в index.html). На другом домене — задать VITE_SITE_URL.
-process.env.VITE_SITE_URL ??= 'https://marshrutypobedy.ru'
+process.env.VITE_SITE_URL ??= 'http://marshrutypobedy.ru'
 
 export default defineConfig({
   plugins: [react()],
