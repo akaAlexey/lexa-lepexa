@@ -67,6 +67,16 @@ class FamilyRecord(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 
+class UserState(Base):
+    """Личное состояние аккаунта (профиль, «мои» записи, прогресс): одно на все устройства пользователя."""
+
+    __tablename__ = "user_state"
+    user_id: Mapped[str] = mapped_column(String(50), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    key: Mapped[str] = mapped_column(String(100), primary_key=True)
+    value: Mapped[dict | list | str | int | float | bool | None] = mapped_column(JSON, nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
 class Role(Base):
     __tablename__ = "roles"
     id: Mapped[str] = mapped_column(String(50), primary_key=True)

@@ -62,6 +62,8 @@ export interface StorageService {
   remove(key: string): void
   /** Удалить все данные приложения на устройстве (сброс демо). */
   clear(): void
+  /** Ключи данных приложения на устройстве (синхронизация личного состояния с аккаунтом). */
+  keys?(): string[]
 }
 
 export interface ImageService {

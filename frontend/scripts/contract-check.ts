@@ -289,12 +289,14 @@ if (READ_ONLY) {
   }
 }
 
-// ---------- Семейный архив: только после входа ----------
+// ---------- Личное (семейный архив, состояние аккаунта): только после входа ----------
 if (READ_ONLY) {
   // На боевой базе не регистрируемся: проверяем, что без входа архив закрыт
-  const res = await fetch(`${BASE}/family/fighters`)
-  if (res.status === 401) pass('GET   /family/fighters (без входа — 401, как и ожидается)')
-  else failRow(`GET   /family/fighters → без входа HTTP ${res.status}, ожидался 401`)
+  for (const path of ['/family/fighters', '/me/state']) {
+    const res = await fetch(`${BASE}${path}`)
+    if (res.status === 401) pass(`GET   ${path} (без входа — 401, как и ожидается)`)
+    else failRow(`GET   ${path} → без входа HTTP ${res.status}, ожидался 401`)
+  }
 } else {
   const registered = await fetch(`${BASE}/auth/register`, {
     method: 'POST',
@@ -315,6 +317,13 @@ if (READ_ONLY) {
   if (!registered.ok || !cookie) failRow(`POST  /auth/register → HTTP ${registered.status}`)
   else {
     const who = `cc-family-${run}`
+    await call(
+      'putMyState',
+      { body: { key: 'search.joinedRequests', value: ['R01'] } },
+      who,
+      cookie,
+    )
+    await call('getMyState', {}, who, cookie)
     const fighter = (await call(
       'createFamilyFighter',
       {

@@ -32,19 +32,33 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      # Сайт работает только с сервером и общей базой: демо-данных в браузере на боевом сайте нет.
+      # Адрес API — переменная репозитория API_URL (Settings → Secrets and variables → Actions → Variables),
+      # по умолчанию свой домен API. Если API недоступен или отстал от контракта фронта, выкладка
+      # останавливается: остаётся прежняя версия сайта, а не сайт с ошибками загрузки.
+      - name: API доступен и совпадает с контрактом
+        env:
+          API_URL: ${{ vars.API_URL || 'https://api.marshrutypobedy.ru/api/v1' }}
+          SITE_URL: ${{ vars.SITE_URL || 'https://marshrutypobedy.ru' }}
+        run: |
+          echo "API: $API_URL"
+          curl -fsS --retry 5 --retry-delay 10 --retry-all-errors --max-time 20 "$API_URL/health" | grep -q '"ok":true'
+          # CORS: сервер разрешает запросы со страниц сайта (и с cookie входа)
+          curl -fsS --max-time 20 -o /dev/null -D headers.txt -H "Origin: $SITE_URL" "$API_URL/health"
+          grep -qi "access-control-allow-origin: $SITE_URL" headers.txt
+          grep -qi "access-control-allow-credentials: true" headers.txt
+          # Все GET контракта отвечают по схемам фронта (ничего не пишет в боевую базу)
+          npm run contract:check -- "$API_URL" --read-only
+
       # Сайт на своём домене (Settings → Pages → Custom domain = marshrutypobedy.ru), поэтому base=/.
       # Вернуться на team-shpilit.github.io/lexa-lepexa/ — переменная репозитория SITE_BASE=/lexa-lepexa/ .
       - name: Build
         run: npm run build -- --base=${{ vars.SITE_BASE || '/' }}
         env:
           VITE_SITE_URL: ${{ vars.SITE_URL || 'https://marshrutypobedy.ru' }}
-          # Живой бэкенд — только когда задана переменная репозитория API_URL
-          # (Settings → Secrets and variables → Actions → Variables). Без неё — демо-данные в браузере:
-          # бесплатный туннель меняет адрес и падает, а жюри не должно увидеть пустой сайт.
-          # Сайт на своём домене https://marshrutypobedy.ru (Settings → Pages → Custom domain), поэтому base=/.
-          # Бэкенд должен разрешать CORS для https://marshrutypobedy.ru (переменная CORS_ORIGINS).
-          VITE_API_MODE: ${{ vars.API_URL && 'live' || 'mock' }}
-          VITE_API_URL: ${{ vars.API_URL }}
+          # Всегда живой бэкенд (проверен шагом выше). Демо-режим (mock) — только для разработки и e2e.
+          VITE_API_MODE: live
+          VITE_API_URL: ${{ vars.API_URL || 'https://api.marshrutypobedy.ru/api/v1' }}
           VITE_TILES: openfreemap
 
       - name: SPA fallback for deep links
@@ -56,6 +70,8 @@ jobs:
           grep -q '"${{ vars.SITE_BASE || '/' }}assets/' dist/index.html
           test -f dist/manifest.webmanifest
           test -f dist/sw.js
+          # В сборку попал живой режим, а не демо-данные
+          grep -q 'VITE_API_MODE:`live`' dist/assets/index-*.js
 
       - uses: actions/upload-pages-artifact@v3
         with:

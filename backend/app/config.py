@@ -9,7 +9,9 @@ class Settings(BaseSettings):
     # Боевые адреса сайта (Pages и свой домен) разрешены по умолчанию — перенесено из fix/backend-pages-cors.
     cors_origins: str = (
         "http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173,"
-        "https://team-shpilit.github.io,https://marshrutypobedy.ru,https://www.marshrutypobedy.ru"
+        "https://team-shpilit.github.io,https://marshrutypobedy.ru,https://www.marshrutypobedy.ru,"
+        # Пока у домена на GitHub Pages не выпущен сертификат, сайт открывается и по http
+        "http://marshrutypobedy.ru,http://www.marshrutypobedy.ru"
     )
     # Залить демо-данные фронта при старте, если их ещё нет в базе (существующие записи не трогаются).
     seed_demo: bool = True
@@ -28,7 +30,18 @@ class Settings(BaseSettings):
     # Серверная сессия входа: HttpOnly-cookie, токен хранится в БД только в виде SHA-256.
     auth_cookie_name: str = "mp_session"
     auth_cookie_secure: bool = True
+    # none — cookie уходит и со страницы сайта на другом адресе (сайт на GitHub Pages или по http,
+    # API — https://api.marshrutypobedy.ru): иначе браузер не пришлёт сессию и вход «не держится».
+    # none требует Secure; без Secure (локально по http) — lax. Защита от CSRF — проверка Origin (main.py).
+    auth_cookie_samesite: str = "none"
     auth_session_days: int = 30
+
+    @property
+    def cookie_samesite(self) -> str:
+        value = self.auth_cookie_samesite.lower()
+        if value not in ("lax", "strict", "none"):
+            value = "lax"
+        return "lax" if value == "none" and not self.auth_cookie_secure else value
 
     @property
     def yookassa_enabled(self) -> bool:

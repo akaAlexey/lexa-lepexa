@@ -952,6 +952,56 @@
         }
       }
     },
+    "/me/state": {
+      "get": {
+        "operationId": "getMyState",
+        "summary": "Личное состояние вошедшего пользователя (профиль, записи, «мои» истории, прогресс)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyState"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "putMyState",
+        "summary": "Записать одно значение личного состояния (null — удалить)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ack"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Ошибка запроса: { \"message\": string }"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MyStateChange"
+              }
+            }
+          }
+        }
+      }
+    },
     "/family/fighters": {
       "get": {
         "operationId": "listFamilyFighters",
@@ -3084,6 +3134,28 @@
         ],
         "additionalProperties": false,
         "description": "Подтверждение действия"
+      },
+      "MyState": {
+        "type": "object",
+        "additionalProperties": {},
+        "description": "Личное состояние вошедшего пользователя: {имя слота памяти: значение} — одно на все его устройства"
+      },
+      "MyStateChange": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9:._-]{0,99}$",
+            "description": "Имя слота: «search.joinedRequests», «quest:park-3km», «profile»"
+          },
+          "value": {}
+        },
+        "required": [
+          "key",
+          "value"
+        ],
+        "additionalProperties": false,
+        "description": "Записать одно значение личного состояния; null — удалить"
       }
     }
   }

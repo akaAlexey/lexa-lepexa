@@ -618,6 +618,26 @@ export const AppNotification = entity(
 
 export const Ack = entity('Ack', 'Подтверждение действия', z.object({ ok: z.literal(true) }))
 
+/* ---------- Личное состояние аккаунта ---------- */
+
+export const MyState = entity(
+  'MyState',
+  'Личное состояние вошедшего пользователя: {имя слота памяти: значение} — одно на все его устройства',
+  z.record(z.string(), z.unknown()),
+)
+
+export const MyStateChange = entity(
+  'MyStateChange',
+  'Записать одно значение личного состояния; null — удалить',
+  z.object({
+    key: z
+      .string()
+      .regex(/^[a-zA-Z][a-zA-Z0-9:._-]{0,99}$/)
+      .describe('Имя слота: «search.joinedRequests», «quest:park-3km», «profile»'),
+    value: z.unknown(),
+  }),
+)
+
 export type LatLon = z.infer<typeof LatLon>
 export type Source = z.infer<typeof Source>
 export type Grave = z.infer<typeof Grave>
@@ -647,6 +667,8 @@ export type FoundRecord = z.infer<typeof FoundRecord>
 export type FamilyFighter = z.infer<typeof FamilyFighter>
 export type FamilyFighterInput = z.infer<typeof FamilyFighterInput>
 export type FoundRecordInput = z.infer<typeof FoundRecordInput>
+export type MyState = z.infer<typeof MyState>
+export type MyStateChange = z.infer<typeof MyStateChange>
 export type SiteStatus = z.infer<typeof SiteStatus>
 export type LastBattleSite = z.infer<typeof LastBattleSite>
 export type NewLastBattleSite = z.infer<typeof NewLastBattleSite>

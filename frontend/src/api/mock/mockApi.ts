@@ -106,6 +106,7 @@ export function createMockApi(options: MockOptions = {}): ApiClient {
   } = options
   let db = createDb()
   let seq = 0
+  const myState: Record<string, unknown> = {}
 
   /** Подтянуть сохранённое: своё после перезагрузки и созданное в соседних вкладках. */
   function load() {
@@ -359,6 +360,15 @@ export function createMockApi(options: MockOptions = {}): ApiClient {
         const input = endpoints.subscribe.body.parse(body)
         db.subscriptions.push({ lat: input.lat, lon: input.lon, radiusKm: input.radiusKm })
         return { id: nextId('SUB') }
+      }),
+    // Личное состояние: в демо без сервера входа — одно на браузер (синхронизация и не включается)
+    getMyState: () => respond(() => ({ ...myState })),
+    putMyState: ({ body }) =>
+      respond(() => {
+        const input = endpoints.putMyState.body.parse(body)
+        if (input.value === null || input.value === undefined) delete myState[input.key]
+        else myState[input.key] = input.value
+        return { ok: true as const }
       }),
     listFamilyFighters: () => respond(() => db.family),
     createFamilyFighter: ({ body }) =>

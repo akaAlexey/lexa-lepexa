@@ -26,8 +26,10 @@
     "vite.config.ts",
     "playwright.config.ts",
     "playwright.visual.config.ts",
+    "playwright.live.config.ts",
     "scripts/**/*.ts",
     "e2e/**/*.ts",
-    "e2e-visual/**/*.ts"
+    "e2e-visual/**/*.ts",
+    "e2e-live/**/*.ts"
   ]
 }

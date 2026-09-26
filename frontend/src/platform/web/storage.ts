@@ -40,6 +40,19 @@ export function createWebStorage(
     remove(key) {
       write(key, null)
     },
+    keys() {
+      const found = new Set(memory.keys())
+      try {
+        if (backend)
+          for (let i = 0; i < backend.length; i++) {
+            const key = backend.key(i)
+            if (key?.startsWith(PREFIX)) found.add(key.slice(PREFIX.length))
+          }
+      } catch {
+        /* хранилище недоступно — только то, что в памяти */
+      }
+      return [...found]
+    },
     clear() {
       memory.clear()
       try {

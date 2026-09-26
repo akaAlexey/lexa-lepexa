@@ -228,6 +228,21 @@ export const endpoints = {
     response: s.SubscriptionResult,
   }),
 
+  // Личное состояние: только для вошедшего пользователя (cookie сессии), иначе 401
+  getMyState: endpoint({
+    method: 'GET',
+    path: '/me/state',
+    summary: 'Личное состояние вошедшего пользователя (профиль, записи, «мои» истории, прогресс)',
+    response: s.MyState,
+  }),
+  putMyState: endpoint({
+    method: 'PATCH',
+    path: '/me/state',
+    summary: 'Записать одно значение личного состояния (null — удалить)',
+    body: s.MyStateChange,
+    response: s.Ack,
+  }),
+
   // Семейный архив (A7): только для вошедшего пользователя (cookie сессии), иначе 401.
   // Чужой боец — 404. Удаление — POST …/delete: в контракте нет DELETE.
   listFamilyFighters: endpoint({
