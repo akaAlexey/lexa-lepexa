@@ -62,15 +62,19 @@ describe('лента «Мероприятий»: карточки', () => {
     expect(screen.getByTestId('feed-fund-F02')).toHaveTextContent('Экипировать отряд')
   })
 
-  it('«Пожертвовать» — оплата через ЮKassa в тестовом режиме с явным предупреждением', async () => {
+  it('«Пожертвовать» — сумма и переход в кассу учебной оплаты с явным предупреждением', async () => {
     renderApp('/events?show=fund', { role: 'volunteer' })
     const card = await screen.findByTestId('feed-fund-F03')
     await userEvent.click(within(card).getByTestId('donate-F03'))
     const dialog = screen.getByTestId('donate-dialog-F03')
     expect(dialog).toHaveTextContent('реальные деньги не списываются')
-    expect(within(dialog).getByTestId('donate-confirm')).toHaveTextContent('через ЮKassa')
+    await userEvent.click(within(dialog).getByTestId('amount-500'))
+    expect(within(dialog).getByTestId('donate-confirm')).toHaveAttribute(
+      'href',
+      '/payment/checkout?fundraiser=F03&amount=500',
+    )
     expect(within(dialog).getByTestId('donate-test-caption')).toHaveTextContent(
-      'Тестовый платёж — деньги не списываются',
+      'деньги не списываются',
     )
   })
 

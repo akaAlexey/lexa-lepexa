@@ -69,7 +69,12 @@ test('«Оживить своё фото»: снимок, согласие → �
   await expect(page.getByTestId('live-new-preview')).toBeVisible()
   await page.getByTestId('live-new-consent').check()
   await page.getByTestId('live-new-submit').click()
-  await expect(page.getByTestId('live-new-speech')).toContainText('голубое небо')
+  // Этапы генерации идут около 9 с, затем — ролик
+  await expect(page.getByTestId('live-gen-step')).toBeVisible()
+  await expectNoA11yViolations(page)
+  await expect(page.getByTestId('live-new-speech')).toContainText('голубое небо', {
+    timeout: 20_000,
+  })
   await expect(page.getByTestId('live-new-example')).toBeVisible()
   await expect(page.locator('[data-main-action]')).toHaveCount(1)
   await expectNoA11yViolations(page)

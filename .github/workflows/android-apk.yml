@@ -4,7 +4,7 @@ name: Android APK
 # JDK 17+ и Android SDK (docs/audit/apk-feasibility.md). Сайт и его деплой этот workflow не трогает.
 on:
   push:
-    branches: [mobile/android-apk]
+    branches: [main, mobile/android-apk]
   workflow_dispatch:
 
 permissions:
@@ -48,7 +48,10 @@ jobs:
       - name: Install deps
         run: npm ci
 
-      - name: Web build for the app (demo data, no service worker)
+      # Приложение — с тем же сервером и общей базой, что и сайт (.env.android; другой адрес — vars.API_URL)
+      - name: Web build for the app (live API, no service worker)
+        env:
+          VITE_API_URL: ${{ vars.API_URL || 'https://api.marshrutypobedy.ru/api/v1' }}
         run: npm run build:android
 
       - name: Copy web build into the Android project
@@ -67,6 +70,8 @@ jobs:
           ls -la "$APK"
           unzip -l "$APK" | grep -q "assets/public/index.html"
           unzip -l "$APK" | grep -q "assets/public/live/soldier.mind"
+          # Приложение работает с сервером, а не с демо-данными
+          unzip -p "$APK" 'assets/public/assets/index-*.js' | grep -q 'VITE_API_MODE:`live`'
 
       - uses: actions/upload-artifact@v4
         with:

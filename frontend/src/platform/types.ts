@@ -84,4 +84,6 @@ export interface Platform {
   ar: ArService
   /** Фото к историям. Нет в тестовых подменах — тогда фото читается без уменьшения. */
   images?: ImageService
+  /** Телефон или компьютер (AR-режим). Нет — определяется по браузеру (functions/ar/formFactor). */
+  formFactor?: () => 'phone' | 'desktop'
 }

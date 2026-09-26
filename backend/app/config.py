@@ -11,7 +11,9 @@ class Settings(BaseSettings):
         "http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173,"
         "https://team-shpilit.github.io,https://marshrutypobedy.ru,https://www.marshrutypobedy.ru,"
         # Пока у домена на GitHub Pages не выпущен сертификат, сайт открывается и по http
-        "http://marshrutypobedy.ru,http://www.marshrutypobedy.ru"
+        "http://marshrutypobedy.ru,http://www.marshrutypobedy.ru,"
+        # Мобильное приложение (Capacitor): WebView Android и iOS
+        "https://localhost,capacitor://localhost"
     )
     # Залить демо-данные фронта при старте, если их ещё нет в базе (существующие записи не трогаются).
     seed_demo: bool = True

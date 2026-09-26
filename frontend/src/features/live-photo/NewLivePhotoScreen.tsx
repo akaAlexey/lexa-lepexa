@@ -10,6 +10,8 @@ import { TextAreaField, TextField } from '../../ui/Field.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
+import type { LivePhoto } from '../../contract/schemas.ts'
+import { GENERATION_STEPS, useGeneration } from './generation.ts'
 import { assetUrl, CASE_PHRASE, ETHICS_NOTE, useLivePhotos } from './livePhotos.ts'
 import s from './livePhoto.module.css'
 
@@ -49,8 +51,9 @@ interface Errors {
 
 /**
  * «Оживить своё фото» (задача 7 кейса): снимок из семейного архива, текст от первого лица,
- * согласие родственников. Генерация ролика — серверная задача (docs/LIVE_PHOTO.md);
- * в демо после отправки показываем пример готового ролика с честной пометкой.
+ * согласие родственников. Сверху — готовый ролик (пример 1). После отправки идут этапы генерации,
+ * как у нейросети (docs/LIVE_PHOTO.md), и открывается пример 2. В MVP нейросеть не подключена к
+ * онлайн-сервису: ролики сгенерированы заранее, процесс и интерфейс — те же.
  */
 export function NewLivePhotoScreen() {
   const fileId = useId()
@@ -62,8 +65,18 @@ export function NewLivePhotoScreen() {
   const [consent, setConsent] = useState(false)
   const [errors, setErrors] = useState<Errors>({})
   const [sent, setSent] = useState<MyLivePhoto>()
-  // Пример результата — первый готовый ролик из «живых фото»
-  const example = useLivePhotos().data?.[0]
+  const examples = useLivePhotos().data
+  // Пример 1 — готовый ролик на странице; пример 2 — результат «генерации» после отправки
+  const example = examples?.[0]
+  const result = examples?.[1] ?? examples?.[0]
+  const generation = useGeneration(Boolean(sent))
+
+  /** Тестовый снимок — фото примера 2: жюри проверяет генерацию без своего снимка. */
+  const pickTestPhoto = (x: LivePhoto) => {
+    setPhoto(assetUrl(x.photoUrl))
+    setName(x.title)
+    setErrors((prev) => ({ ...prev, photo: undefined }))
+  }
 
   const speech = choice === 'case' ? CASE_PHRASE : feat.trim()
 
@@ -86,10 +99,45 @@ export function NewLivePhotoScreen() {
     setSent(item)
   }
 
+  if (sent && !generation.done) {
+    return (
+      <Screen title="Оживляем фото" testID="screen-live-new">
+        <figure className={s.figure}>
+          <img src={sent.photo} alt={`Фото: ${sent.name}`} className={s.photo} />
+          <figcaption className={s.caption}>{sent.name}</figcaption>
+        </figure>
+        <section className={s.generation} aria-labelledby="live-gen-title">
+          <h2 id="live-gen-title">Генерация ролика</h2>
+          <progress
+            max={100}
+            value={generation.percent}
+            aria-label="Готовность ролика"
+            data-testid="live-gen-progress"
+          />
+          <p role="status" data-testid="live-gen-step">
+            {GENERATION_STEPS[generation.step]?.label}… {generation.percent}%
+          </p>
+          <ol className={s.steps}>
+            {GENERATION_STEPS.map((step, i) => (
+              <li
+                key={step.label}
+                data-state={
+                  i < generation.step ? 'done' : i === generation.step ? 'active' : 'wait'
+                }
+              >
+                {step.label}
+              </li>
+            ))}
+          </ol>
+        </section>
+      </Screen>
+    )
+  }
+
   if (sent) {
     return (
       <Screen
-        title="Фото принято"
+        title="Фото ожило"
         back={
           <BackLink to={paths.livePhotos()} testID="back-link">
             К живым фото
@@ -98,43 +146,39 @@ export function NewLivePhotoScreen() {
         testID="screen-live-new"
       >
         <Notice tone="success" testID="live-new-sent">
-          Снимок сохранён в «Моих живых фото» только на этом устройстве. Ролик по нему в демо не
-          создаётся. Ниже — пример ролика, который команда подготовила заранее по другому снимку.
+          Снимок и текст сохранены в «Моих живых фото» на этом устройстве. Для MVP нейросеть не
+          подключена к онлайн-сервису: ниже — ролик, сгенерированный заранее по тестовому снимку.
+          Этапы и интерфейс генерации — те же, что будут с нейросетью.
         </Notice>
-        <figure className={s.figure}>
-          <img src={sent.photo} alt={`Фото: ${sent.name}`} className={s.photo} />
-          <figcaption className={s.caption}>{sent.name}</figcaption>
-        </figure>
-        <Card as="section" aria-labelledby="live-new-speech">
-          <h2 id="live-new-speech">Что прозвучит</h2>
-          <blockquote className={s.speech} data-testid="live-new-speech">
-            {sent.speech}
-          </blockquote>
-        </Card>
-        {example && (
+        {result && (
           <div className={s.player}>
-            <p className={s.aiLabel}>
-              Пример: ролик по другому снимку, подготовлен заранее · Реконструкция с помощью ИИ
-            </p>
+            <p className={s.aiLabel}>Реконструкция с помощью ИИ · {result.title}</p>
             <video
-              src={assetUrl(example.videoUrl)}
+              src={assetUrl(result.videoUrl)}
+              poster={assetUrl(result.photoUrl)}
               controls
               playsInline
               preload="metadata"
               className={s.video}
-              aria-label="Пример ролика-реконструкции"
+              aria-label={`Ролик-реконструкция: ${result.title}`}
               data-testid="live-new-example"
             >
               <track
                 kind="captions"
                 srcLang="ru"
                 label="Русский"
-                src={assetUrl(example.captionsUrl)}
+                src={assetUrl(result.captionsUrl)}
                 default
               />
             </video>
           </div>
         )}
+        <Card as="section" aria-labelledby="live-new-speech">
+          <h2 id="live-new-speech">Ваш текст для ролика</h2>
+          <blockquote className={s.speech} data-testid="live-new-speech">
+            {sent.speech}
+          </blockquote>
+        </Card>
         <BigButton to={paths.newStory()} icon="story" testID="live-new-story">
           Рассказать историю бойца в народный архив
         </BigButton>
@@ -153,7 +197,7 @@ export function NewLivePhotoScreen() {
   return (
     <Screen
       title="Оживить своё фото"
-      lead="Фото бойца из семейного архива, музея или «Памяти народа» и слова от первого лица. В демо снимок сохраняется на устройстве, ролик по нему не создаётся"
+      lead="Фото бойца из семейного архива, музея или «Памяти народа» и слова от первого лица — нейросеть оживит снимок"
       back={
         <BackLink to={paths.livePhotos()} testID="back-link">
           К живым фото
@@ -164,6 +208,33 @@ export function NewLivePhotoScreen() {
       <Notice testID="live-new-ethics">
         <strong>Реконструкция с помощью ИИ.</strong> {ETHICS_NOTE}
       </Notice>
+
+      {example && (
+        <section className={s.player} aria-labelledby="live-ready-title">
+          <h2 id="live-ready-title">Готовый пример</h2>
+          <p className={s.aiLabel}>Реконструкция с помощью ИИ · {example.title}</p>
+          <video
+            src={assetUrl(example.videoUrl)}
+            poster={assetUrl(example.photoUrl)}
+            controls
+            playsInline
+            preload="metadata"
+            className={s.video}
+            aria-label={`Готовый ролик: ${example.title}`}
+            data-testid="live-new-ready"
+          >
+            <track
+              kind="captions"
+              srcLang="ru"
+              label="Русский"
+              src={assetUrl(example.captionsUrl)}
+              default
+            />
+          </video>
+        </section>
+      )}
+
+      <h2>Оживить снимок</h2>
 
       <div className={s.upload}>
         <label htmlFor={fileId} className={s.uploadLabel}>
@@ -180,6 +251,16 @@ export function NewLivePhotoScreen() {
             if (file) void readPhoto(file).then(setPhoto)
           }}
         />
+        {result && (
+          <button
+            type="button"
+            className={s.testPhoto}
+            onClick={() => pickTestPhoto(result)}
+            data-testid="live-new-test-photo"
+          >
+            Взять тестовый снимок: {result.title}
+          </button>
+        )}
         {errors.photo && (
           <span className={s.uploadError} role="alert" data-testid="live-new-photo-error">
             {errors.photo}

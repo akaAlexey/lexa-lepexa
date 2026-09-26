@@ -15,6 +15,7 @@ import { paths, patterns } from '../functions/core/paths.ts'
 import { Layout } from './Layout.tsx'
 import { NotFoundScreen } from './NotFoundScreen.tsx'
 import { PaymentScreen } from './PaymentScreen.tsx'
+import { CheckoutScreen } from './CheckoutScreen.tsx'
 
 /**
  * Карта URL. Каждый экран и каждая карточка — свой адрес: «Назад» работает, ссылкой можно поделиться.
@@ -28,6 +29,7 @@ export const appRoutes: RouteObject[] = [
       { index: true, element: <Navigate to={paths.events()} replace /> },
       { path: patterns.roles, element: <RolePickerScreen /> },
       { path: patterns.payment, element: <PaymentScreen /> },
+      { path: patterns.checkout, element: <CheckoutScreen /> },
       ...mapHub,
       ...events,
       ...trail,

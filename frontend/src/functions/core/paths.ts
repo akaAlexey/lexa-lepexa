@@ -32,6 +32,7 @@ export const patterns = {
   demo: '/demo',
   /** Сюда ЮKassa возвращает после оплаты (YOOKASSA_RETURN_URL на сервере). */
   payment: '/payment',
+  checkout: '/payment/checkout',
   about: '/about',
   privacy: '/privacy',
   terms: '/terms',
@@ -75,6 +76,9 @@ export const paths = {
   livePhoto: (photoId: string) => `/live/${seg(photoId)}`,
   demo: () => patterns.demo,
   payment: () => patterns.payment,
+  /** Касса учебной оплаты: сбор и сумма — в адресе, страницу можно обновить. */
+  checkout: (fundraiserId: string, amount: string) =>
+    `${patterns.checkout}?fundraiser=${encodeURIComponent(fundraiserId)}&amount=${amount}`,
   about: () => patterns.about,
   privacy: () => patterns.privacy,
   terms: () => patterns.terms,
