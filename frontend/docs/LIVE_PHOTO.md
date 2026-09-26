@@ -40,11 +40,27 @@ node scripts/live-photo/compile_targets.mjs public/live soldier reichstag
 
 Бесплатный запасной путь — Hugging Face Spaces (`make_audio.py`, `cloud_video.py`: Edge TTS, LTX-Video, MoDA). Без входа ZeroGPU даёт около 3 минут в сутки; с токеном — переменная `HF_TOKEN` в своей консоли, в репо не попадает.
 
+## Надёжность камеры
+
+- Камера включается только после согласия и только на https: на `http://` сразу понятная ошибка и ролик без камеры.
+- Запуск ограничен 20 секундами: если MindAR не стартовал (например, не загрузилась цель `.mind` — тогда MindAR падает внутри себя и сам не завершается), запуск отменяется, камера гаснет, предлагаются «Включить камеру снова» и «Смотреть без камеры».
+- Камера гаснет при закрытии, ошибке, таймауте, уходе с экрана, свёртывании браузера (`visibilitychange`) и `pagehide`. `platform/web/ar.ts` сам гасит дорожки камеры, даже если `mindar.stop()` не сработал; события «найден/потерян» после остановки игнорируются.
+- В режиме камеры текущая реплика субтитров выводится внизу экрана; дорожка `.vtt` в это время скрыта и потом возвращается плееру.
+- Ролики подготовлены заранее: интерфейс нигде не называет их созданными в момент показа.
+
 ## Проверка
 
-- Компонентные тесты: `src/features/live-photo/LivePhoto.test.tsx`.
+- Модульные: `src/platform/web/ar.test.ts` (запуск, уборка, отмена, https), `captions.test.ts`, `assets.test.ts` (файлы в `public/live`, WebVTT, faststart, причины ошибок камеры).
+- Компонентные: `LivePhoto.test.tsx`, `LivePhotoReliability.test.tsx` (согласие, fallback, таймаут, свёртывание, уборка обработчиков, субтитры в камере, пометка ИИ, базовый путь Pages).
 - e2e: `e2e/live-photo.spec.ts` (экраны, согласие, ролик и субтитры отдаются сервером).
-- Настоящее распознавание: `e2e/live-photo-ar.spec.ts` — вместо камеры Chromium получает видеопоток со снимком. Нужна сеть (jsDelivr), поэтому запускается вручную: `LIVE_AR_CAMERA=<снимок.y4m> LIVE_AR_PHOTO=soldier npx playwright test e2e/live-photo-ar.spec.ts`.
+- Настоящее распознавание: `e2e/live-photo-ar.spec.ts` — вместо камеры Chromium получает видеопоток со снимком; проверяет и то, что камера гаснет после закрытия, сбоя цели и свёртывания. Нужна сеть (jsDelivr), поэтому запускается вручную:
+
+  ```bash
+  python scripts/live-photo/fake_camera.py public/live/soldier.jpg soldier.y4m
+  LIVE_AR_CAMERA=soldier.y4m LIVE_AR_PHOTO=soldier npx playwright test e2e/live-photo-ar.spec.ts
+  ```
+
+- На телефоне: [LIVE_PHOTO_MOBILE_CHECKLIST.md](LIVE_PHOTO_MOBILE_CHECKLIST.md).
 
 ## Ограничения
 

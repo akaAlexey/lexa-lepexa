@@ -1,0 +1,75 @@
+name: Android APK
+
+# Отладочный APK «Тропы памяти» через Capacitor. Собирается в облаке GitHub: на машине команды нет
+# JDK 17+ и Android SDK (docs/audit/apk-feasibility.md). Сайт и его деплой этот workflow не трогает.
+on:
+  push:
+    branches: [mobile/android-apk]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # AGP 8.13 требует JDK 17+; Capacitor 8 рассчитан на JDK 21
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # Android SDK в образе ubuntu-latest уже есть ($ANDROID_HOME, лицензии приняты).
+      # Доставляем платформу 36, если её нет; android-actions/setup-android не нужен (падал на --licenses)
+      - name: Android SDK — платформа 36 и build-tools
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls "$ANDROID_HOME/platforms" "$ANDROID_HOME/build-tools" || true
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" --install "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Web build for the app (demo data, no service worker)
+        run: npm run build:android
+
+      - name: Copy web build into the Android project
+        run: npx cap sync android
+
+      - name: Build debug APK
+        working-directory: frontend/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Check APK
+        run: |
+          APK=android/app/build/outputs/apk/debug/app-debug.apk
+          test -f "$APK"
+          ls -la "$APK"
+          unzip -l "$APK" | grep -q "assets/public/index.html"
+          unzip -l "$APK" | grep -q "assets/public/live/soldier.mind"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tropa-pamyati-debug-apk
+          path: frontend/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14

@@ -33,7 +33,9 @@ describe('«Оживить своё фото»', () => {
     await userEvent.click(screen.getByTestId('live-new-consent'))
     await userEvent.click(screen.getByTestId('live-new-submit'))
 
-    expect(await screen.findByTestId('live-new-sent')).toHaveTextContent('следующий этап')
+    const sent = await screen.findByTestId('live-new-sent')
+    expect(sent).toHaveTextContent('в демо не создаётся')
+    expect(sent).toHaveTextContent('подготовила заранее')
     expect(screen.getByTestId('live-new-speech')).toHaveTextContent(
       'Я сделал это, чтобы ты жил и видел голубое небо. Помни меня.',
     )
