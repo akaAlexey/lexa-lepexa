@@ -38,7 +38,7 @@ jobs:
       - name: API доступен и совпадает с контрактом
         env:
           API_URL: https://a49782-3772.q.d-f.pw/api/v1
-          SITE_URL: ${{ vars.SITE_URL || 'https://marshrutypobedy.ru' }}
+          SITE_URL: http://marshrutypobedy.ru
         run: |
           echo "API: $API_URL"
           # Бэкенд мог перезапускаться с этим же push (Deploy-F из main) — ждём до 10 минут
@@ -63,7 +63,7 @@ jobs:
       - name: Build
         run: npm run build -- --base=${{ vars.SITE_BASE || '/' }}
         env:
-          VITE_SITE_URL: ${{ vars.SITE_URL || 'https://marshrutypobedy.ru' }}
+          VITE_SITE_URL: http://marshrutypobedy.ru
           # Всегда живой бэкенд (проверен шагом выше). Демо-режим (mock) — только для разработки и e2e.
           VITE_API_MODE: live
           VITE_API_URL: https://a49782-3772.q.d-f.pw/api/v1
