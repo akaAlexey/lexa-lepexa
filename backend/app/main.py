@@ -45,6 +45,11 @@ async def health():
     return {"ok": True}
 
 
+@app.get("/", include_in_schema=False)
+async def root_health():
+    return {"ok": True}
+
+
 api = APIRouter(prefix="/api/v1")
 for module in (auth, family, me, jury, trail, search_hq, payments, trips, stories, sites, reference):
     api.include_router(module.router)
