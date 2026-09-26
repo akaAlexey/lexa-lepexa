@@ -66,7 +66,8 @@ test('«Оживить своё фото»: снимок, согласие → �
   await page
     .getByTestId('live-new-file')
     .setInputFiles({ name: 'ded.png', mimeType: 'image/png', buffer: png })
-  await expect(page.getByTestId('live-new-preview')).toBeVisible()
+  // Снимок уменьшается через canvas — под нагрузкой полного прогона это дольше 5 с
+  await expect(page.getByTestId('live-new-preview')).toBeVisible({ timeout: 15_000 })
   await page.getByTestId('live-new-consent').check()
   await page.getByTestId('live-new-submit').click()
   // Этапы генерации идут около 9 с, затем — ролик

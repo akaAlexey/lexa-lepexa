@@ -23,7 +23,10 @@ test('старт: главная — «Мероприятия»; роль — н
   await expect(page.getByTestId('role-family')).toHaveAttribute('aria-pressed', 'true')
 
   await page.goto('/trail')
-  await expect(page.getByTestId('trail-map')).toHaveAttribute('data-ready', 'true')
+  // Карта (MapLibre, WebGL) под нагрузкой полного прогона готовится дольше 5 с
+  await expect(page.getByTestId('trail-map')).toHaveAttribute('data-ready', 'true', {
+    timeout: 20_000,
+  })
   await expect(page.getByTestId('marker-rubezh')).toBeVisible()
   await expectNoA11yViolations(page)
   await snap(page, testInfo, '02-trail')
@@ -54,7 +57,9 @@ test('прямые ссылки открывают экраны, разделы 
   await expect(page.getByTestId('tab-events')).toHaveAttribute('aria-current', 'page')
 
   await page.getByTestId('tab-map').click()
-  await expect(page.getByTestId('hub-map')).toHaveAttribute('data-ready', 'true')
+  await expect(page.getByTestId('hub-map')).toHaveAttribute('data-ready', 'true', {
+    timeout: 20_000,
+  })
   await snap(page, testInfo, '05-map')
 
   await page.getByTestId('tab-stories').click()
