@@ -1,6 +1,7 @@
-import { screen } from '@testing-library/react'
+import { act, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import { RECHECK_MS } from '../functions/core/useConnection.ts'
 import { renderApp } from '../test/renderApp.tsx'
 
 describe('шапка и меню', () => {
@@ -63,10 +64,33 @@ describe('шапка и меню', () => {
     expect(screen.queryByTestId('nav-account-role')).not.toBeInTheDocument()
   })
 
-  it('приложение без связи с сервером — плашка «Сервер недоступен» и «Повторить»', async () => {
-    renderApp('/events', { api: { offline: true } })
-    expect(await screen.findByTestId('offline-banner')).toHaveTextContent('Сервер недоступен')
+  it('приложение без связи с сервером — причина, «Повторить» и проверка в браузере', async () => {
+    const offline = {
+      reason: 'network' as const,
+      healthUrl: 'https://api.example.ru/api/v1/health',
+      probe: async () => false,
+    }
+    renderApp('/events', { api: { offline } })
+    const banner = await screen.findByTestId('offline-banner')
+    expect(banner).toHaveTextContent('Сервер недоступен')
+    expect(banner).toHaveTextContent('нет соединения с сервером')
     expect(screen.getByTestId('offline-retry')).toHaveTextContent('Повторить')
+    expect(screen.getByTestId('offline-check')).toHaveAttribute('href', offline.healthUrl)
+  })
+
+  it('сервер вернулся, пока пользователь вводит текст, — «Подключиться» вместо перезапуска', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const probe = vi.fn<() => Promise<boolean>>(async () => true)
+    renderApp('/events', {
+      api: { offline: { reason: 'timeout', healthUrl: 'https://x/health', probe } },
+    })
+    expect(await screen.findByTestId('offline-banner')).toHaveTextContent('не ответил за 15 секунд')
+    screen.getByPlaceholderText(/Поиск/).focus()
+    await act(() => vi.advanceTimersByTimeAsync(RECHECK_MS + 100))
+    expect(probe).toHaveBeenCalled()
+    expect(await screen.findByTestId('offline-back')).toHaveTextContent('Сервер снова на связи')
+    expect(screen.getByTestId('offline-reconnect')).toHaveTextContent('Подключиться')
+    vi.useRealTimers()
   })
 
   it('со связью плашки нет', async () => {

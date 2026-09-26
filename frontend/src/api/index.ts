@@ -1,36 +1,59 @@
 import type { Env } from '../config/env.ts'
-import type { ApiClient } from './client.ts'
+import type { ApiClient, OfflineReason } from './client.ts'
 import { demoUserKey } from './live/demoUser.ts'
 import { createLiveApi } from './live/liveApi.ts'
 import { createMockApi, type MockStorage } from './mock/mockApi.ts'
 
 /** Сколько ждать ответа сервера при запуске приложения, прежде чем перейти на встроенные данные. */
-export const HEALTH_TIMEOUT_MS = 5000
+export const HEALTH_TIMEOUT_MS = 15_000
+
+type Probe = { ok: true } | { ok: false; reason: OfflineReason; status?: number }
+
+/** Один запрос /health: сервер жив и отвечает {"ok": true}. */
+export async function probeServer(
+  healthUrl: string,
+  fetchImpl: typeof fetch,
+  timeoutMs = HEALTH_TIMEOUT_MS,
+): Promise<Probe> {
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs)
+  try {
+    const res = await fetchImpl(healthUrl, { signal: ctrl.signal, cache: 'no-store' })
+    if (!res.ok) return { ok: false, reason: 'status', status: res.status }
+    const body = (await res.json()) as { ok?: unknown }
+    return body.ok === true ? { ok: true } : { ok: false, reason: 'status', status: res.status }
+  } catch {
+    // AbortError — не успел; TypeError — нет соединения (сеть, блокировка, сертификат, CORS)
+    return { ok: false, reason: ctrl.signal.aborted ? 'timeout' : 'network' }
+  } finally {
+    clearTimeout(timer)
+  }
+}
 
 /**
  * API для запуска. Живой режим с резервом (приложение): сервер ответил на /health — работаем с ним
- * (общая база), не ответил за 5 с — встроенные данные на устройстве и плашка «Сервер недоступен».
- * При следующем запуске сервер проверяется снова.
+ * (общая база). Не ответил за 15 с (или сразу ошибка сети, и повтор тоже) — встроенные данные на
+ * устройстве и плашка «Сервер недоступен» с причиной; приложение само перепроверяет сервер в фоне.
  */
 export async function chooseApi(env: Env, fetchImpl: typeof fetch = (...a) => fetch(...a)) {
   if (env.VITE_API_MODE !== 'live' || !env.VITE_API_URL || env.VITE_API_FALLBACK !== 'device')
     return createApi(env)
-  const ctrl = new AbortController()
-  const timer = setTimeout(() => ctrl.abort(), HEALTH_TIMEOUT_MS)
-  try {
-    const res = await fetchImpl(`${env.VITE_API_URL.replace(/\/$/, '')}/health`, {
-      signal: ctrl.signal,
-    })
-    const body = (await res.json()) as { ok?: unknown }
-    if (res.ok && body.ok === true) return createApi(env)
-  } catch {
-    // нет связи, таймаут, не тот ответ — ниже резерв
-  } finally {
-    clearTimeout(timer)
+  const healthUrl = `${env.VITE_API_URL.replace(/\/$/, '')}/health`
+  let probe = await probeServer(healthUrl, fetchImpl)
+  // Мгновенная ошибка сети бывает при переключении Wi-Fi ↔ мобильная сеть — одна повторная попытка
+  if (!probe.ok && probe.reason === 'network') {
+    await new Promise((r) => setTimeout(r, 1500))
+    probe = await probeServer(healthUrl, fetchImpl)
   }
+  if (probe.ok) return createApi(env)
   const offline: ApiClient = {
     ...createMockApi({ latencyMs: 0, storage: browserStorage() }),
-    offline: true,
+    offline: {
+      reason: probe.reason,
+      status: probe.status,
+      healthUrl,
+      probe: async () => (await probeServer(healthUrl, fetchImpl, 10_000)).ok,
+    },
   }
   return offline
 }
@@ -74,5 +97,5 @@ function browserStorage(): MockStorage | null {
   }
 }
 
-export type { ApiClient } from './client.ts'
+export type { ApiClient, OfflineInfo, OfflineReason } from './client.ts'
 export { ApiError, ContractError } from './client.ts'

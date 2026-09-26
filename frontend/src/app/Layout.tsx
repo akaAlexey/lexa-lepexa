@@ -1,7 +1,7 @@
 import { Link, Outlet, ScrollRestoration, useLocation } from 'react-router'
 import { region } from '../config/region.ts'
 import { useAccount } from '../functions/account/useAccount.ts'
-import { useServerConnected } from '../functions/core/useConnection.ts'
+import { useServerStatus, type ServerStatus } from '../functions/core/useConnection.ts'
 import { useRole } from './RoleContext.tsx'
 import { otherSection, paths } from '../functions/core/paths.ts'
 import { Icon } from '../ui/Icon.tsx'
@@ -20,7 +20,7 @@ export function Layout() {
   const { pathname } = useLocation()
   const active = tabOf(pathname)
   const { role } = useRole()
-  const connected = useServerConnected()
+  const server = useServerStatus()
   const who = account ? account.name?.trim() || account.login : 'Войти'
   const fullBleed = pathname === paths.map()
   return (
@@ -81,21 +81,7 @@ export function Layout() {
             </Link>
           </header>
         )}
-        {!connected && (
-          <div className={s.offline} role="status" data-testid="offline-banner">
-            <span>
-              Сервер недоступен — приложение работает на встроенных данных. Когда сервер ответит,
-              данные снова станут общими с сайтом.
-            </span>
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              data-testid="offline-retry"
-            >
-              Повторить
-            </button>
-          </div>
-        )}
+        {!server.connected && <OfflineBanner server={server} />}
         <main id="main" className={s.main} tabIndex={-1}>
           <Outlet />
         </main>
@@ -115,6 +101,47 @@ export function Layout() {
       <Toaster />
       {/* Новый экран открывается сверху, «Назад» возвращает прежнюю прокрутку */}
       <ScrollRestoration />
+    </div>
+  )
+}
+
+const REASON: Record<Exclude<ServerStatus, { connected: true }>['reason'], string> = {
+  timeout: 'сервер не ответил за 15 секунд',
+  network: 'нет соединения с сервером: сеть, ограничение у оператора или сертификат',
+  status: 'сервер ответил ошибкой',
+}
+
+/** Приложение без сервера: причина, «Повторить», проверка адреса в браузере; сервер вернулся — «Подключиться». */
+function OfflineBanner({ server }: { server: Exclude<ServerStatus, { connected: true }> }) {
+  if (server.back)
+    return (
+      <div className={s.offline} role="status" data-testid="offline-back">
+        <span>Сервер снова на связи — подключитесь, чтобы данные стали общими с сайтом.</span>
+        <button type="button" onClick={server.reconnect} data-testid="offline-reconnect">
+          Подключиться
+        </button>
+      </div>
+    )
+  return (
+    <div className={s.offline} role="status" data-testid="offline-banner">
+      <span>
+        Сервер недоступен ({REASON[server.reason]}
+        {server.status ? ` ${server.status}` : ''}) — приложение работает на встроенных данных и
+        само переключится, когда сервер ответит.
+      </span>
+      <span className={s.offlineActions}>
+        <button type="button" onClick={server.reconnect} data-testid="offline-retry">
+          Повторить
+        </button>
+        <a
+          href={server.healthUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="offline-check"
+        >
+          Проверить в браузере
+        </a>
+      </span>
     </div>
   )
 }

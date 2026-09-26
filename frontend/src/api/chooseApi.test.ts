@@ -21,12 +21,29 @@ describe('приложение: сервер или встроенные дан�
     expect(api.auth).toBeDefined()
   })
 
-  it('нет связи или не тот ответ — встроенные данные и признак offline', async () => {
+  it('нет связи или ошибка сервера — встроенные данные, причина и повторная проверка', async () => {
     const down = (async () => Promise.reject(new TypeError('network'))) as unknown as typeof fetch
-    expect((await chooseApi(app, down)).offline).toBe(true)
-    expect((await chooseApi(app, answer(404, { detail: 'нет' }))).offline).toBe(true)
     const offline = await chooseApi(app, down)
+    expect(offline.offline).toMatchObject({
+      reason: 'network',
+      healthUrl: 'https://api.example.ru/api/v1/health',
+    })
+    expect(await offline.offline!.probe()).toBe(false)
     expect((await offline.listFundraisers()).length).toBeGreaterThan(0)
+    const broken = await chooseApi(app, answer(502, { detail: 'нет' }))
+    expect(broken.offline).toMatchObject({ reason: 'status', status: 502 })
+  })
+
+  it('мгновенная ошибка сети — одна повторная попытка, сервер ответил — живой API', async () => {
+    let calls = 0
+    const flaky = (async () => {
+      calls += 1
+      if (calls === 1) throw new TypeError('network')
+      return new Response(JSON.stringify({ ok: true }), { status: 200 })
+    }) as unknown as typeof fetch
+    const api = await chooseApi(app, flaky)
+    expect(calls).toBe(2)
+    expect(api.offline).toBeUndefined()
   })
 
   it('сайт (без резерва) сервер при запуске не проверяет', async () => {

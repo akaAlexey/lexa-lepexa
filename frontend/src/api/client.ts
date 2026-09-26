@@ -48,7 +48,20 @@ export interface ApiClient extends EndpointMethods {
   /** Только mock: вернуть данные к исходным фикстурам (сброс демо). */
   reset?(): void
   /** Сервер не ответил при запуске приложения — работаем на встроенных данных (VITE_API_FALLBACK). */
-  offline?: boolean
+  offline?: OfflineInfo
+}
+
+/** Почему нет связи с сервером: не ответил вовремя, нет соединения (сеть, оператор, сертификат), ошибка. */
+export type OfflineReason = 'timeout' | 'network' | 'status'
+
+export interface OfflineInfo {
+  reason: OfflineReason
+  /** Код ответа при reason = 'status'. */
+  status?: number
+  /** Адрес проверки сервера — открыть в браузере для диагностики. */
+  healthUrl: string
+  /** Проверить сервер ещё раз: true — отвечает. */
+  probe(): Promise<boolean>
 }
 
 export class ApiError extends Error {

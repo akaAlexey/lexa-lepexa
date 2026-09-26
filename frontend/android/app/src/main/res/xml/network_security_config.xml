@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Сервер (Deploy-F) — сертификат Let's Encrypt новой цепочки: YR1/YR2 → «Root YR» (2025).
+  На многих телефонах (старый Android, давно не было системных обновлений) этого корня нет —
+  связи с сервером не было. Доверяем системным сертификатам и дополнительно корням ISRG
+  (X1, X2, YR, YE) и промежуточным YR1/YR2 — только их, больше ничего не добавляем.
+  Файлы — официальные, https://letsencrypt.org/certificates/
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="@raw/isrg_root_x1" />
+            <certificates src="@raw/isrg_root_x2" />
+            <certificates src="@raw/isrg_root_yr" />
+            <certificates src="@raw/isrg_root_ye" />
+            <certificates src="@raw/le_int_yr1" />
+            <certificates src="@raw/le_int_yr2" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
