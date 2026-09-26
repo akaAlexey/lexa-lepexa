@@ -4,6 +4,37 @@ import { demoUserKey } from './live/demoUser.ts'
 import { createLiveApi } from './live/liveApi.ts'
 import { createMockApi, type MockStorage } from './mock/mockApi.ts'
 
+/** Сколько ждать ответа сервера при запуске приложения, прежде чем перейти на встроенные данные. */
+export const HEALTH_TIMEOUT_MS = 5000
+
+/**
+ * API для запуска. Живой режим с резервом (приложение): сервер ответил на /health — работаем с ним
+ * (общая база), не ответил за 5 с — встроенные данные на устройстве и плашка «Сервер недоступен».
+ * При следующем запуске сервер проверяется снова.
+ */
+export async function chooseApi(env: Env, fetchImpl: typeof fetch = (...a) => fetch(...a)) {
+  if (env.VITE_API_MODE !== 'live' || !env.VITE_API_URL || env.VITE_API_FALLBACK !== 'device')
+    return createApi(env)
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), HEALTH_TIMEOUT_MS)
+  try {
+    const res = await fetchImpl(`${env.VITE_API_URL.replace(/\/$/, '')}/health`, {
+      signal: ctrl.signal,
+    })
+    const body = (await res.json()) as { ok?: unknown }
+    if (res.ok && body.ok === true) return createApi(env)
+  } catch {
+    // нет связи, таймаут, не тот ответ — ниже резерв
+  } finally {
+    clearTimeout(timer)
+  }
+  const offline: ApiClient = {
+    ...createMockApi({ latencyMs: 0, storage: browserStorage() }),
+    offline: true,
+  }
+  return offline
+}
+
 export function createApi(env: Env): ApiClient {
   if (env.VITE_API_MODE === 'live' && env.VITE_API_URL) {
     return createLiveApi({ baseUrl: env.VITE_API_URL, userKey: demoUserKey() })

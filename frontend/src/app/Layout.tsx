@@ -1,6 +1,8 @@
 import { Link, Outlet, ScrollRestoration, useLocation } from 'react-router'
 import { region } from '../config/region.ts'
 import { useAccount } from '../functions/account/useAccount.ts'
+import { useServerConnected } from '../functions/core/useConnection.ts'
+import { useRole } from './RoleContext.tsx'
 import { otherSection, paths } from '../functions/core/paths.ts'
 import { Icon } from '../ui/Icon.tsx'
 import { Logo } from '../ui/Logo.tsx'
@@ -17,6 +19,9 @@ export function Layout() {
   const { account } = useAccount()
   const { pathname } = useLocation()
   const active = tabOf(pathname)
+  const { role } = useRole()
+  const connected = useServerConnected()
+  const who = account ? account.name?.trim() || account.login : 'Войти'
   const fullBleed = pathname === paths.map()
   return (
     <div className={s.shell} data-full-bleed={fullBleed || undefined}>
@@ -54,12 +59,42 @@ export function Layout() {
             <Link to={paths.events()} className={s.mastTitle} data-testid="mast-home">
               {region.appTitle}
             </Link>
-            {/* В шапке: «Войти» для гостя, имя пользователя после входа. */}
-            <Link to={otherSection('account')} className={s.account} data-testid="nav-role">
+            {/* В шапке: «Войти» для гостя, имя пользователя после входа, под ним — роль.
+                Длинное ФИО и роль обрезаются многоточием, а не наезжают на название (полностью — в подсказке). */}
+            <Link
+              to={otherSection('account')}
+              className={s.account}
+              title={[who, role?.label].filter(Boolean).join(' · ')}
+              data-testid="nav-role"
+            >
               <Icon name="user" size={1.1} />
-              <span>{account ? account.name?.trim() || account.login : 'Войти'}</span>
+              <span className={s.accountText}>
+                <span className={s.accountName} data-testid="nav-account-name">
+                  {who}
+                </span>
+                {role && (
+                  <span className={s.accountRole} data-testid="nav-account-role">
+                    {role.label}
+                  </span>
+                )}
+              </span>
             </Link>
           </header>
+        )}
+        {!connected && (
+          <div className={s.offline} role="status" data-testid="offline-banner">
+            <span>
+              Сервер недоступен — приложение работает на встроенных данных. Когда сервер ответит,
+              данные снова станут общими с сайтом.
+            </span>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              data-testid="offline-retry"
+            >
+              Повторить
+            </button>
+          </div>
         )}
         <main id="main" className={s.main} tabIndex={-1}>
           <Outlet />

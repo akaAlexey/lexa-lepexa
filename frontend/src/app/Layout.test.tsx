@@ -40,24 +40,38 @@ describe('шапка и меню', () => {
     expect(screen.getByTestId('tab-events')).not.toHaveAttribute('aria-current')
   })
 
-  it('в шапке гость видит «Войти», а вошедший пользователь — своё имя без роли', async () => {
+  it('в шапке: гость — «Войти», вошедший — имя; под ним роль отдельной строкой, без наслаивания', async () => {
     const guest = renderApp('/events', { role: 'volunteer' })
-    expect(await screen.findByTestId('nav-role')).toHaveTextContent('Войти')
-    expect(screen.getByTestId('nav-role')).not.toHaveTextContent('Волонтёр')
+    expect(await screen.findByTestId('nav-account-name')).toHaveTextContent('Войти')
+    expect(screen.getByTestId('nav-account-role')).toHaveTextContent('Волонтёр')
     guest.unmount()
 
+    const name = 'Анастасия Константиновна Верховская'
     renderApp('/events', {
       role: 'volunteer',
-      stored: {
-        account: {
-          login: 'anna@example.com',
-          name: 'Анна Иванова',
-          since: '2026-09-25T09:00:00Z',
-        },
-      },
+      stored: { account: { login: 'anna@example.com', name, since: '2026-09-25T09:00:00Z' } },
     })
-    expect(await screen.findByTestId('nav-role')).toHaveTextContent('Анна Иванова')
+    expect(await screen.findByTestId('nav-account-name')).toHaveTextContent(name)
+    expect(screen.getByTestId('nav-account-role')).toHaveTextContent('Волонтёр')
+    expect(screen.getByTestId('nav-role')).toHaveAttribute('title', `${name} · Волонтёр`)
     expect(screen.getByTestId('nav-role')).not.toHaveTextContent('Профиль')
-    expect(screen.getByTestId('nav-role')).not.toHaveTextContent('Волонтёр')
+  })
+
+  it('без выбранной роли — только имя', async () => {
+    renderApp('/events')
+    expect(await screen.findByTestId('nav-account-name')).toHaveTextContent('Войти')
+    expect(screen.queryByTestId('nav-account-role')).not.toBeInTheDocument()
+  })
+
+  it('приложение без связи с сервером — плашка «Сервер недоступен» и «Повторить»', async () => {
+    renderApp('/events', { api: { offline: true } })
+    expect(await screen.findByTestId('offline-banner')).toHaveTextContent('Сервер недоступен')
+    expect(screen.getByTestId('offline-retry')).toHaveTextContent('Повторить')
+  })
+
+  it('со связью плашки нет', async () => {
+    renderApp('/events')
+    await screen.findByTestId('nav-role')
+    expect(screen.queryByTestId('offline-banner')).not.toBeInTheDocument()
   })
 })

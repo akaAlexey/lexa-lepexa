@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter } from 'react-router'
-import { createApi } from './api/index.ts'
+import { chooseApi } from './api/index.ts'
 import { App } from './app/App.tsx'
 import { appRoutes } from './app/routes.tsx'
 import { createServices } from './app/services.tsx'
@@ -22,12 +22,16 @@ if (import.meta.env.BASE_URL === '/' && window.location.pathname.startsWith(`${L
 
 registerOffline()
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App
-      services={createServices(createApi(env), createWebPlatform())}
-      // На GitHub Pages приложение живёт в /lexa-lepexa/ — базовый путь берём из сборки (--base)
-      router={createBrowserRouter(appRoutes, { basename: import.meta.env.BASE_URL })}
-    />
-  </StrictMode>,
+// Приложение (APK) сначала проверяет сервер; сайт выбирает API сразу (chooseApi не ждёт)
+const root = createRoot(document.getElementById('root')!)
+void chooseApi(env).then((api) =>
+  root.render(
+    <StrictMode>
+      <App
+        services={createServices(api, createWebPlatform())}
+        // На GitHub Pages приложение живёт в /lexa-lepexa/ — базовый путь берём из сборки (--base)
+        router={createBrowserRouter(appRoutes, { basename: import.meta.env.BASE_URL })}
+      />
+    </StrictMode>,
+  ),
 )

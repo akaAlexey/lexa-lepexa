@@ -14,6 +14,9 @@ const EnvSchema = z
       z.union([z.url(), z.string().regex(/^\/[^/]/)]).optional(),
     ),
     VITE_TILES: z.enum(['openfreemap', 'none']).default('openfreemap'),
+    // Приложение (APK): сервер не ответил при запуске — работать на встроенных данных (device),
+    // а не показывать ошибки загрузки. Сайт — только сервер (none).
+    VITE_API_FALLBACK: z.enum(['none', 'device']).default('none'),
     VITE_MOCK_LATENCY_MS: z.coerce.number().int().nonnegative().default(300),
     // Геопозиция по умолчанию: device — настоящий GPS, demo — точка из конфига региона (e2e, показ)
     VITE_GEO_DEFAULT: z.enum(['device', 'demo']).default('device'),

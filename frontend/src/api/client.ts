@@ -47,6 +47,8 @@ export interface ApiClient extends EndpointMethods {
   onNotification(listener: (n: AppNotification) => void): () => void
   /** Только mock: вернуть данные к исходным фикстурам (сброс демо). */
   reset?(): void
+  /** Сервер не ответил при запуске приложения — работаем на встроенных данных (VITE_API_FALLBACK). */
+  offline?: boolean
 }
 
 export class ApiError extends Error {

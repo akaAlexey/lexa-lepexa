@@ -313,9 +313,8 @@
 
 /* «← К мероприятиям»: тёмная кнопка над газетой, липнет к верху при прокрутке */
 .back {
-  position: sticky;
-  top: var(--space-2);
-  z-index: 3;
+  /* Статично вверху страницы: не ездит поверх текста при прокрутке */
+  position: relative;
   align-self: flex-start;
   display: inline-flex;
   align-items: center;
@@ -327,14 +326,7 @@
   color: var(--color-surface);
   font-weight: 700;
   text-decoration: none;
-  /* Кольцо «бумаги» вокруг: прилипшая кнопка не режет строки текста под собой */
-  /* Фолбэк для старых WebView без color-mix (Android < 12, iOS < 16.2) */
-  box-shadow:
-    0 0 0 0.5rem rgb(242 232 213 / 0.94),
-    var(--shadow-float);
-  box-shadow:
-    0 0 0 0.5rem color-mix(in srgb, var(--color-paper) 94%, transparent),
-    var(--shadow-float);
+  box-shadow: var(--shadow-float);
 }
 
 .back:hover {

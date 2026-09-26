@@ -63,6 +63,7 @@
 }
 
 .mastTitle {
+  flex-shrink: 0;
   display: inline-flex;
   flex-wrap: nowrap;
   min-width: 0;
@@ -75,12 +76,8 @@
   text-decoration: none;
 }
 
-/* Телефон: шапка всегда в одну строку — роль видна в «Другом» */
+/* Телефон: поля шапки уже */
 @media (max-width: 30rem) {
-  .accountRole {
-    display: none;
-  }
-
   .masthead {
     padding: 0 var(--space-3);
   }
@@ -90,20 +87,42 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  /* Сжимается первым: название сайта слева не трогаем */
+  min-width: 0;
+  max-width: 62%;
   min-height: var(--touch-min);
-  padding: 0 var(--space-2);
+  padding: 0 0 0 var(--space-2);
   color: var(--color-olive);
   font-weight: 700;
   text-decoration: none;
+}
+
+.account svg {
+  flex-shrink: 0;
+}
+
+/* ФИО и роль — две строки справа, каждая обрезается многоточием */
+.accountText {
+  display: grid;
+  min-width: 0;
+  line-height: 1.2;
+  text-align: right;
+}
+
+.accountName,
+.accountRole {
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.account:hover span:first-of-type {
+.account:hover .accountName {
   text-decoration: underline;
 }
 
 .accountRole {
   color: var(--color-ink-muted);
+  font-size: 0.7rem;
   font-weight: 400;
 }
 
@@ -335,4 +354,30 @@
     inset: auto var(--space-6) var(--space-6) auto;
     justify-items: end;
   }
+}
+
+/* Приложение без связи с сервером: плашка под шапкой, «Повторить» перезапускает проверку */
+.offline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: var(--space-2) var(--space-4);
+  background: #fff4d6;
+  border-bottom: 1px solid var(--color-line-strong);
+  font-size: 0.9rem;
+}
+
+.offline button {
+  min-height: var(--touch-min);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-ink);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
 }
