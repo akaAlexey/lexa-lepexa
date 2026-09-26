@@ -62,7 +62,17 @@ class Settings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> list[str]:
-        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+        configured = [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+        official = [
+            "https://team-shpilit.github.io",
+            "https://marshrutypobedy.ru",
+            "https://www.marshrutypobedy.ru",
+            "http://marshrutypobedy.ru",
+            "http://www.marshrutypobedy.ru",
+            "https://localhost",
+            "capacitor://localhost",
+        ]
+        return list(dict.fromkeys([*configured, *official]))
 
 
 settings = Settings()
