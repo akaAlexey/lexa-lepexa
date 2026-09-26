@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { formatRub } from '../domain/format.ts'
 import { tokensLabel, WALLET_TOP_UP } from '../domain/tokens.ts'
 import { paths } from '../functions/core/paths.ts'
@@ -116,9 +116,9 @@ export function CheckoutScreen() {
             Пополнить на {tokensLabel(WALLET_TOP_UP)}
           </Button>
         )}
-        <BigButton to={paths.events('fund')} testID="checkout-cancel">
-          Отменить
-        </BigButton>
+        <Link to={paths.events('fund')} className={s.cancel} data-testid="checkout-cancel">
+          Отменить и вернуться к сборам
+        </Link>
       </div>
     </Screen>
   )

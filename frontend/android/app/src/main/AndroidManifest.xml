@@ -41,4 +41,8 @@
     <!-- «Живое фото»: камера для AR. Разрешение спрашивается у пользователя при первом включении камеры -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <!-- «Где я?» на карте и расстояние до точек тропы. Спрашивается при первом открытии карты -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 </manifest>

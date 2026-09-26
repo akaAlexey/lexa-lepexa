@@ -31,7 +31,7 @@ function sectionsFor(signedIn: boolean): Section[] {
     {
       id: 'account',
       title: signedIn ? 'Профиль' : 'Вход и регистрация',
-      hint: signedIn ? 'Ваш профиль на этом устройстве' : 'По телефону или почте',
+      hint: signedIn ? 'Имя, роль и данные аккаунта' : 'По телефону или почте',
       icon: 'user',
       requiresAccount: false,
     },

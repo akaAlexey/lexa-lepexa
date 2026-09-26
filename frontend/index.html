@@ -38,7 +38,41 @@
   </head>
   <body>
     <noscript>Для работы приложения включите JavaScript.</noscript>
-    <div id="root"></div>
+    <!-- Заставка до первого кадра приложения (в APK — пока идёт проверка сервера); React её заменяет -->
+    <div id="root">
+      <div
+        role="status"
+        style="
+          display: grid;
+          place-items: center;
+          min-height: 100dvh;
+          background: #f2e8d5;
+          color: #2b2a26;
+          font:
+            700 1.1rem/1.4 'PT Sans',
+            system-ui,
+            sans-serif;
+          text-align: center;
+          padding: 1rem;
+        "
+      >
+        <div>
+          <div
+            style="
+              font:
+                700 1.6rem/1.2 'Oswald',
+                'Arial Narrow',
+                sans-serif;
+              letter-spacing: 0.04em;
+              text-transform: uppercase;
+            "
+          >
+            Тропа памяти
+          </div>
+          <div style="margin-top: 0.5rem; font-weight: 400; color: #5d594e">Загружаем…</div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
