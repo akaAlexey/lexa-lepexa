@@ -1259,7 +1259,8 @@
           "archive",
           "literature",
           "eyewitness",
-          "demo"
+          "demo",
+          "test"
         ],
         "description": "Тип источника факта"
       },

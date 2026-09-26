@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
 SourceKind = Literal[
-    "book_of_memory", "obd_memorial", "pamyat_naroda", "osm", "archive", "literature", "eyewitness", "demo"
+    "book_of_memory", "obd_memorial", "pamyat_naroda", "osm", "archive", "literature", "eyewitness", "demo", "test"
 ]
 VolunteerRole = Literal["digger", "prober", "cook", "driver", "medic", "any"]
 SiteStatus = Literal["found_needs_check", "archive_confirmed", "remains_raised"]
