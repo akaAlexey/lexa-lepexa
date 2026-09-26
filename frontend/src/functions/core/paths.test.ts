@@ -38,6 +38,7 @@ const SAMPLE: Record<ScreenId, string> = {
   livePhoto: paths.livePhoto('soldier'),
   demo: paths.demo(),
   payment: paths.payment(),
+  checkout: paths.checkout('F03', '500'),
   about: paths.about(),
   privacy: paths.privacy(),
   terms: paths.terms(),
@@ -71,6 +72,7 @@ describe('адреса экранов', () => {
       livePhoto: '/live/soldier',
       demo: '/demo',
       payment: '/payment',
+      checkout: '/payment/checkout?fundraiser=F03&amount=500',
       about: '/about',
       privacy: '/privacy',
       terms: '/terms',
@@ -79,7 +81,8 @@ describe('адреса экранов', () => {
 
   it('каждая ссылка подходит под свой шаблон и не подходит под чужой статический', () => {
     for (const [id, url] of Object.entries(SAMPLE) as [ScreenId, string][]) {
-      expect(matchPath(patterns[id], url), `${id}: ${url}`).not.toBeNull()
+      // Параметры после «?» (касса: сбор и сумма) в шаблон пути не входят
+      expect(matchPath(patterns[id], url.split('?')[0]!), `${id}: ${url}`).not.toBeNull()
     }
     expect(matchPath(patterns.site, paths.newSite())).not.toBeNull() // поэтому new объявлен раньше :siteId
   })

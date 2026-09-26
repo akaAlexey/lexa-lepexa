@@ -1,7 +1,8 @@
-import { screen, within } from '@testing-library/react'
+import { act, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { renderApp } from '../../test/renderApp.tsx'
+import { GENERATION_MS } from './generation.ts'
 
 // В jsdom нет декодирования картинок: снимок остаётся исходным data URL
 
@@ -25,23 +26,45 @@ describe('«Оживить своё фото»', () => {
     expect(screen.queryByTestId('live-new-sent')).not.toBeInTheDocument()
   })
 
-  it('фото, согласие → принято: речь из кейса, пример ролика с пометкой ИИ, «Мои живые фото» на устройстве', async () => {
-    const { platform } = renderApp('/live/new', { role: 'family', signedIn: true })
-    await userEvent.upload(await screen.findByTestId('live-new-file'), photo())
-    expect(await screen.findByTestId('live-new-preview')).toBeInTheDocument()
-    await userEvent.type(screen.getByTestId('live-new-name'), 'Красноармеец Петров П.П.')
-    await userEvent.click(screen.getByTestId('live-new-consent'))
-    await userEvent.click(screen.getByTestId('live-new-submit'))
+  it('сверху — готовый пример ролика с пометкой ИИ', async () => {
+    renderApp('/live/new', { role: 'family', signedIn: true })
+    expect(await screen.findByTestId('live-new-ready')).toHaveAttribute('src', '/live/soldier.mp4')
+    expect(screen.getAllByText(/Реконструкция с помощью ИИ/).length).toBeGreaterThan(0)
+  })
 
-    expect(await screen.findByTestId('live-new-sent')).toHaveTextContent('следующий этап')
+  it('фото, согласие → этапы генерации → ролик с пометкой ИИ, «Мои живые фото» на устройстве', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const { platform } = renderApp('/live/new', { role: 'family', signedIn: true })
+    await user.upload(await screen.findByTestId('live-new-file'), photo())
+    expect(await screen.findByTestId('live-new-preview')).toBeInTheDocument()
+    await user.type(screen.getByTestId('live-new-name'), 'Красноармеец Петров П.П.')
+    await user.click(screen.getByTestId('live-new-consent'))
+    await user.click(screen.getByTestId('live-new-submit'))
+
+    expect(await screen.findByTestId('live-gen-step')).toHaveTextContent('Загружаем снимок')
+    await act(() => vi.advanceTimersByTimeAsync(4000))
+    expect(screen.getByTestId('live-gen-step')).toHaveTextContent('Синтезируем речь')
+    await act(() => vi.advanceTimersByTimeAsync(GENERATION_MS))
+
+    const sent = await screen.findByTestId('live-new-sent')
+    expect(sent).toHaveTextContent('сгенерированный заранее')
     expect(screen.getByTestId('live-new-speech')).toHaveTextContent(
       'Я сделал это, чтобы ты жил и видел голубое небо. Помни меня.',
     )
-    expect(await screen.findByTestId('live-new-example')).toBeInTheDocument()
+    expect(screen.getByTestId('live-new-example')).toHaveAttribute('src', '/live/reichstag.mp4')
     expect(screen.getByText(/Реконструкция с помощью ИИ/)).toBeInTheDocument()
     expect(screen.getByTestId('live-new-share')).toBeInTheDocument()
     const saved = platform.storage.get<{ name: string }[]>('live:mine')
     expect(saved?.[0]?.name).toBe('Красноармеец Петров П.П.')
+    vi.useRealTimers()
+  })
+
+  it('тестовый снимок подставляет фото и подпись второго примера', async () => {
+    renderApp('/live/new', { role: 'family', signedIn: true })
+    await userEvent.click(await screen.findByTestId('live-new-test-photo'))
+    expect(screen.getByTestId('live-new-preview')).toHaveAttribute('src', '/live/reichstag.jpg')
+    expect(screen.getByTestId('live-new-name')).not.toHaveValue('')
   })
 
   it('рассказ о подвиге вместо фразы: короткий не принимается', async () => {

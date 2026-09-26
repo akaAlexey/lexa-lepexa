@@ -20,8 +20,8 @@ import { POINT_ICON, useQuestProgress } from '../../functions/quest/index.ts'
 import { MapView, type MapMarker } from '../../map/MapView.tsx'
 import { tokens } from '../../theme/tokens.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
-import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Icon, type IconName } from '../../ui/Icon.tsx'
+import { MEMORIAL_META } from '../../ui/memorialKind.ts'
 import { SITE_STATUS_META } from '../../ui/siteStatus.ts'
 import { StatusBadge } from '../../ui/StatusBadge.tsx'
 import ui from '../../ui/ui.module.css'
@@ -40,7 +40,15 @@ const KIND_ICON: Record<Place['kind'], IconName> = {
   site: 'pin',
   grave: 'grave',
   battle: 'star',
+  memorial: 'flag',
 }
+
+/** Иконка места: у памятного места — по его виду (музей, вечный огонь, братская могила…). */
+const iconFor = (p: Place): IconName =>
+  p.kind === 'memorial' && p.memorialKind ? MEMORIAL_META[p.memorialKind].icon : KIND_ICON[p.kind]
+
+/** Маршрут до места в Яндекс Картах — от того места, где сейчас человек. */
+const directionsUrl = (p: Place) => `https://yandex.ru/maps/?rtext=~${p.lat},${p.lon}&rtt=auto`
 
 /** Адрес подробной карточки места: у каждой точки и места поиска свой экран. */
 function detailPath(p: Place): string | undefined {
@@ -92,6 +100,18 @@ function markerFor(p: Place, routes: readonly Route[] | undefined): MapMarker {
         icon: 'star',
         label: `Бой: ${p.title}, ${p.subtitle}`,
         color: tokens.color.map.marker,
+      }
+    case 'memorial':
+      return {
+        id: p.key,
+        lat: p.lat,
+        lon: p.lon,
+        icon: iconFor(p),
+        label: `${p.subtitle}: ${p.title}`,
+        color: tokens.color.map.memorial,
+        size: 'small',
+        // Фоновый слой всего региона: кадр подгоняется под маршрут и места поиска, как раньше
+        fit: false,
       }
   }
 }
@@ -194,9 +214,12 @@ export function MapHubScreen() {
         .filter((p) =>
           tab === 'history'
             ? p.kind === 'battle' && shownBattles.has(p.id)
-            : // Захоронения и бои — только выбранные: 40 обелисков закрыли бы маршрут и места поиска
+            : // Захоронения и бои — только выбранные: 40 обелисков закрыли бы маршрут и места поиска.
+              // Памятники и музеи — маленькими метками, их можно нажать.
               (p.kind !== 'battle' && p.kind !== 'grave') || p.key === selectedKey,
         )
+        // Памятники и музеи — первыми в DOM, то есть под метками маршрута и мест поиска
+        .sort((a, b) => Number(b.kind === 'memorial') - Number(a.kind === 'memorial'))
         .map((p) => markerFor(p, hub.routes)),
     [hub.places, hub.routes, tab, shownBattles, selectedKey],
   )
@@ -222,7 +245,7 @@ export function MapHubScreen() {
         Карта
       </h1>
       <MapView
-        label="Карта памяти: маршруты, места поиска, захоронения и бои"
+        label="Карта памяти: маршруты, места поиска, памятники, музеи, захоронения и бои"
         center={region.mapCenter}
         zoom={region.mapZoom}
         markers={markers}
@@ -365,11 +388,11 @@ function SearchBox({ places, onPick }: { places: Place[]; onPick: (p: Place) => 
                 }}
                 data-testid={`hub-result-${p.key}`}
               >
-                <Icon name={KIND_ICON[p.kind]} size={1.1} />
+                <Icon name={iconFor(p)} size={1.1} />
                 <span>
                   <span className={s.resultTitle}>{p.title}</span>
                   <span className={s.resultHint}>
-                    {PLACE_KIND_LABEL[p.kind]} · {p.subtitle} {p.demo && <DemoBadge />}
+                    {PLACE_KIND_LABEL[p.kind]} · {p.subtitle}
                   </span>
                 </span>
               </button>
@@ -394,7 +417,7 @@ function RouteCard({ route, main }: { route: Route; main: boolean }) {
       <h3 className={s.cardTitle}>{route.title}</h3>
       <p className={s.muted}>
         {route.summary}. {(route.lengthM / 1000).toFixed(1).replace('.', ',')} км, около{' '}
-        {route.durationMin} мин. {route.demo && <DemoBadge />}
+        {route.durationMin} мин.
       </p>
       {main ? (
         <BigButton
@@ -430,6 +453,8 @@ function Overview({
     n: sites.filter((x) => x.status === st).length,
   }))
   const list = places.filter((p) => p.kind === 'site' || p.kind === 'point')
+  const memorials = places.filter((p) => p.kind === 'memorial')
+  const museums = memorials.filter((p) => p.memorialKind === 'museum')
   return (
     <>
       {/* Главная кнопка карты зависит от роли (ADR 0010): командир отмечает находку, остальные идут по тропе */}
@@ -468,18 +493,48 @@ function Overview({
                 onClick={() => onPick(p.key)}
                 data-testid={`hub-place-${p.key}`}
               >
-                <Icon name={KIND_ICON[p.kind]} size={1.1} />
+                <Icon name={iconFor(p)} size={1.1} />
                 <span>
                   <span className={s.resultTitle}>{p.title}</span>
-                  <span className={s.resultHint}>
-                    {p.subtitle} {p.demo && <DemoBadge />}
-                  </span>
+                  <span className={s.resultHint}>{p.subtitle}</span>
                 </span>
               </button>
             </li>
           ))}
         </ul>
       </section>
+      {memorials.length > 0 && (
+        <section aria-labelledby="hub-memorials" className={s.block}>
+          <h2 id="hub-memorials" className={s.blockTitle}>
+            Памятники и музеи
+          </h2>
+          <p className={s.muted}>
+            {memorials.length - museums.length} памятников войны и {museums.length} музеев края.
+            Данные OpenStreetMap.
+          </p>
+          <details className={s.memorials} data-testid="hub-memorials">
+            <summary>Показать списком</summary>
+            <ul className={s.placeList}>
+              {memorials.map((p) => (
+                <li key={p.key}>
+                  <button
+                    type="button"
+                    className={s.placeItem}
+                    onClick={() => onPick(p.key)}
+                    data-testid={`hub-place-${p.key}`}
+                  >
+                    <Icon name={iconFor(p)} size={1.1} />
+                    <span>
+                      <span className={s.resultTitle}>{p.title}</span>
+                      <span className={s.resultHint}>{p.subtitle}</span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </details>
+        </section>
+      )}
     </>
   )
 }
@@ -507,7 +562,29 @@ function PlaceCard({
       <p className={s.muted}>{place.subtitle}</p>
       {place.status && <StatusBadge status={place.status} />}
       {battle && <p>{battle.text}</p>}
-      {place.demo && <DemoBadge />}
+      {place.kind === 'memorial' && (
+        <p className={s.cardLinks}>
+          <a
+            href={directionsUrl(place)}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="hub-card-directions"
+          >
+            Как добраться
+          </a>
+          {place.sourceUrl && (
+            <a
+              href={place.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid="hub-card-source"
+            >
+              Источник: OpenStreetMap
+            </a>
+          )}
+        </p>
+      )}
+
       {href && (
         <BigButton to={href} icon={place.kind === 'point' ? 'route' : 'pin'} testID="hub-card-open">
           {place.kind === 'site'
@@ -578,7 +655,6 @@ function History({
                       Архивный источник
                       <span className="visually-hidden">: {formatHistoricDate(b.date)}</span>
                     </a>
-                    {b.demo && <DemoBadge />}
                   </p>
                 </li>
               ))}

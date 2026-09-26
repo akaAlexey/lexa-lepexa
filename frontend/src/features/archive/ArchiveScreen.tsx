@@ -14,7 +14,6 @@ import {
   useStories,
 } from '../../functions/stories/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
-import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Icon } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { Screen } from '../../ui/Screen.tsx'
@@ -39,7 +38,7 @@ function StoryList({ label, stories }: { label: string; stories: ArchiveStory[] 
               </span>
             </span>
             <span className={s.badges}>
-              <StatePill label={state.label} tone={state.tone} /> {story.demo && <DemoBadge />}
+              <StatePill label={state.label} tone={state.tone} />
             </span>
           </li>
         )

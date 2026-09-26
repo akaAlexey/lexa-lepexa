@@ -1,13 +1,17 @@
 import type { Fundraiser } from '../../contract/schemas.ts'
 import { formatRub } from '../../domain/format.ts'
-import { DONATION_AMOUNTS, useDonate } from '../../functions/fundraising/index.ts'
-import { Button } from '../../ui/Button.tsx'
+import { paths } from '../../functions/core/paths.ts'
+import { DONATION_AMOUNTS, useDonateAmount } from '../../functions/fundraising/index.ts'
+import { BigButton } from '../../ui/BigButton.tsx'
 import { ChoiceChips } from '../../ui/ChoiceChips.tsx'
 import { Dialog } from '../../ui/Dialog.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import s from './search.module.css'
 
-/** Пожертвование через ЮKassa (тестовый магазин): оплата на странице ЮKassa, деньги не списываются. */
+/**
+ * Пожертвование: выбор суммы и переход на страницу оплаты (касса). Оплата — условными токенами:
+ * реальные деньги не списываются, сумма добавляется в сбор на сервере.
+ */
 export function DonateDialog({
   fundraiser,
   onClose,
@@ -15,13 +19,12 @@ export function DonateDialog({
   fundraiser: Fundraiser
   onClose: () => void
 }) {
-  const { amount, setAmount, status, confirm } = useDonate(fundraiser.id)
-
+  const [amount, setAmount] = useDonateAmount()
   return (
     <Dialog title={fundraiser.title} onClose={onClose} testID={`donate-dialog-${fundraiser.id}`}>
       <Notice>
-        Оплата через ЮKassa в тестовом режиме: реальные деньги не списываются. Для проверки — карта
-        5555 5555 5555 4477, любой срок и CVC.
+        Оплата условными токенами: реальные деньги не списываются, а сумма добавляется в сбор — так
+        видно, как работает пожертвование.
       </Notice>
       <ChoiceChips
         legend="Сумма"
@@ -33,34 +36,16 @@ export function DonateDialog({
         value={amount}
         onChange={setAmount}
       />
-      {status === 'done' ? (
-        <Notice tone="success" testID="donate-result">
-          Спасибо! Тестовый платёж на {formatRub(amount)} прошёл, деньги не списаны.
-        </Notice>
-      ) : status === 'redirect' ? (
-        <Notice testID="donate-redirect">Переходим на страницу оплаты ЮKassa…</Notice>
-      ) : (
-        <>
-          <Button
-            onClick={() => void confirm()}
-            disabled={status === 'sending'}
-            testID="donate-confirm"
-          >
-            {status === 'sending'
-              ? 'Создаём платёж…'
-              : `Оплатить ${formatRub(amount)} через ЮKassa`}
-          </Button>
-          <p className={s.caption} data-testid="donate-test-caption">
-            Тестовый платёж — деньги не списываются
-          </p>
-        </>
-      )}
-      {status === 'error' && (
-        <Notice tone="error" testID="donate-error">
-          Не удалось начать оплату: сервер или ЮKassa сейчас не отвечают. Попробуйте ещё раз чуть
-          позже.
-        </Notice>
-      )}
+      <BigButton
+        to={paths.checkout(fundraiser.id, String(amount))}
+        icon="check"
+        testID="donate-confirm"
+      >
+        Перейти к оплате {formatRub(amount)}
+      </BigButton>
+      <p className={s.caption} data-testid="donate-test-caption">
+        Учебная оплата — деньги не списываются
+      </p>
     </Dialog>
   )
 }

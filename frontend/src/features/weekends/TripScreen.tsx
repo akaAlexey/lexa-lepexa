@@ -13,7 +13,6 @@ import { freeSpots, spotsText, useChecklist, useTrip } from '../../functions/tri
 import { isGroupSentState } from '../../functions/groupApplications/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
-import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
@@ -126,7 +125,6 @@ function TripDetails({ trip }: { trip: Trip }) {
         <p className={s.spots} data-testid="trip-spots" aria-live="polite">
           {spotsText(trip)}
         </p>
-        {trip.demo && <DemoBadge />}
       </Card>
 
       {account ? (

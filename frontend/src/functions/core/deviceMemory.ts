@@ -1,5 +1,6 @@
 import type { LatLon, Subscription } from '../../contract/schemas.ts'
 import { parseFighters, type FamilyFighter } from '../../domain/familyArchive.ts'
+import { WALLET_START } from '../../domain/tokens.ts'
 import { emptyProgress, type QuestProgress } from '../../domain/trail.ts'
 import { DEMO_POSITION_KEY, GEO_MODE_KEY, type StorageService } from '../../platform/index.ts'
 
@@ -183,6 +184,13 @@ export const memory = {
   myGroups: memorySlot<string[]>('groups:mine', []),
   /** Истории, отправленные с этого устройства. */
   myStories: memorySlot<string[]>('archive:mine', []),
+  /**
+   * Кошелёк условных токенов для учебной оплаты сборов (1 токен = 1 ₽ условно). Реальные деньги не
+   * участвуют; баланс — в личном состоянии аккаунта (одинаков на всех устройствах).
+   */
+  wallet: memorySlot<number>('wallet.tokens', WALLET_START, (raw) =>
+    typeof raw === 'number' && Number.isFinite(raw) && raw >= 0 ? Math.floor(raw) : undefined,
+  ),
   /** Платёж ЮKassa, на оплату которого ушёл пользователь: после возврата проверяем статус. */
   pendingPayment: memorySlot<PendingPayment | undefined>('payment:pending', undefined),
   /** «Живые фото», загруженные с этого устройства и ждущие генерации. */

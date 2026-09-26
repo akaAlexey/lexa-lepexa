@@ -1,11 +1,14 @@
 import { endpoints } from '../../contract/endpoints.ts'
 import type {
   AppNotification,
+  FamilyFighter,
+  FamilyFighterInput,
   LastBattleSite,
   LatLon,
   Subscription,
 } from '../../contract/schemas.ts'
 import { isAwaitingReview } from '../../domain/archive.ts'
+import { makeFighter, makeRecord, type Errors } from '../../domain/familyArchive.ts'
 import { distanceKm, isWithinRadius } from '../../domain/geo.ts'
 import {
   NOTIFY_RADIUS_KM,
@@ -48,18 +51,19 @@ const MUTABLE = [
   'stories',
   'sites',
   'subscriptions',
+  'family',
 ] as const
 
 /** Меняется вместе с фикстурами: снимок старой демо-базы после выкладки не подхватываем. */
-export const MOCK_DB_VERSION = 1
+export const MOCK_DB_VERSION = 2
 
 type StoredSubscription = Required<Pick<Subscription, 'radiusKm'>> & LatLon
 
 function createDb() {
   return structuredClone({
     graves: jury.graves,
-    battles: jury.battles,
-    teams: jury.teams,
+    battles: [...jury.battles, ...seed.extraBattles],
+    teams: [...jury.teams, ...seed.extraTeams],
     routes: seed.routes,
     requests: seed.requests,
     fundraisers: seed.fundraisers,
@@ -69,7 +73,25 @@ function createDb() {
     livePhotos: seed.livePhotos,
     sites: seed.sites,
     subscriptions: [] as StoredSubscription[],
+    /** Семейный архив: в демо без сервера входа — один владелец на браузер. */
+    family: [] as FamilyFighter[],
   })
+}
+
+/** Тело запроса → значения формы: mock проверяет те же правила, что и сервер. */
+const fighterValues = (b: FamilyFighterInput) => ({
+  lastName: b.lastName,
+  firstName: b.firstName,
+  middleName: b.middleName,
+  birthYear: b.birthYear ? String(b.birthYear) : '',
+  relation: b.relation,
+  note: b.note,
+})
+
+/** Первая ошибка правил — как 422 сервера; повтор записи — 409. */
+function rejected(errors: Errors): never {
+  const [message = 'Проверьте данные'] = Object.values(errors).filter(Boolean)
+  throw new ApiError(message, message === 'Эта запись уже добавлена' ? 409 : 422)
 }
 
 /** Адаптер на фикстурах: in-memory «сервер» с задержками и ошибками. */
@@ -84,6 +106,7 @@ export function createMockApi(options: MockOptions = {}): ApiClient {
   } = options
   let db = createDb()
   let seq = 0
+  const myState: Record<string, unknown> = {}
 
   /** Подтянуть сохранённое: своё после перезагрузки и созданное в соседних вкладках. */
   function load() {
@@ -337,6 +360,62 @@ export function createMockApi(options: MockOptions = {}): ApiClient {
         const input = endpoints.subscribe.body.parse(body)
         db.subscriptions.push({ lat: input.lat, lon: input.lon, radiusKm: input.radiusKm })
         return { id: nextId('SUB') }
+      }),
+    // Личное состояние: в демо без сервера входа — одно на браузер (синхронизация и не включается)
+    getMyState: () => respond(() => ({ ...myState })),
+    putMyState: ({ body }) =>
+      respond(() => {
+        const input = endpoints.putMyState.body.parse(body)
+        if (input.value === null || input.value === undefined) delete myState[input.key]
+        else myState[input.key] = input.value
+        return { ok: true as const }
+      }),
+    listFamilyFighters: () => respond(() => db.family),
+    createFamilyFighter: ({ body }) =>
+      respond(() => {
+        const input = endpoints.createFamilyFighter.body.parse(body)
+        const made = makeFighter(fighterValues(input), {
+          id: nextId('FF'),
+          createdAt: now().toISOString(),
+        })
+        if (!made.ok) rejected(made.errors)
+        db.family.push(made.value)
+        return made.value
+      }),
+    updateFamilyFighter: ({ id, body }) =>
+      respond(() => {
+        const input = endpoints.updateFamilyFighter.body.parse(body)
+        const previous = find(db.family, id, 'Боец')
+        const made = makeFighter(fighterValues(input), {
+          id,
+          createdAt: previous.createdAt,
+          previous,
+        })
+        if (!made.ok) rejected(made.errors)
+        db.family = db.family.map((f) => (f.id === id ? made.value : f))
+        return made.value
+      }),
+    deleteFamilyFighter: ({ id }) =>
+      respond(() => {
+        find(db.family, id, 'Боец')
+        db.family = db.family.filter((f) => f.id !== id)
+        return { ok: true as const }
+      }),
+    addFamilyRecord: ({ id, body }) =>
+      respond(() => {
+        const input = endpoints.addFamilyRecord.body.parse(body)
+        const fighter = find(db.family, id, 'Боец')
+        const made = makeRecord(input, { id: nextId('FR'), existing: fighter.records })
+        if (!made.ok) rejected(made.errors)
+        fighter.records.push(made.value)
+        return fighter
+      }),
+    deleteFamilyRecord: ({ id, recordId }) =>
+      respond(() => {
+        const fighter = find(db.family, id, 'Боец')
+        find(fighter.records, recordId, 'Запись')
+        fighter.records = fighter.records.filter((r) => r.id !== recordId)
+        return fighter
       }),
     onNotification(listener) {
       listeners.add(listener)

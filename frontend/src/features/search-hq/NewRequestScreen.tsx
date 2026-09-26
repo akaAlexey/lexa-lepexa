@@ -15,7 +15,6 @@ import {
 } from '../../functions/helpRequests/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { ChoiceChips } from '../../ui/ChoiceChips.tsx'
-import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { TextField } from '../../ui/Field.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { BackLink } from '../../ui/BackLink.tsx'
@@ -63,7 +62,7 @@ function RequestForm({ team, last }: { team: Team; last: VolunteerRequest | unde
   return (
     <form ref={formRef} className={s.form} onSubmit={form.submit} noValidate>
       <p className={s.team} data-testid="request-team">
-        Отряд «{team.name}» {team.demo && <DemoBadge />}
+        Отряд «{team.name}»
       </p>
       <div>
         <ChoiceChips

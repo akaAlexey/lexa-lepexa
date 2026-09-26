@@ -7,7 +7,7 @@ from .. import schemas as sch
 from .. import serializers as out
 from ..db import get_session
 from ..errors import found
-from ..identity import user_key
+from ..identity import ACCOUNT_PREFIX, user_key
 from ..timeutil import gid
 
 router = APIRouter(tags=["Поисковый штаб"])
@@ -41,6 +41,13 @@ async def create_request(body: sch.NewVolunteerRequest, s: AsyncSession = Depend
 @router.post("/requests/{id}/join", summary="«Стать частью команды»")
 async def join_request(id: str, s: AsyncSession = Depends(get_session), user: str = Depends(user_key)):
     x = found(await s.get(m.VolunteerRequest, id), "Заявка")
+    # Вошедший пользователь записывается один раз, с какого бы устройства ни нажал
+    if user.startswith(ACCOUNT_PREFIX) and await s.scalar(
+        select(m.VolunteerRequestJoin.id).where(
+            m.VolunteerRequestJoin.request_id == id, m.VolunteerRequestJoin.user_key == user
+        )
+    ):
+        return out.volunteer_request(x)
     x.joined += 1
     s.add(m.VolunteerRequestJoin(id=gid("RJ"), request_id=id, user_key=user))
     await s.commit()

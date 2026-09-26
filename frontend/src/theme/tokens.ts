@@ -66,6 +66,8 @@ export const tokens = {
       marker: '#C8261C',
       selected: '#EE7F1B',
       grave: '#2B2A26',
+      /** Памятники и музеи из OpenStreetMap — тёмно-коричневые, спокойнее красных меток. */
+      memorial: '#6B3F1D',
       me: '#2F5D7C', // «Вы здесь» — синий, как принято на картах
     },
   },

@@ -50,7 +50,7 @@ export function Layout() {
       <div className={s.page}>
         {!fullBleed && (
           <header className={s.masthead}>
-            {/* Без региона и «Демо» — решение команды 25.09 (пометки демо — флаг в ui/DemoBadge) */}
+            {/* Без региона и пометок «Демо» — решение команды 25.09 */}
             <Link to={paths.events()} className={s.mastTitle} data-testid="mast-home">
               {region.appTitle}
             </Link>

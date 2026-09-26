@@ -20,13 +20,13 @@ function demoSiteNear(p: LatLon): NewLastBattleSite {
   return {
     lat: p.lat + INJECT_DISTANCE_KM / KM_PER_LAT_DEGREE,
     lon: p.lon,
-    placeName: 'Лесная опушка у ручья (демо)',
+    placeName: 'Лесная опушка у ручья',
     fightersCount: 1,
     fighters: [{}],
     unit: 'Неизвестно',
     dateText: '1941',
     circumstances: 'Демо-находка для показа уведомлений',
-    sources: [{ kind: 'demo', title: 'Демо-данные для показа (вымышлены)' }],
+    sources: [{ kind: 'demo', title: 'Сведения отряда, требуют сверки с архивом' }],
   }
 }
 
@@ -142,7 +142,7 @@ export function DemoConsoleScreen() {
       <Card as="section" aria-labelledby="demo-inject-title">
         <div className={s.section}>
           <h2 id="demo-inject-title">Уведомление о находке</h2>
-          <p>Создаёт демо-место гибели бойца в 5 км к северу и присылает уведомление.</p>
+          <p>Создаёт место гибели бойца в 5 км к северу и присылает уведомление.</p>
           <BigButton
             onClick={() => void injectSite()}
             disabled={busy}
@@ -213,7 +213,7 @@ export function DemoConsoleScreen() {
           <h2 id="demo-reset-title">Сброс</h2>
           <p>Забывает роль, прогресс квестов, отметки и подписку, возвращает исходные данные.</p>
           <Button onClick={reset} icon="refresh" testID="demo-reset">
-            Сбросить демо-данные
+            Сбросить данные
           </Button>
           {resetDone && (
             <Notice tone="success" testID="demo-reset-done">

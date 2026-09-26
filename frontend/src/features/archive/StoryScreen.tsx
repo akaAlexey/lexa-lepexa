@@ -21,12 +21,12 @@ import { BackLink } from '../../ui/BackLink.tsx'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Button } from '../../ui/Button.tsx'
 import { Card } from '../../ui/Card.tsx'
-import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { TextAreaField, TextField } from '../../ui/Field.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { StatePill } from '../../ui/StatePill.tsx'
 import s from './archive.module.css'
+import { ArchivePhotos } from './ArchivePhotos.tsx'
 import { StoryImages } from './StoryImages.tsx'
 
 /** Чек-лист и решение проверяющего — как экран «Проверка источника» на макете. */
@@ -114,7 +114,6 @@ function StoryCard({ story, sent }: { story: ArchiveStory; sent: boolean }) {
       )}
       <p className={s.badges}>
         <StatePill label={state.label} tone={state.tone} testID="story-status" />{' '}
-        {story.demo && <DemoBadge />}
       </p>
       <Card as="section" aria-labelledby="story-text">
         <h2 id="story-text" className="visually-hidden">
@@ -139,6 +138,7 @@ function StoryCard({ story, sent }: { story: ArchiveStory; sent: boolean }) {
           {story.reviewNote}
         </Notice>
       )}
+      {story.photos && story.photos.length > 0 && <ArchivePhotos photos={story.photos} />}
       <StoryImages storyId={story.id} canAdd={canAddImages} />
       {story.status === 'verified' && story.verifiedBy && !story.reviewNote && (
         <p className={s.meta} data-testid="story-verified-by">

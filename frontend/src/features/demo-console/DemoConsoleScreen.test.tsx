@@ -25,7 +25,7 @@ describe('демо-пульт: детали', () => {
     const site = sites.at(-1)!
     expect(distanceKm({ lat: 52.97, lon: 36.07 }, site)).toBeCloseTo(5, 1)
     expect(site).toMatchObject({ demo: true, fightersCount: 1, unit: 'Неизвестно' })
-    expect(site.placeName).toContain('(демо)')
+    expect(site.placeName).not.toMatch(/демо/i)
     expect(site.sources[0]?.kind).toBe('demo')
   })
 })

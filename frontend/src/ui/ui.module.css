@@ -72,15 +72,6 @@
   color: #fff;
 }
 
-.demoBadge {
-  composes: badge;
-  color: var(--color-ink-muted);
-  border: 1.5px dashed var(--color-sepia);
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  font-weight: 400;
-}
-
 /* Экран — газетная полоса: колонка до 62rem, шапка с двойной линейкой */
 .screen {
   display: flex;

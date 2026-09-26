@@ -29,3 +29,5 @@ dist-ssr
 /e2e/screenshots
 /coverage
 /dist-e2e-*
+/dist-live
+/test-results-live

@@ -151,5 +151,7 @@ export function useAccount() {
     setAccount({ ...account, id, ...profile })
     return { ok: true as const }
   }
-  return { account, signIn: submit, signUp, signOut, saveProfile }
+  /** Вход проверяет сервер: профиль и личные данные хранятся в аккаунте и доступны на всех устройствах. */
+  const server = Boolean(api.auth)
+  return { account, server, signIn: submit, signUp, signOut, saveProfile }
 }

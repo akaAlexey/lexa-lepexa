@@ -6,7 +6,6 @@ import { progressPercent } from '../../domain/fundraising.ts'
 import { paths } from '../../functions/core/paths.ts'
 import { freeSpots } from '../../functions/trips/index.ts'
 import { Button } from '../../ui/Button.tsx'
-import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Icon } from '../../ui/Icon.tsx'
 import ui from '../../ui/ui.module.css'
 import s from './events.module.css'
@@ -68,10 +67,6 @@ export function FeedCard({
   ]
     .filter(Boolean)
     .join(' · ')
-  const demo =
-    (item.kind === 'request' && item.request.demo) ||
-    (item.kind === 'trip' && item.trip.demo) ||
-    (item.kind === 'fund' && item.fundraiser.demo)
   const testID =
     item.kind === 'request' ? `request-card-${item.id}` : `feed-${item.kind}-${item.id}`
 
@@ -80,7 +75,6 @@ export function FeedCard({
       <p className={ui.kick}>{kick}</p>
       <p className={s.tagLine}>
         <span className={`${ui.tag} ${s[`tag-${item.kind}`]}`}>{EVENT_KIND_LABEL[item.kind]}</span>
-        {demo && <DemoBadge />}
       </p>
       {item.kind === 'request' && (
         <>

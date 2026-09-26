@@ -5,18 +5,24 @@ import { renderApp } from '../../test/renderApp.tsx'
 
 describe('хроника боёв', () => {
   it('события по годам с подписями, у каждого — архивный источник', async () => {
-    renderApp('/chronicle', { role: 'family' })
+    const { api } = renderApp('/chronicle', { role: 'family' })
     expect(await screen.findByRole('heading', { level: 2, name: '1941 оборона' })).toBeVisible()
     expect(screen.getByRole('heading', { level: 2, name: '1943 освобождение' })).toBeVisible()
+    const battles = await api.listBattles()
+    const of = (year: string) => battles.filter((b) => b.date.startsWith(year)).length
     const y1941 = screen.getByRole('list', { name: 'События 1941 года' })
-    expect(within(y1941).getAllByRole('listitem')).toHaveLength(4)
-    expect(within(y1941).getAllByRole('link', { name: /Архивный источник/ })).toHaveLength(4)
-    // В 1942 году событий нет — предложение рассказать историю
-    expect(screen.getByTestId('year-empty-1942')).toHaveTextContent('Расскажите, что знаете')
+    expect(within(y1941).getAllByRole('listitem')).toHaveLength(of('1941'))
+    expect(within(y1941).getAllByRole('link', { name: /Архивный источник/ })).toHaveLength(
+      of('1941'),
+    )
+    // 1942 — Болховская операция: год не пустой
+    const y1942 = screen.getByRole('list', { name: 'События 1942 года' })
+    expect(within(y1942).getAllByRole('listitem')).toHaveLength(of('1942'))
+    expect(y1942).toHaveTextContent('Болхов')
   })
 
   it('фильтр «1943» оставляет только освобождение; метки на карте — только этого года', async () => {
-    renderApp('/chronicle', { role: 'family' })
+    const { api } = renderApp('/chronicle', { role: 'family' })
     // Памятники вне хронологии — для проверки фильтра лет выключаем их слой
     await userEvent.click(await screen.findByTestId('layer-memorials'))
     await userEvent.click(screen.getByTestId('year-1943'))
@@ -24,7 +30,10 @@ describe('хроника боёв', () => {
       screen.queryByRole('heading', { level: 2, name: '1941 оборона' }),
     ).not.toBeInTheDocument()
     const map = screen.getByTestId('chronicle-map')
-    expect(within(map).getAllByRole('button')).toHaveLength(4)
+    const placed1943 = (await api.listBattles()).filter(
+      (b) => b.date.startsWith('1943') && b.place,
+    ).length
+    expect(within(map).getAllByRole('button')).toHaveLength(placed1943)
     expect(within(map).getAllByRole('button')[0]).toHaveAccessibleName(/1943/)
   })
 

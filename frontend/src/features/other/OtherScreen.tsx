@@ -1,10 +1,9 @@
-import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useId, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
 import { useRole } from '../../app/RoleContext.tsx'
 import type { FieldErrors } from '../../functions/core/form.ts'
 import { otherSection, paths, type OtherSection } from '../../functions/core/paths.ts'
 import { useAccount } from '../../functions/account/useAccount.ts'
-import { useDeps } from '../../functions/core/useDeps.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { TextField } from '../../ui/Field.tsx'
 import { Icon, type IconName } from '../../ui/Icon.tsx'
@@ -13,6 +12,7 @@ import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { FamilyArchivePanel } from './FamilyArchivePanel.tsx'
 import { ProfilePanel } from './ProfilePanel.tsx'
+import { ArPanel } from './ArPanel.tsx'
 import s from './other.module.css'
 
 type SectionId = OtherSection
@@ -52,7 +52,7 @@ function sectionsFor(signedIn: boolean): Section[] {
     {
       id: 'ar',
       title: 'AR-режим',
-      hint: 'Совмещение снимков пока недоступно',
+      hint: 'Боец в 3D в камере телефона',
       icon: 'target',
       requiresAccount: true,
     },
@@ -170,63 +170,6 @@ function Panel({ id, owner }: { id: SectionId; owner?: string }) {
     case 'role':
       return <RolePanel />
   }
-}
-
-function ArPanel() {
-  const { platform } = useDeps()
-  const video = useRef<HTMLVideoElement>(null)
-  const session = useRef<{ stop(): void } | undefined>(undefined)
-  const [status, setStatus] = useState<'idle' | 'starting' | 'active' | 'error'>('idle')
-  const [error, setError] = useState('')
-
-  useEffect(
-    () => () => {
-      session.current?.stop()
-    },
-    [],
-  )
-
-  const start = async () => {
-    if (!video.current) return
-    setStatus('starting')
-    setError('')
-    try {
-      session.current?.stop()
-      session.current = await platform.ar.openCamera(video.current)
-      setStatus('active')
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : String(e))
-      setStatus('error')
-    }
-  }
-
-  return (
-    <div className={s.cameraPanel}>
-      <p>
-        Разрешите сайту использовать камеру. После разрешения здесь появится обычное изображение с
-        камеры.
-      </p>
-      <video
-        ref={video}
-        className={s.cameraPreview}
-        autoPlay
-        muted
-        playsInline
-        hidden={status !== 'active'}
-        data-testid="ar-camera"
-      />
-      {status !== 'active' && (
-        <BigButton onClick={() => void start()} icon="target" testID="ar-camera-enable">
-          {status === 'starting' ? 'Включаем камеру…' : 'Включить камеру'}
-        </BigButton>
-      )}
-      {status === 'error' && (
-        <Notice>
-          Не удалось включить камеру: {error}. Проверьте разрешение камеры для этого сайта.
-        </Notice>
-      )}
-    </div>
-  )
 }
 
 function RolePanel() {

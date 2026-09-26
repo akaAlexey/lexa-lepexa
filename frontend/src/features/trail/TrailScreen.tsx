@@ -16,7 +16,6 @@ import { MapView } from '../../map/MapView.tsx'
 import { tokens } from '../../theme/tokens.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Button } from '../../ui/Button.tsx'
-import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Icon } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { BackLink } from '../../ui/BackLink.tsx'
@@ -36,7 +35,6 @@ function RouteOverview({ route }: { route: Route }) {
     <>
       <p>
         {route.summary}. {formatDistance(route.lengthM / 1000)}, около {route.durationMin} мин.{' '}
-        {route.demo && <DemoBadge />}
       </p>
       <p className={s.progress} data-testid="trail-progress">
         <Icon name="flag" /> Пройдено {status.done} из {status.total}

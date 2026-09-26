@@ -47,12 +47,17 @@ export interface ImageTrackingOptions {
   aspect: number
   onFound(): void
   onLost(): void
+  /** Отмена запуска (закрыли экран, истёк таймаут): камера гаснет, промис отклоняется с AbortError. */
+  signal?: AbortSignal
 }
 
 export interface ArService {
   /** Запросить доступ к камере и показать обычное превью в video. */
   openCamera(video: HTMLVideoElement): Promise<CameraSession>
-  /** Узнать снимок в камере и положить поверх него ролик. Ошибка — если камеры нет или доступ запрещён. */
+  /**
+   * Узнать снимок в камере и положить поверх него ролик. Ошибка — если нет защищённого адреса (https),
+   * камеры или доступа к ней. При любой ошибке и отмене камера уже выключена.
+   */
   trackImage(options: ImageTrackingOptions): Promise<ImageTrackingSession>
 }
 
@@ -62,6 +67,8 @@ export interface StorageService {
   remove(key: string): void
   /** Удалить все данные приложения на устройстве (сброс демо). */
   clear(): void
+  /** Ключи данных приложения на устройстве (синхронизация личного состояния с аккаунтом). */
+  keys?(): string[]
 }
 
 export interface ImageService {
@@ -77,4 +84,6 @@ export interface Platform {
   ar: ArService
   /** Фото к историям. Нет в тестовых подменах — тогда фото читается без уменьшения. */
   images?: ImageService
+  /** Телефон или компьютер (AR-режим). Нет — определяется по браузеру (functions/ar/formFactor). */
+  formFactor?: () => 'phone' | 'desktop'
 }

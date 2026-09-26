@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { renderApp } from '../test/renderApp.tsx'
@@ -28,8 +28,8 @@ describe('шапка и меню', () => {
     const { api } = renderApp('/events', { role: 'volunteer' })
     const header = (await screen.findByTestId('mast-home')).closest('header')
     expect(header).not.toHaveTextContent(/демо/i)
-    const card = await screen.findByTestId('request-card-R01')
-    expect(within(card).queryByText('Демо-данные')).not.toBeInTheDocument()
+    await screen.findByTestId('request-card-R01')
+    expect(document.body).not.toHaveTextContent(/демо/i)
     expect((await api.listRequests()).find((r) => r.id === 'R01')?.demo).toBe(true)
   })
 

@@ -16,7 +16,6 @@ import {
 } from '../../functions/places/index.ts'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
-import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Icon } from '../../ui/Icon.tsx'
 import { Notice } from '../../ui/Notice.tsx'
 import { BackLink } from '../../ui/BackLink.tsx'
@@ -70,7 +69,7 @@ function SiteCard({ site, notified }: { site: LastBattleSite; notified: number |
         </Notice>
       )}
       <p>
-        <StatusBadge status={site.status} /> {site.demo && <DemoBadge />}
+        <StatusBadge status={site.status} />
       </p>
       {needsRaising && (
         <p className={s.need} data-testid="site-need">

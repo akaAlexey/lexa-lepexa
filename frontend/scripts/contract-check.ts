@@ -30,17 +30,25 @@ const failRow = (line: string) => rows.push({ ok: false, line: `FAIL    ${line}`
 
 async function call(
   name: EndpointName,
-  args: { id?: string; body?: unknown } = {},
+  args: { id?: string; recordId?: string; body?: unknown } = {},
   user = `cc-${run}`,
+  /** Cookie сессии — для разделов, которые требуют входа (семейный архив). */
+  cookie?: string,
 ) {
   const e = endpoints[name]
-  const path = e.path.replace('{id}', encodeURIComponent(args.id ?? ''))
+  const path = e.path
+    .replace('{id}', encodeURIComponent(args.id ?? ''))
+    .replace('{recordId}', encodeURIComponent(args.recordId ?? ''))
   if (READ_ONLY && e.method !== 'GET') {
     return undefined
   }
   const res = await fetch(BASE + path, {
     method: e.method,
-    headers: { 'Content-Type': 'application/json', 'X-Demo-User': user },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Demo-User': user,
+      ...(cookie ? { Cookie: cookie } : {}),
+    },
     body: args.body === undefined ? undefined : JSON.stringify(args.body),
   })
   const label = `${e.method.padEnd(5)} ${e.path}`
@@ -278,6 +286,86 @@ if (READ_ONLY) {
       },
     })
     await call('volunteerForSite', { id: createdSiteId })
+  }
+}
+
+// ---------- Личное (семейный архив, состояние аккаунта): только после входа ----------
+if (READ_ONLY) {
+  // На боевой базе не регистрируемся: проверяем, что без входа архив закрыт
+  for (const path of ['/family/fighters', '/me/state']) {
+    const res = await fetch(`${BASE}${path}`)
+    if (res.status === 401) pass(`GET   ${path} (без входа — 401, как и ожидается)`)
+    else failRow(`GET   ${path} → без входа HTTP ${res.status}, ожидался 401`)
+  }
+} else {
+  const registered = await fetch(`${BASE}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      login: `cc-${run}@example.com`,
+      password: `cc-${run}-password`,
+      name: 'Проверка контракта',
+      terms: true,
+      privacy: true,
+    }),
+  })
+  // Cookie сессии: только «имя=значение», без атрибутов
+  const cookie = registered.headers
+    .getSetCookie()
+    .map((c) => c.split(';')[0])
+    .join('; ')
+  if (!registered.ok || !cookie) failRow(`POST  /auth/register → HTTP ${registered.status}`)
+  else {
+    const who = `cc-family-${run}`
+    await call(
+      'putMyState',
+      { body: { key: 'search.joinedRequests', value: ['R01'] } },
+      who,
+      cookie,
+    )
+    await call('getMyState', {}, who, cookie)
+    const fighter = (await call(
+      'createFamilyFighter',
+      {
+        body: {
+          lastName: 'Проверкин',
+          firstName: 'Пётр',
+          middleName: '',
+          birthYear: 1912,
+          relation: 'прадед',
+          note: '',
+        },
+      },
+      who,
+      cookie,
+    )) as { id: string } | undefined
+    await call('listFamilyFighters', {}, who, cookie)
+    if (fighter) {
+      await call(
+        'updateFamilyFighter',
+        {
+          id: fighter.id,
+          body: {
+            lastName: 'Проверкин',
+            firstName: 'Павел',
+            middleName: '',
+            relation: '',
+            note: '',
+          },
+        },
+        who,
+        cookie,
+      )
+      const withRecord = (await call(
+        'addFamilyRecord',
+        { id: fighter.id, body: { url: `https://pamyat-naroda.ru/heroes/cc-${run}/`, title: '' } },
+        who,
+        cookie,
+      )) as { records?: { id: string }[] } | undefined
+      const recordId = withRecord?.records?.[0]?.id
+      if (recordId) await call('deleteFamilyRecord', { id: fighter.id, recordId }, who, cookie)
+      await call('deleteFamilyFighter', { id: fighter.id }, who, cookie)
+    }
   }
 }
 

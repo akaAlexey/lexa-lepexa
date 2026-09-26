@@ -15,8 +15,8 @@ const out = new URL('../../backend/app/seed_data.json', import.meta.url)
 
 const data = {
   graves: z.array(s.Grave).parse(jury.graves),
-  battles: z.array(s.Battle).parse(jury.battles),
-  teams: z.array(s.Team).parse(jury.teams),
+  battles: z.array(s.Battle).parse([...jury.battles, ...seed.extraBattles]),
+  teams: z.array(s.Team).parse([...jury.teams, ...seed.extraTeams]),
   routes: z.array(s.Route).parse(seed.routes),
   requests: z.array(s.VolunteerRequest).parse(seed.requests),
   fundraisers: z.array(s.Fundraiser).parse(seed.fundraisers),

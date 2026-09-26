@@ -37,12 +37,13 @@ describe('новая заявка командира (user story 2)', () => {
       role: 'commander',
       signedIn: true,
     })
+    const before = (await api.listRequests()).length
     await userEvent.clear(await screen.findByTestId('request-place'))
     await userEvent.click(screen.getByTestId('request-publish'))
     expect(await screen.findByText('Укажите место сбора')).toBeInTheDocument()
     expect(screen.getByTestId('request-place')).toHaveAttribute('aria-invalid', 'true')
     expect(router.state.location.pathname).toBe('/search/requests/new')
-    expect(await api.listRequests()).toHaveLength(1)
+    expect(await api.listRequests()).toHaveLength(before)
   })
 
   it('гость не может опубликовать заявку волонтёров', async () => {

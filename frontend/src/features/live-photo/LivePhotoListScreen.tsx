@@ -3,7 +3,6 @@ import { otherSection, paths } from '../../functions/core/paths.ts'
 import { QueryState } from '../../app/QueryState.tsx'
 import { BigButton } from '../../ui/BigButton.tsx'
 import { Card } from '../../ui/Card.tsx'
-import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { BackLink } from '../../ui/BackLink.tsx'
 import { Screen } from '../../ui/Screen.tsx'
 import { assetUrl, livePhotoUrl, useLivePhotos } from './livePhotos.ts'
@@ -36,8 +35,8 @@ export function LivePhotoListScreen() {
                 Фото из вашего семейного архива
               </h2>
               <p>
-                Загрузите снимок бойца — нейросеть оживит лицо, и он скажет слова от первого лица.
-                Только с согласия родственников.
+                Сохраните снимок бойца с текстом от первого лица — только с согласия родственников.
+                Ролик по нему в демо не создаётся: оба ролика выше подготовлены командой заранее.
               </p>
               <Link to={paths.newLivePhoto()} data-testid="live-own-link">
                 Оживить своё фото
@@ -55,9 +54,7 @@ export function LivePhotoListScreen() {
                   <h2 className={s.itemTitle}>
                     <Link to={livePhotoUrl(p.id)}>{p.title}</Link>
                   </h2>
-                  <p className={s.caption}>
-                    {p.caption} {p.demo && <DemoBadge />}
-                  </p>
+                  <p className={s.caption}>{p.caption}</p>
                   <a href={assetUrl(p.photoUrl)} download>
                     Скачать для печати<span className="visually-hidden">: {p.title}</span>
                   </a>

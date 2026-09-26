@@ -80,13 +80,13 @@ export const Grave = entity(
 
 export const MemorialKind = entity(
   'MemorialKind',
-  'Тип памятника: братская могила, вечный огонь, техника, памятник или стела',
-  z.enum(['grave', 'flame', 'vehicle', 'monument']),
+  'Тип памятного места: братская могила, вечный огонь, техника, памятник или стела, музей',
+  z.enum(['grave', 'flame', 'vehicle', 'monument', 'museum']),
 )
 
 export const Memorial = entity(
   'Memorial',
-  'Памятник Великой Отечественной войны. Источник — OpenStreetMap (historic=memorial|monument)',
+  'Памятник Великой Отечественной войны или музей края. Источник — OpenStreetMap (historic=memorial|monument, tourism=museum)',
   z.object({ id, lat, lon, name: z.string().min(1), kind: MemorialKind, osmUrl: z.url() }),
 )
 
@@ -404,6 +404,20 @@ export const ArchiveStatus = entity(
   z.enum(['pending', 'clarify', 'verified', 'rejected']),
 )
 
+export const StoryPhoto = entity(
+  'StoryPhoto',
+  'Архивный снимок к истории: файл на сайте, подпись и открытый источник с лицензией',
+  z.object({
+    src: z
+      .string()
+      .min(1)
+      .describe('Путь к файлу на сайте, например archive-photos/bolkhov-1943.jpg'),
+    caption: z.string().min(1).describe('Что на снимке, где и когда'),
+    sourceUrl: z.url().describe('Страница источника, например Wikimedia Commons'),
+    license: z.string().min(1).describe('Лицензия снимка, например «Общественное достояние»'),
+  }),
+)
+
 export const ArchiveStory = entity(
   'ArchiveStory',
   'История человека или места от пользователя. Всем видна только после проверки краеведом или отрядом',
@@ -417,6 +431,7 @@ export const ArchiveStory = entity(
     status: ArchiveStatus,
     verifiedBy: z.string().optional(),
     reviewNote: z.string().optional().describe('Комментарий проверяющего автору'),
+    photos: z.array(StoryPhoto).optional().describe('Архивные снимки из открытых источников'),
     createdAt: isoDateTime,
     demo,
   }),
@@ -436,6 +451,41 @@ export const ArchiveReview = entity(
     reviewer: z.string().min(1),
     note: z.string(),
   }),
+)
+
+/* ---------- Семейный архив (A7) ---------- */
+
+export const FoundRecord = entity(
+  'FoundRecord',
+  'Найденный документ — ссылка на страницу в «Памяти народа», ОБД «Мемориал» или «Подвиге народа»',
+  z.object({ id, url: z.url(), title: z.string().min(1).max(120) }),
+)
+
+const fighterFields = {
+  lastName: z.string().min(1).max(60),
+  firstName: z.string().max(60),
+  middleName: z.string().max(60),
+  birthYear: z.number().int().min(1860).max(1935).optional(),
+  relation: z.string().max(60).describe('Кем приходится: «прадед по маме»'),
+  note: z.string().max(1000).describe('Что известно в семье'),
+}
+
+export const FamilyFighter = entity(
+  'FamilyFighter',
+  'Боец семьи в личном архиве пользователя. Виден только владельцу (нужен вход)',
+  z.object({ id, ...fighterFields, records: z.array(FoundRecord), createdAt: isoDateTime }),
+)
+
+export const FamilyFighterInput = entity(
+  'FamilyFighterInput',
+  'Новый боец или правка: сервер проверяет те же правила, что и форма (domain/familyArchive)',
+  z.object(fighterFields),
+)
+
+export const FoundRecordInput = entity(
+  'FoundRecordInput',
+  'Ссылка на найденный документ; без названия — название базы',
+  z.object({ url: z.string().min(1).max(500), title: z.string().max(120) }),
 )
 
 /* ---------- «Живое фото» ---------- */
@@ -568,6 +618,26 @@ export const AppNotification = entity(
 
 export const Ack = entity('Ack', 'Подтверждение действия', z.object({ ok: z.literal(true) }))
 
+/* ---------- Личное состояние аккаунта ---------- */
+
+export const MyState = entity(
+  'MyState',
+  'Личное состояние вошедшего пользователя: {имя слота памяти: значение} — одно на все его устройства',
+  z.record(z.string(), z.unknown()),
+)
+
+export const MyStateChange = entity(
+  'MyStateChange',
+  'Записать одно значение личного состояния; null — удалить',
+  z.object({
+    key: z
+      .string()
+      .regex(/^[a-zA-Z][a-zA-Z0-9:._-]{0,99}$/)
+      .describe('Имя слота: «search.joinedRequests», «quest:park-3km», «profile»'),
+    value: z.unknown(),
+  }),
+)
+
 export type LatLon = z.infer<typeof LatLon>
 export type Source = z.infer<typeof Source>
 export type Grave = z.infer<typeof Grave>
@@ -590,8 +660,15 @@ export type GroupApplicationStatus = z.infer<typeof GroupApplicationStatus>
 export type GroupApplication = z.infer<typeof GroupApplication>
 export type NewGroupApplication = z.infer<typeof NewGroupApplication>
 export type ArchiveStory = z.infer<typeof ArchiveStory>
+export type StoryPhoto = z.infer<typeof StoryPhoto>
 export type NewArchiveStory = z.infer<typeof NewArchiveStory>
 export type LivePhoto = z.infer<typeof LivePhoto>
+export type FoundRecord = z.infer<typeof FoundRecord>
+export type FamilyFighter = z.infer<typeof FamilyFighter>
+export type FamilyFighterInput = z.infer<typeof FamilyFighterInput>
+export type FoundRecordInput = z.infer<typeof FoundRecordInput>
+export type MyState = z.infer<typeof MyState>
+export type MyStateChange = z.infer<typeof MyStateChange>
 export type SiteStatus = z.infer<typeof SiteStatus>
 export type LastBattleSite = z.infer<typeof LastBattleSite>
 export type NewLastBattleSite = z.infer<typeof NewLastBattleSite>

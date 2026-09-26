@@ -37,15 +37,17 @@ describe('подача заявки группы', () => {
     const created = await submitGroupApplication(deps, request)
     expect(created).toMatchObject({ ...request, status: 'pending' })
     const list = await listGroupApplications(deps)
-    expect(list.map((a) => a.id)).toEqual([created.id, 'G01'])
+    expect(list[0]?.id).toBe(created.id)
+    expect(list.map((a) => a.id)).toContain('G01')
   })
 
   it('на несуществующий выезд — ошибка, заявка не создаётся', async () => {
     const deps = createTestDeps()
+    const before = (await listGroupApplications(deps)).length
     await expect(submitGroupApplication(deps, { ...request, tripId: 'NOPE' })).rejects.toThrow(
       'Выезд NOPE не найден',
     )
-    expect(await listGroupApplications(deps)).toHaveLength(1)
+    expect(await listGroupApplications(deps)).toHaveLength(before)
   })
 
   it('сервер проверяет заявку по контракту: больше 100 человек не принимается', async () => {

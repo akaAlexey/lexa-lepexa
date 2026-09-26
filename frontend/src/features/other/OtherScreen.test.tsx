@@ -109,12 +109,13 @@ describe('Другое, профиль и личные функции', () => {
     await userEvent.click(screen.getByTestId('last-battle-site-S02'))
     expect(router.state.location.pathname).toBe('/last-battle/S02')
   })
-  it('AR запрашивает камеру по кнопке и показывает превью после разрешения', async () => {
+  it('AR на телефоне: камера по кнопке, поверх — 3D-боец, пояснение про MVP', async () => {
     const stop = vi.fn<() => void>()
     const openCamera = vi.fn<ArService['openCamera']>(async () => ({ stop }))
     renderApp('/other?section=ar', {
       signedIn: true,
       platform: {
+        formFactor: () => 'phone',
         ar: {
           openCamera,
           trackImage: () => Promise.reject(new Error('не используется')),
@@ -123,8 +124,44 @@ describe('Другое, профиль и личные функции', () => {
     })
 
     expect(screen.getByTestId('ar-camera')).not.toBeVisible()
+    expect(screen.getByTestId('ar-mvp-note')).toHaveTextContent('в реальном времени')
     await userEvent.click(screen.getByTestId('ar-camera-enable'))
     expect(openCamera).toHaveBeenCalledTimes(1)
     expect(screen.getByTestId('ar-camera')).toBeVisible()
+    expect(screen.getByTestId('ar-model')).toHaveAttribute('role', 'img')
+    await userEvent.click(screen.getByTestId('ar-camera-stop'))
+    expect(stop).toHaveBeenCalled()
+    expect(screen.queryByTestId('ar-model')).not.toBeInTheDocument()
+  })
+
+  it('AR на компьютере: камера недоступна, предпросмотр модели и пояснение', async () => {
+    const openCamera = vi.fn<ArService['openCamera']>()
+    renderApp('/other?section=ar', {
+      signedIn: true,
+      platform: {
+        formFactor: () => 'desktop',
+        ar: { openCamera, trackImage: () => Promise.reject(new Error('не используется')) },
+      },
+    })
+    expect(await screen.findByTestId('ar-unavailable')).toHaveTextContent('на телефоне')
+    expect(screen.getByTestId('ar-model-preview')).toBeInTheDocument()
+    expect(screen.queryByTestId('ar-camera-enable')).not.toBeInTheDocument()
+    expect(openCamera).not.toHaveBeenCalled()
+  })
+
+  it('камера на телефоне не включилась — причина и модель без камеры', async () => {
+    renderApp('/other?section=ar', {
+      signedIn: true,
+      platform: {
+        formFactor: () => 'phone',
+        ar: {
+          openCamera: () => Promise.reject(new Error('доступ к камере запрещён')),
+          trackImage: () => Promise.reject(new Error('не используется')),
+        },
+      },
+    })
+    await userEvent.click(await screen.findByTestId('ar-camera-enable'))
+    expect(await screen.findByText(/доступ к камере запрещён/)).toBeVisible()
+    expect(screen.getByTestId('ar-model-preview')).toBeInTheDocument()
   })
 })

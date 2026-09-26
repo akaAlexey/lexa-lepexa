@@ -27,8 +27,8 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements-dev.txt
       - run: pip install -r requirements-dev.txt
-      - run: ruff check app tests migrations/env.py migrations/versions/0003_contract_tables.py migrations/versions/0004_needs_coordinates.py migrations/versions/0005_server_auth.py migrations/versions/0006_yookassa_payments.py start.py
-      - run: ruff format --check app tests migrations/env.py migrations/versions/0003_contract_tables.py migrations/versions/0004_needs_coordinates.py migrations/versions/0005_server_auth.py migrations/versions/0006_yookassa_payments.py start.py
+      - run: ruff check app tests migrations/env.py migrations/versions/0003_contract_tables.py migrations/versions/0004_needs_coordinates.py migrations/versions/0005_server_auth.py migrations/versions/0006_yookassa_payments.py migrations/versions/0007_story_photos.py migrations/versions/0008_family_archive.py migrations/versions/0009_user_state.py start.py
+      - run: ruff format --check app tests migrations/env.py migrations/versions/0003_contract_tables.py migrations/versions/0004_needs_coordinates.py migrations/versions/0005_server_auth.py migrations/versions/0006_yookassa_payments.py migrations/versions/0007_story_photos.py migrations/versions/0008_family_archive.py migrations/versions/0009_user_state.py start.py
       - run: pytest -q
 
   frontend:
@@ -105,6 +105,10 @@ jobs:
 
       - name: Запуск API
         working-directory: backend
+        env:
+          # Сайт живой сборки ниже — на http://127.0.0.1:4195 (без https: cookie без Secure)
+          CORS_ORIGINS: http://127.0.0.1:4195
+          AUTH_COOKIE_SECURE: '0'
         run: |
           nohup python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 > api.log 2>&1 &
           for i in $(seq 1 30); do curl -fs http://127.0.0.1:8000/health && exit 0; sleep 1; done
@@ -113,6 +117,20 @@ jobs:
       - name: Сверка всех эндпоинтов и потока уведомлений с контрактом фронта
         working-directory: frontend
         run: npm run contract:check -- http://127.0.0.1:8000/api/v1
+
+      - name: Сайт в живом режиме с этим API — два устройства видят одни данные
+        working-directory: frontend
+        env:
+          VITE_API_MODE: live
+          VITE_API_URL: http://127.0.0.1:8000/api/v1
+          VITE_TILES: none
+          LIVE_SITE_URL: http://127.0.0.1:4195
+        run: |
+          npx playwright install --with-deps chromium
+          npx vite build --outDir dist-live
+          nohup npx vite preview --outDir dist-live --port 4195 --strictPort --host 127.0.0.1 > preview.log 2>&1 &
+          for i in $(seq 1 30); do curl -fs http://127.0.0.1:4195/ > /dev/null && break; sleep 1; done
+          npx playwright test -c playwright.live.config.ts
 
       - name: Лог API при ошибке
         if: failure()

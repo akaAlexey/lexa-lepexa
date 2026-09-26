@@ -11,7 +11,7 @@ import { Notice } from '../../ui/Notice.tsx'
 import s from './other.module.css'
 
 export function ProfilePanel({ account }: { account: Account }) {
-  const { saveProfile, signOut } = useAccount()
+  const { saveProfile, signOut, server } = useAccount()
   const { role } = useRole()
   const [login, setLogin] = useState('')
   const [editing, setEditing] = useState(!account.name)
@@ -153,9 +153,10 @@ export function ProfilePanel({ account }: { account: Account }) {
         </Link>
         <Link to={paths.livePhotos()}>Мои живые фото</Link>
       </nav>
-      <p className={s.muted}>
-        Профиль хранится в этом браузере. Вход на другом устройстве и восстановление пароля появятся
-        после подключения серверной авторизации.
+      <p className={s.muted} data-testid="profile-storage">
+        {server
+          ? 'Профиль, записи, истории и семейный архив сохранены в вашем аккаунте: войдите на любом устройстве — всё на месте.'
+          : 'Профиль хранится в этом браузере.'}
       </p>
       <Button onClick={signOut} testID="profile-signout">
         Выйти из аккаунта

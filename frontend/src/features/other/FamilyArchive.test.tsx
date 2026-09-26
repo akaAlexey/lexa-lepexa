@@ -67,7 +67,7 @@ describe('Семейный архив', () => {
     expect(saved[0]!.id).toMatch(/^F-/)
     expect(saved[0]).toMatchObject({ lastName: 'Иванов', relation: 'прадед по маме' })
     expect(router.state.location.search).toBe(`?section=archive&fighter=${saved[0]!.id}`)
-    expect(screen.getByTestId('family-card-name')).toHaveTextContent('Иванов Пётр Сергеевич')
+    expect(await screen.findByTestId('family-card-name')).toHaveTextContent('Иванов Пётр Сергеевич')
     expect(screen.getByText('прадед по маме · 1912 г. р.')).toBeVisible()
 
     // сохранение заменило форму в истории: «Назад» браузера не возвращает к пустой форме
@@ -155,7 +155,9 @@ describe('Семейный архив', () => {
     await userEvent.click(screen.getByTestId('family-save'))
 
     expect(router.state.location.search).toBe('?section=archive&fighter=F-1')
-    expect(screen.getByTestId('family-card-name')).toHaveTextContent('Иванов Павел Сергеевич')
+    expect(await screen.findByTestId('family-card-name')).toHaveTextContent(
+      'Иванов Павел Сергеевич',
+    )
     expect(platform.storage.get(KEY)).toEqual([{ ...IVANOV, firstName: 'Павел' }])
     expect(screen.getByText('Донесение о потерях')).toBeVisible()
   })
@@ -173,9 +175,11 @@ describe('Семейный архив', () => {
 
     await userEvent.click(screen.getByTestId('family-remove'))
     await userEvent.click(screen.getByTestId('family-remove-confirm'))
+    // удаление и уход к списку — одним обновлением: «бойца нет в архиве» не показывается
+    expect(await screen.findByTestId('family-empty')).toBeVisible()
+    expect(screen.queryByTestId('family-missing')).not.toBeInTheDocument()
     expect(platform.storage.get(KEY)).toEqual([])
     expect(router.state.location.search).toBe('?section=archive')
-    expect(screen.getByTestId('family-empty')).toBeVisible()
   })
 
   it('неизвестный боец: сообщение и путь к списку', async () => {

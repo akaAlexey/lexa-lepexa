@@ -15,6 +15,11 @@ function subscribe(storage: StorageService, key: string, listener: () => void) {
   return () => void set.delete(listener)
 }
 
+/** Сообщить читателям слота, что он изменился в обход хука (данные аккаунта с сервера). */
+export function notifyMemory(storage: StorageService, key: string) {
+  notify(storage, key)
+}
+
 function notify(storage: StorageService, key: string) {
   for (const listener of listeners.get(storage)?.get(key) ?? []) listener()
 }

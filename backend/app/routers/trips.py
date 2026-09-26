@@ -7,7 +7,7 @@ from .. import schemas as sch
 from .. import serializers as out
 from ..db import get_session
 from ..errors import fail, found
-from ..identity import user_key
+from ..identity import ACCOUNT_PREFIX, user_key
 from ..timeutil import gid
 
 router = APIRouter(tags=["Выходные с поисковиком"])
@@ -27,6 +27,11 @@ async def get_trip(id: str, s: AsyncSession = Depends(get_session)):
 async def register_trip(id: str, s: AsyncSession = Depends(get_session), user: str = Depends(user_key)):
     # Блокировка строки: два одновременных запроса не займут последнее место дважды (в Postgres).
     trip = found(await s.get(m.Trip, id, with_for_update=True), "Выезд")
+    # Вошедший пользователь занимает одно место, с какого бы устройства ни записался
+    if user.startswith(ACCOUNT_PREFIX) and await s.scalar(
+        select(m.TripRegistration.id).where(m.TripRegistration.trip_id == id, m.TripRegistration.user_key == user)
+    ):
+        return out.trip(trip)
     if trip.spots_taken >= trip.spots_total:
         fail(409, "Мест нет")
     trip.spots_taken += 1

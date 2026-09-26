@@ -10,6 +10,7 @@ export const qk = {
   site: (id: string) => ['sites', id] as const,
   graves: ['graves'],
   battles: ['battles'],
+  memorials: ['memorials'],
   teams: ['teams'],
   requests: ['requests'],
   fundraisers: ['fundraisers'],
@@ -18,4 +19,5 @@ export const qk = {
   groupApplications: ['group-applications'],
   stories: ['stories'],
   story: (id: string) => ['stories', id] as const,
+  family: (owner: string) => ['family', owner] as const,
 } as const

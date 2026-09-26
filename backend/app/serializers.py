@@ -146,6 +146,7 @@ def story(x: m.ArchiveStory) -> dict:
             "status": x.status,
             "verifiedBy": x.verified_by,
             "reviewNote": x.review_note,
+            "photos": x.photos or None,
             "createdAt": iso_z(x.created_at),
             "demo": x.demo,
         }

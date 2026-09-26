@@ -32,19 +32,42 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      # Сайт работает только с сервером и общей базой: демо-данных в браузере на боевом сайте нет.
+      # Адрес API — переменная репозитория API_URL (Settings → Secrets and variables → Actions → Variables),
+      # по умолчанию свой домен API. Если API недоступен или отстал от контракта фронта, выкладка
+      # останавливается: остаётся прежняя версия сайта, а не сайт с ошибками загрузки.
+      - name: API доступен и совпадает с контрактом
+        env:
+          API_URL: ${{ vars.API_URL || 'https://api.marshrutypobedy.ru/api/v1' }}
+          SITE_URL: ${{ vars.SITE_URL || 'https://marshrutypobedy.ru' }}
+        run: |
+          echo "API: $API_URL"
+          # Бэкенд мог перезапускаться с этим же push (Deploy-F из main) — ждём до 10 минут
+          for i in $(seq 1 40); do
+            if curl -fsS --max-time 15 "$API_URL/health" | grep -q '"ok":true'; then break; fi
+            if [ "$i" = 40 ]; then
+              echo "::error title=API недоступен::$API_URL/health не отвечает 10 минут. Сайт не выложен — на домене прежняя версия. Поднимите бэкенд по backend/DEPLOY-F.md и нажмите Re-run jobs."
+              exit 1
+            fi
+            echo "API ещё не отвечает ($i/40), ждём 15 с"; sleep 15
+          done
+          # CORS: сервер разрешает запросы со страниц сайта (и с cookie входа)
+          curl -fsS --max-time 20 -o /dev/null -D headers.txt -H "Origin: $SITE_URL" "$API_URL/health"
+          grep -qi "access-control-allow-origin: $SITE_URL" headers.txt || {
+            echo "::error title=CORS::API не разрешает запросы с $SITE_URL — добавьте адрес в CORS_ORIGINS (backend/DEPLOY-F.md)"; exit 1; }
+          grep -qi "access-control-allow-credentials: true" headers.txt
+          # Все GET контракта отвечают по схемам фронта (ничего не пишет в боевую базу)
+          npm run contract:check -- "$API_URL" --read-only
+
       # Сайт на своём домене (Settings → Pages → Custom domain = marshrutypobedy.ru), поэтому base=/.
       # Вернуться на team-shpilit.github.io/lexa-lepexa/ — переменная репозитория SITE_BASE=/lexa-lepexa/ .
       - name: Build
         run: npm run build -- --base=${{ vars.SITE_BASE || '/' }}
         env:
           VITE_SITE_URL: ${{ vars.SITE_URL || 'https://marshrutypobedy.ru' }}
-          # Живой бэкенд — только когда задана переменная репозитория API_URL
-          # (Settings → Secrets and variables → Actions → Variables). Без неё — демо-данные в браузере:
-          # бесплатный туннель меняет адрес и падает, а жюри не должно увидеть пустой сайт.
-          # Сайт на своём домене https://marshrutypobedy.ru (Settings → Pages → Custom domain), поэтому base=/.
-          # Бэкенд должен разрешать CORS для https://marshrutypobedy.ru (переменная CORS_ORIGINS).
-          VITE_API_MODE: ${{ vars.API_URL && 'live' || 'mock' }}
-          VITE_API_URL: ${{ vars.API_URL }}
+          # Всегда живой бэкенд (проверен шагом выше). Демо-режим (mock) — только для разработки и e2e.
+          VITE_API_MODE: live
+          VITE_API_URL: ${{ vars.API_URL || 'https://api.marshrutypobedy.ru/api/v1' }}
           VITE_TILES: openfreemap
 
       - name: SPA fallback for deep links
@@ -56,6 +79,8 @@ jobs:
           grep -q '"${{ vars.SITE_BASE || '/' }}assets/' dist/index.html
           test -f dist/manifest.webmanifest
           test -f dist/sw.js
+          # В сборку попал живой режим, а не демо-данные
+          grep -q 'VITE_API_MODE:`live`' dist/assets/index-*.js
 
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -2,11 +2,16 @@ import { createContext, useContext, type ReactNode } from 'react'
 import type { ApiClient } from '../api/index.ts'
 import type { Services } from '../functions/core/deps.ts'
 import { BUILD_ID } from '../config/build.ts'
+import { observeStorage } from '../functions/account/accountSync.ts'
 import { DEMO_POSITION_KEY, type Platform } from '../platform/index.ts'
 
 export type { DemoControls, OwnActions, Services } from '../functions/core/deps.ts'
 
-export function createServices(api: ApiClient, platform: Platform): Services {
+export function createServices(api: ApiClient, source: Platform): Services {
+  // Есть сервер входа — личные слоты памяти синхронизируются с аккаунтом (functions/account/accountSync)
+  const platform: Platform = api.auth
+    ? { ...source, storage: observeStorage(source.storage) }
+    : source
   let running = 0
   return {
     api,

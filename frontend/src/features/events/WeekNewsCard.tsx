@@ -1,7 +1,6 @@
 import { useId } from 'react'
 import { formatDayRu } from '../../domain/format.ts'
 import { useWeekNews, useWeekNewsOpen } from '../../functions/events/useEvents.ts'
-import { DemoBadge } from '../../ui/DemoBadge.tsx'
 import { Icon } from '../../ui/Icon.tsx'
 import ui from '../../ui/ui.module.css'
 import s from './events.module.css'
@@ -16,8 +15,7 @@ const newsCount = (n: number) =>
 /**
  * «Новости недели» — всегда первая строка ленты: находки и выезды отрядов за неделю.
  * По умолчанию свёрнуты (решение команды): заголовок, даты и число новостей; раскрываются
- * заголовком-кнопкой плавно, выбор запоминается. Пометка «Демо» — у заголовка (сейчас скрыта
- * флагом SHOW_DEMO_BADGES, см. ui/DemoBadge).
+ * заголовком-кнопкой плавно, выбор запоминается.
  */
 export function WeekNewsCard() {
   const news = useWeekNews()
@@ -46,7 +44,6 @@ export function WeekNewsCard() {
           <span className={ui.kick}>
             {day(news.from)} — {day(news.to)} · {newsCount(news.items.length)}
           </span>
-          <DemoBadge />
         </p>
       </header>
       <div className={s.weekBody} data-open={open || undefined}>
@@ -54,7 +51,7 @@ export function WeekNewsCard() {
           {news.items.map((n) => (
             <div key={n.id} className={s.weekItem}>
               <p className={ui.kick}>
-                {formatDayRu(n.date)} · {n.team} · {n.kind} <DemoBadge />
+                {formatDayRu(n.date)} · {n.team} · {n.kind}
               </p>
               <p className={s.weekText}>{n.text}</p>
             </div>

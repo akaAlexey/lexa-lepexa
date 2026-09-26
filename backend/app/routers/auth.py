@@ -13,7 +13,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import settings
-from ..db import get_session
+from ..db import Session, get_session
 from ..models_domain import AuthSession, User
 from ..timeutil import gid, iso_z, now
 
@@ -136,9 +136,27 @@ async def issue_session(response: Response, user: User, s: AsyncSession) -> None
         max_age=settings.auth_session_days * 24 * 60 * 60,
         httponly=True,
         secure=settings.auth_cookie_secure,
-        samesite="lax",
+        samesite=settings.cookie_samesite,
         path="/api/v1",
     )
+
+
+async def signed_in_user_id(request: Request) -> str | None:
+    """id вошедшего пользователя по cookie сессии или None — без ошибок (для разделов, где вход не обязателен)."""
+    token = request.cookies.get(settings.auth_cookie_name)
+    if not token:
+        return None
+    async with Session() as s:
+        session = await s.scalar(select(AuthSession).where(AuthSession.token_hash == token_hash(token)))
+        if session is None:
+            return None
+        expires = session.expires_at
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=now().tzinfo)
+        if expires <= now():
+            return None
+        user = await s.get(User, session.user_id)
+        return user.id if user is not None and user.is_active else None
 
 
 async def current_user(
@@ -221,6 +239,6 @@ async def logout(
         path="/api/v1",
         secure=settings.auth_cookie_secure,
         httponly=True,
-        samesite="lax",
+        samesite=settings.cookie_samesite,
     )
     return {"ok": True}
